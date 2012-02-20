@@ -56,58 +56,12 @@ for i = 1:minSize
     %Save current H matrix for next iteration.
     hdiffOld = [cvt.H_psi_v_psi_0 qvt.H_psi_1_psi_i];
 end
-%Synchronise over a subset of the matrix's
-newStart = 200;
-newEnd = minSize;
-t = rbt(newStart:newEnd,4)';
 clear fot;
 clear rbt;
 clear lbt;
 
-display('Syncrohonising:');
-
-N=size(t,2)
-y_v = y_v(newStart:newEnd);
-y_i = y_i(newStart:newEnd);
-
-figure
-subplot(2,1,1);
-hold on;
-plot(t,y_v,'--k');
-plot(t,y_i,'--m');
-title('Magnitude of Rotation Matrix change over time.');
-grid on;
-
-subplot(2,1,2);
-hold on;
-%Get correlation.
-Rvi = xcorr(y_v',y_i');
-Riv = xcorr(y_i',y_v');
-R=Rvi(1:N);
-Rvi=R;
-R=Riv(1:N);
-Riv=R;
-
-[max_vi,max_lags_vi]=max(Rvi)
-[max_iv,max_lags_iv]=max(Riv)
-
-%Adjust input data.
-if (max(max_vi,max_iv) == max_vi)
-    display('Syncrohonising: Vicon ahead of IMU');
-    H_psi_1_psi_i_t = H_psi_1_psi_i_t(...
-        N-max_lags_vi:size(H_psi_1_psi_i_t,1));
-    H_psi_0_psi_v_t = H_psi_0_psi_v_t(1:max_lags_vi);
-    plot([1:N],y_v,'--k')
-    plot([1:max_lags_vi+1],y_i(N-max_lags_vi:N),'--m')
-    title([' Synchronising: Vicon ahead of IMU by ' num2str(max_lags_vi) ' '  num2str(max_vi) ])
-else
-    H_psi_0_psi_v_t = H_psi_0_psi_v_t(N-max_lags_iv:size(H_psi_0_psi_v_t,1));
-    H_psi_1_psi_i_t = H_psi_1_psi_i_t(1:max_lags_iv);
-    display('Syncrohonising: IMU ahead of Vicon');
-    plot([1:N],y_i,'--m')
-    plot([1:max_lags_iv+1],y_v(N-max_lags_iv:N),'--k')
-    title(['Syncrohonising: IMU ahead of Vicon by ' num2str(max_lags_iv) ' '  num2str(max_iv)])
-end
+[H_psi_0_psi_v_t,H_psi_1_psi_i_t] = ...
+    synchronise(y_v,y_i,H_psi_0_psi_v_t,H_psi_1_psi_i_t,Fs,200);
 
 grid on;
 clear Riv;
@@ -180,7 +134,10 @@ end
 axes('Position',[0 0 1 1])
 display('Creating Video');
 if makeMovie == 1
-    aviobj=close(aviobj); %closes the AVI file
+    aviobj=close(aviobj); %closes the AVx = 2*pi;
+y = 2*pi+0.1;
+assertElementsAlmostEqual(angleDifference(x,y),-0.1);
+assertElementsAlmostEqual(angleDifference(y,x),0.1);I file
     close(hf); %closes the handle to invisible figure
 end;
 
@@ -215,21 +172,4 @@ y=i_eulers1(3,:);
 diffAng = angleDifference(x,y);
 plotangles(t,diffAng,0,...
     ['X-axis Error (radians): max:' num2str(max(abs(diffAng))) ]);
-
-
-% figure
-% subplot(3,2,1);
-% plotangles(t,v_eulers2(1,:),i_eulers2(1,:),'Phi1 (radians):')
-% subplot(3,2,3);
-% plotangles(t,v_eulers2(2,:),i_eulers2(2,:),'Thetha1 (radians):')
-% subplot(3,2,5)
-% plotangles(t,v_eulers2(3,:),i_eulers2(3,:),'Psi1 (radians):')
-%
-% %Plots of Error
-% subplot(3,2,2);
-% plotangles(t,v_eulers2(1,:)-i_eulers2(1,:),0,'Phi1 Error (radians):');
-% subplot(3,2,4);
-% plotangles(t,v_eulers2(2,:)-i_eulers2(2,:),0,'Thetha1 Error (radians):');
-% subplot(3,2,6);
-% plotangles(t,v_eulers2(3,:)-i_eulers2(3,:),0,'Psi1 Error (radians):');
 toc
