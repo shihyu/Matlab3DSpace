@@ -13,7 +13,7 @@ node=1;
 %run = '/yaxisnode1_2'
 run = '/yaxisnode2'
 %run = '/moveaxisnode1'
-plotGraphs = 0;
+plotGraphs = 1;
 makeMovie = 0;
 
 %Get the data..
@@ -46,9 +46,9 @@ for i = 1:minSize
         lbt(i,1:3),fot(i,1:3),rbt(i,4));
     qvt = QuaternionsThreeMarkers(quaternions(i,1:4),rbt(i,4));
     %Save the cvt
-    H_psi_0_psi_v_t = [H_psi_0_psi_v_t; cvt];
+    H_psi_0_psi_v_t = [H_psi_0_psi_v_t cvt];
     %Save the quaternions.
-    H_psi_1_psi_i_t = [H_psi_1_psi_i_t; qvt];
+    H_psi_1_psi_i_t = [H_psi_1_psi_i_t qvt];
     
     %Calculate the difference between H matrix's from last point
     y_v(i) = calculateRotDiff(cvt.H_psi_v_psi_0,hdiffOld(1:4,1:4));
@@ -67,7 +67,7 @@ grid on;
 clear Riv;
 clear RvI;
 %Find new end.
-minSize = min(size(H_psi_0_psi_v_t,1),size(H_psi_1_psi_i_t,1));
+minSize = min(size(H_psi_0_psi_v_t,2),size(H_psi_1_psi_i_t,2));
 
 %Get the estimated H Matrix: Least Means square solution
 %from within the Still part of the experiment.
@@ -86,10 +86,10 @@ H_psi_1_psi_0_est(1:3,4) = 0;
 H_psi_1_psi_0_est(4,1:3) = 0;
 
 %
-v_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-v_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-i_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-i_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
+v_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+v_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+i_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+i_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
 figure;
 if makeMovie == 1
     hf= figure('visible','off','OuterPosition',[0 0 2048 2048]); %turns visibility of figure off
