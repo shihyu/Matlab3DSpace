@@ -6,11 +6,11 @@ format long;
 filename = '~/aa_sofie_code/data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
 node=1;
 %run = '/zaxisnode1_2'
-%run = '/zaxisnode1'
+run = '/zaxisnode1'
 %run = '/xaxisnode1_2'
 %run = '/xaxisnode2'
 %run = '/yaxisnode1'         %Does not synchronise.
-run = '/yaxisnode1_2'
+%run = '/yaxisnode1_2'
 %run = '/yaxisnode2'
 %run = '/moveaxisnode1'
 plotGraphs = 0;
