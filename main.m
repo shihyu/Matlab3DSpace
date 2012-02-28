@@ -3,7 +3,7 @@ clear;
 close all;
 clc;
 format long;
-filename = '~/aa_sofie_code/data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
+filename = '~/aa_sofie_data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
 node=1;
 %run = '/zaxisnode1_2'
 run = '/zaxisnode1'
