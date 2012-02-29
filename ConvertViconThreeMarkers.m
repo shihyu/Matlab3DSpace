@@ -6,6 +6,7 @@ classdef ConvertViconThreeMarkers < handle
         timestamp = 0;
         points_psi_v = zeros(4);
         H_psi_v_psi_0 = zeros(4);
+        quaternion = [0 0 0 0];
     end
     properties (Constant)
         points_psi_0 = [ 
@@ -79,6 +80,7 @@ classdef ConvertViconThreeMarkers < handle
             cvt.H_psi_v_psi_0(1:3,4)  = [0 0 0]';
             %and error
             cvt.H_psi_v_psi_0(4,1:3)  = [0 0 0];
+            cvt.quaternion = matrix2quaternion(cvt.H_psi_v_psi_0')';
             %Recalculate position with no translation added to screw.
             cvt.points_psi_v = cvt.H_psi_v_psi_0\cvt.points_psi_0;
 

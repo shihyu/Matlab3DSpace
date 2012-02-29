@@ -3,15 +3,15 @@ clear;
 close all;
 clc;
 format long;
-filename = '~/aa_sofie_code/data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
+filename = '~/aa_sofie_data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
 node=1;
 %run = '/zaxisnode1_2'
-%run = '/zaxisnode1'
+run = '/zaxisnode1'
 %run = '/xaxisnode1_2'
 %run = '/xaxisnode2'
 %run = '/yaxisnode1'         %Does not synchronise.
 %run = '/yaxisnode1_2'
-run = '/yaxisnode2'
+%run = '/yaxisnode2'
 %run = '/moveaxisnode1'
 plotGraphs = 0;
 makeMovie = 0;
@@ -46,9 +46,9 @@ for i = 1:minSize
         lbt(i,1:3),fot(i,1:3),rbt(i,4));
     qvt = QuaternionsThreeMarkers(quaternions(i,1:4),rbt(i,4));
     %Save the cvt
-    H_psi_0_psi_v_t = [H_psi_0_psi_v_t; cvt];
+    H_psi_0_psi_v_t = [H_psi_0_psi_v_t cvt];
     %Save the quaternions.
-    H_psi_1_psi_i_t = [H_psi_1_psi_i_t; qvt];
+    H_psi_1_psi_i_t = [H_psi_1_psi_i_t qvt];
     
     %Calculate the difference between H matrix's from last point
     y_v(i) = calculateRotDiff(cvt.H_psi_v_psi_0,hdiffOld(1:4,1:4));
@@ -67,7 +67,7 @@ grid on;
 clear Riv;
 clear RvI;
 %Find new end.
-minSize = min(size(H_psi_0_psi_v_t,1),size(H_psi_1_psi_i_t,1));
+minSize = min(size(H_psi_0_psi_v_t,2),size(H_psi_1_psi_i_t,2));
 
 %Get the estimated H Matrix: Least Means square solution
 %from within the Still part of the experiment.
@@ -86,10 +86,11 @@ H_psi_1_psi_0_est(1:3,4) = 0;
 H_psi_1_psi_0_est(4,1:3) = 0;
 
 %
-v_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-v_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-i_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
-i_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,1)-200);
+v_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+v_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+i_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+i_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+error = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
 figure;
 if makeMovie == 1
     hf= figure('visible','off','OuterPosition',[0 0 2048 2048]); %turns visibility of figure off
@@ -109,6 +110,9 @@ for i = 200:minSize
     %Calculate the difference between the rotation from one to the other.
     [v_eulers1(:,i-200+1),v_eulers2(:,i-200+1)] = invrpy(H_psi_0_psi_v);
     [i_eulers1(:,i-200+1),i_eulers2(:,i-200+1)] = invrpy(H_psi_0_psi_i);
+    %Error
+    [errorQuat,error(:,i-200+1)] =  quaternionerror(cvt.quaternion,...
+            matrix2quaternion(H_psi_0_psi_i)');
     
     if plotGraphs == 1
         subplot(1,2,1);
@@ -172,4 +176,23 @@ y=i_eulers1(3,:);
 diffAng = angleDifference(x,y);
 plotangles(t,diffAng,0,...
     ['X-axis Error (radians): max:' num2str(max(abs(diffAng))) ]);
+
+figure
+subplot(3,2,1);
+plotangles(t,v_eulers1(1,:),i_eulers1(1,:),'Z-Axis (radians):')
+subplot(3,2,3);
+plotangles(t,v_eulers1(2,:),i_eulers1(2,:),'Y-axis (radians):')
+subplot(3,2,5)
+plotangles(t,v_eulers1(3,:),i_eulers1(3,:),'X-axis (radians):')
+
+%Plots of Error
+subplot(3,2,2);
+plotangles(t,error(1,:),0,...
+    ['Z-axis Error (radians):']);
+subplot(3,2,4);
+plotangles(t,error(2,:),0,...
+    ['Y-axis Error (radians):']);
+subplot(3,2,6);
+plotangles(t,error(3,:),0,...
+    ['X-axis Error (radians):']);
 toc
