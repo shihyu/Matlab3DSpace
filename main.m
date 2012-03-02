@@ -156,19 +156,19 @@ plotangles(t,v_eulers1(3,:),i_eulers1(3,:),'X-axis (radians):')
 subplot(3,2,2);
 x=v_eulers1(1,:);
 y=i_eulers1(1,:);
-diffAng = angleDifference(x,y);
+diffAng = ThreeMarkers.angleDifference(x,y);
 plotangles(t,diffAng,0,...
     ['Z-axis Error (radians): max:' num2str(max(abs(diffAng))) ]);
 subplot(3,2,4);
 x=v_eulers1(2,:);
 y=i_eulers1(2,:);
-diffAng = angleDifference(x,y);
+diffAng = ThreeMarkers.angleDifference(x,y);
 plotangles(t,diffAng,0,...
     ['Y-axis Error (radians): max:' num2str(max(abs(diffAng))) ]);
 subplot(3,2,6);
 x=v_eulers1(3,:);
 y=i_eulers1(3,:);
-diffAng = angleDifference(x,y);
+diffAng = ThreeMarkers.angleDifference(x,y);
 plotangles(t,diffAng,0,...
     ['X-axis Error (radians): max:' num2str(max(abs(diffAng))) ]);
 
