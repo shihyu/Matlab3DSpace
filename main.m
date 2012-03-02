@@ -42,7 +42,7 @@ points_i = [];
 %Loop to create H matrixs and calculate diff's in rotation matrix's
 for i = 1:minSize
     %Get the vicon points.
-    cvt = ConvertViconThreeMarkers(rbt(i,1:3),...
+    cvt = ViconThreeMarkers(rbt(i,1:3),...
         lbt(i,1:3),fot(i,1:3),rbt(i,4));
     qvt = QuaternionsThreeMarkers(quaternions(i,1:4),rbt(i,4));
     %Save the cvt

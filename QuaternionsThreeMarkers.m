@@ -13,12 +13,7 @@ classdef QuaternionsThreeMarkers < handle
                 0 0 0 1; 
                 1 1 1 1];
     end
-    methods (Access = private,Static)
-      function plot(point,style)
-          plotSensor(point,style);
-      end
-    end
-      
+        
     methods
         function plot_i(qtm)
             qtm.plot(qtm.points_psi_i,'--m');
