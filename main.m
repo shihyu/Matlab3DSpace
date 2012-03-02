@@ -34,11 +34,9 @@ minSize = min(size(rbt,1),size(quaternions,1));
 y_v = zeros(1,minSize);
 y_i = zeros(1,minSize);
 
-H_psi_0_psi_v_t = [];
-H_psi_1_psi_i_t = [];
+H_0_V_t = [];
+H_1_I_t = [];
 
-points_v = [];
-points_i = [];
 %Loop to create H matrixs and calculate diff's in rotation matrix's
 for i = 1:minSize
     %Get the vicon points.
@@ -46,51 +44,51 @@ for i = 1:minSize
         lbt(i,1:3),fot(i,1:3),rbt(i,4));
     qvt = QuaternionsThreeMarkers(quaternions(i,1:4),rbt(i,4));
     %Save the cvt
-    H_psi_0_psi_v_t = [H_psi_0_psi_v_t cvt];
+    H_0_V_t = [H_0_V_t cvt];
     %Save the quaternions.
-    H_psi_1_psi_i_t = [H_psi_1_psi_i_t qvt];
+    H_1_I_t = [H_1_I_t qvt];
     
     %Calculate the difference between H matrix's from last point
-    y_v(i) = calculateRotDiff(cvt.H_psi_v_psi_0,hdiffOld(1:4,1:4));
-    y_i(i) = calculateRotDiff(qvt.H_psi_1_psi_i,hdiffOld(1:4,5:8));
+    y_v(i) = cvt.calculateRotDiff(cvt.getH(),hdiffOld(1:4,1:4));
+    y_i(i) = cvt.calculateRotDiff(qvt.getH(),hdiffOld(1:4,5:8));
     %Save current H matrix for next iteration.
-    hdiffOld = [cvt.H_psi_v_psi_0 qvt.H_psi_1_psi_i];
+    hdiffOld = [cvt.getH() qvt.getH()];
 end
 clear fot;
 clear rbt;
 clear lbt;
 
-[H_psi_0_psi_v_t,H_psi_1_psi_i_t] = ...
-    synchronise(y_v,y_i,H_psi_0_psi_v_t,H_psi_1_psi_i_t,Fs,200);
+[H_0_V_t,H_1_I_t] = ...
+    synchronise(y_v,y_i,H_0_V_t,H_1_I_t,Fs,200);
 
 grid on;
 clear Riv;
 clear RvI;
-%Find new end.
-minSize = min(size(H_psi_0_psi_v_t,2),size(H_psi_1_psi_i_t,2));
+%Find new end.getH()c
+minSize = min(size(H_0_V_t,2),size(H_1_I_t,2));
 
 %Get the estimated H Matrix: Least Means square solution
 %from within the Still part of the experiment.
 points_v = [];
 points_i = [];
 for i = 200:200+99
-    cvt = H_psi_0_psi_v_t(i);
-    qvt = H_psi_1_psi_i_t(i);
-    points_v = [points_v cvt.points_psi_v];
-    points_i = [points_i qvt.points_psi_i];
+    cvt = H_0_V_t(i);
+    qvt = H_1_I_t(i);
+    points_v = [points_v cvt.getT()];
+    points_i = [points_i qvt.getT()];
 end
 %Estimate the transform from 1 to 0.
-H_psi_1_psi_0_est = points_v*pinv(points_i);
+H_1_0_est = points_v*pinv(points_i);
 %Zero translation and error.
-H_psi_1_psi_0_est(1:3,4) = 0;
-H_psi_1_psi_0_est(4,1:3) = 0;
+H_1_0_est(1:3,4) = 0;
+H_1_0_est(4,1:3) = 0;
 
 %
-v_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
-v_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
-i_eulers1 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
-i_eulers2 = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
-error = repmat(zeros(3,1),1,size(H_psi_0_psi_v_t,2)-200);
+v_eulers1 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
+v_eulers2 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
+i_eulers1 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
+i_eulers2 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
+error = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
 figure;
 if makeMovie == 1
     hf= figure('visible','off','OuterPosition',[0 0 2048 2048]); %turns visibility of figure off
@@ -100,30 +98,30 @@ end
 display(['Calculating positions.'])
 
 for i = 200:minSize
-    H_psi_1_psi_i = H_psi_1_psi_i_t(i).H_psi_1_psi_i;
+    H_1_I = H_1_I_t(i).getH();
     %Convert to Inertia frame.
-    H_psi_0_psi_i = H_psi_1_psi_0_est*H_psi_1_psi_i;
-    cvt = H_psi_0_psi_v_t(i);
-    H_psi_0_psi_v = cvt.H_psi_v_psi_0';
-    points_psi_i = H_psi_0_psi_i*qvt.points_psi_1;
+    H_0_I = H_1_0_est*H_1_I;
+    cvt = H_0_V_t(i);
+    H_0_V = cvt.getH;
+    points_I = H_0_I*qvt.get0;
     
     %Calculate the difference between the rotation from one to the other.
-    [v_eulers1(:,i-200+1),v_eulers2(:,i-200+1)] = invrpy(H_psi_0_psi_v);
-    [i_eulers1(:,i-200+1),i_eulers2(:,i-200+1)] = invrpy(H_psi_0_psi_i);
+    [v_eulers1(:,i-200+1),v_eulers2(:,i-200+1)] = invrpy(H_0_V);
+    [i_eulers1(:,i-200+1),i_eulers2(:,i-200+1)] = invrpy(H_0_I);
     %Error
-    [errorQuat,error(:,i-200+1)] =  quaternionerror(cvt.quaternion,...
-            matrix2quaternion(H_psi_0_psi_i)');
+    [errorQuat,error(:,i-200+1)] =  cvt.quaternionerror(cvt.getQ,...
+            matrix2quaternion(H_0_I));
     
     if plotGraphs == 1
         subplot(1,2,1);
-        cvt.plot_v();
+        cvt.plot_T();
         title('Vicon Points in Vicon Frame:');
         grid on
         axis([-2 2 -2 2 -2 2]);
         
         subplot(1,2,2);
         %plotSensor(cvt.points_psi_0,'r');
-        plotSensor(points_psi_i,'r');
+        plotSensor(points_I,'r');
         title('Promove Points in Vikon frame');
         grid on
         axis([-2 2 -2 2 -2 2]);
