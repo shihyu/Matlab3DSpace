@@ -1,4 +1,4 @@
-function [ data_1,data_2 ] = synchronise(metric_1,metric_2,data_1,data_2,Fs,theStart)
+function [ data_1,data_2 ] = synchronise(metric_1,metric_2,data_1,data_2,Fs,theStart,numberOfSamples)
 %SYNCRHONISE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -35,20 +35,30 @@ R21=R;
 if (max(max_12,max_21) == max_12)
     display('Syncrohonising: Vicon ahead of IMU');
     data_2 = data_2(N-max_lags_12:size(data_2,2));
-    %data_1 = data_1(1:max_lags_12);
-    plot([1:N],metric_1(1:N),'--k')
-    plot([1:max_lags_12+1],metric_2(N-max_lags_12:N),'--m')
-    title([' Synchronising: Vicon ahead of IMU by '...
-        num2str(max_lags_12) ' '  num2str(max_12) ])
+    metric_2 = metric_2(N-max_lags_12:size(metric_2,2));
+    theTitle = [' Synchronising: Vicon ahead of IMU by '...
+        num2str(max_lags_12) ' '  num2str(max_12) ]
 else
     data_1 = data_1(N-max_lags_21:size(data_1,2));
-    %data_2 = data_2(1:max_lags_21);
-    display('Syncrohonising: IMU ahead of Vicon');
-    plot([1:N],metric_2(1:N),'--m')
-    plot([1:max_lags_21+1],metric_1(N-max_lags_21:N),'--k')
-    title(['Syncrohonising: IMU ahead of Vicon by ' ...
-        num2str(max_lags_21) ' '  num2str(max_21)])
+    metric_1 = metric_1(N-max_lags_21:size(metric_1,2));
+    theTitle = ['Syncrohonising: IMU ahead of Vicon by ' ...
+        num2str(max_lags_21) ' '  num2str(max_21)];
 end
 
+Threshold = max(metric_1(theStart:theStart+numberOfSamples));
+
+newStart = find(metric_1>Threshold*2,1);
+newStart = newStart -100;
+if newStart <0
+    newStart = 0;
+end
+
+data_1 = data_1(newStart:size(data_1,2));
+data_2 = data_2(newStart:size(data_2,2));
+
+N=min(size(data_1,2),size(data_2,2));
+plot(t(newStart:N),metric_1(newStart:N),'--k')
+plot(t(newStart:N),metric_2(newStart:N),'--m')
+title(theTitle)
 end
 

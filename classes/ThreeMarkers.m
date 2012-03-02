@@ -48,15 +48,15 @@ classdef ThreeMarkers < handle
         function [Hdiff] = calculateRotDiff(H,H_old)
             Hdiff = sum(sum(abs(H(1:3,1:3)-H_old(1:3,1:3))));
         end
+        
+        function [points_0] = get0()
+            points_0 = ThreeMarkers.points_0;
+        end
     end
     
     methods
         function [timestamp] = getTimeStamp(tm)
             timestamp = tm.timestamp;
-        end
-        
-        function [points_0] = get0(tm)
-            points_0 = tm.points_0;
         end
         
         function [points_T] = getT(tm)

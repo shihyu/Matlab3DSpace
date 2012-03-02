@@ -65,4 +65,9 @@ size(v_eulers1,2)
 t=linspace(0,1/Fs*size(v_eulers1,2),size(v_eulers1,2));
 plot(t,v_eulers1(1,:),'k-')
 
+x = [0 1 2 3 5]
+x>3
+
+find(x>=3,1)
+
 

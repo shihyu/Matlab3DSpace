@@ -13,7 +13,7 @@ run = '/xaxisnode1_2'
 %run = '/yaxisnode1_2'
 %run = '/yaxisnode2'
 %run = '/moveaxisnode1'
-plotGraphs = 0;
+plotGraphs = 1;
 makeMovie = 0;
 
 %SampleRates
@@ -28,30 +28,14 @@ quaternions = resample(quaternions(:,1:5),Fs,Fs_quat);
 [metric_v,metric_i,H_0_V_t,H_1_I_t] = createObjects(rbt,lbt,fot,quaternions);
 %Synchronise
 [H_0_V_t,H_1_I_t] = ...
-    synchronise(metric_v,metric_i,H_0_V_t,H_1_I_t,Fs,600);
+    synchronise(metric_v,metric_i,H_0_V_t,H_1_I_t,Fs,600,100);
 clear metric_i;
 clear metric_v;
 
+H_I_V_est = calculateChangeofGlobalFrames(H_0_V_t,H_1_I_t,200,99)
+
 %Find new end.
 minSize = min(size(H_0_V_t,2),size(H_1_I_t,2));
-
-%Get the estimated H Matrix: Least Means square solution
-%from within the Still part of the experiment.
-points_v = [];
-points_i = [];
-for i = 200:200+99
-    cvt = H_0_V_t(i);
-    qvt = H_1_I_t(i);
-    points_v = [points_v cvt.getT()];
-    points_i = [points_i qvt.getT()];
-end
-%Estimate the transform from 1 to 0.
-H_1_0_est = points_v*pinv(points_i);
-%Zero translation and error.
-H_1_0_est(1:3,4) = 0;
-H_1_0_est(4,1:3) = 0;
-
-%
 v_eulers1 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
 v_eulers2 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
 i_eulers1 = repmat(zeros(3,1),1,size(H_0_V_t,2)-200);
@@ -63,22 +47,22 @@ if makeMovie == 1
     aviobj=avifile('test.avi'); %creates AVI file, test.avi
 end
 
-display(['Calculating positions.'])
+display('Calculating positions.')
 
 for i = 200:minSize
-    H_1_I = H_1_I_t(i).getH();
-    %Convert to Inertia frame.
-    H_0_I = H_1_0_est*H_1_I;
+    qvt = H_1_I_t(i);
+    H_1_V = H_I_V_est*qvt.getH;
     cvt = H_0_V_t(i);
     H_0_V = cvt.getH;
-    points_I = H_0_I*qvt.get0;
+    %Convert to Inertia frame.
+    points_I =H_I_V_est*qvt.getT;
     
     %Calculate the difference between the rotation from one to the other.
     [v_eulers1(:,i-200+1),v_eulers2(:,i-200+1)] = invrpy(H_0_V);
-    [i_eulers1(:,i-200+1),i_eulers2(:,i-200+1)] = invrpy(H_0_I);
+    [i_eulers1(:,i-200+1),i_eulers2(:,i-200+1)] = invrpy(H_1_V);
     %Error
     [errorQuat,error(:,i-200+1)] =  cvt.quaternionerror(cvt.getQ,...
-            matrix2quaternion(H_0_I));
+            matrix2quaternion(H_1_V));
     
     if plotGraphs == 1
         subplot(1,2,1);
