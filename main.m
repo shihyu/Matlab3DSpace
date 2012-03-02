@@ -25,12 +25,9 @@ Fs = 120
 Fs_movie = 120/15;
 Fs_quat = 200
 quaternions = resample(quaternions(:,1:4),Fs,Fs_quat);
-
 hdiffOld = zeros(4,8);
-
 minSize = min(size(rbt,1),size(quaternions,1));
 %minSize =2500;
-
 y_v = zeros(1,minSize);
 y_i = zeros(1,minSize);
 
@@ -57,10 +54,10 @@ end
 clear fot;
 clear rbt;
 clear lbt;
-
+size(H_1_I_t)
 [H_0_V_t,H_1_I_t] = ...
-    synchronise(y_v,y_i,H_0_V_t,H_1_I_t,Fs,200);
-
+    synchronise(y_v,y_i,H_0_V_t,H_1_I_t,Fs,300);
+size(H_1_I_t)
 grid on;
 clear Riv;
 clear RvI;

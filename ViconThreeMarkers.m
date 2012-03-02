@@ -5,7 +5,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
             front,timestamp)
-            ThreeMarkers.timestamp = timestamp;
+            vtm.timestamp = timestamp;
             midpoint = (rightback+leftback)/2;
             front = vtm.normWithOffset(front,midpoint);
             rightback = vtm.normWithOffset(rightback,midpoint);
@@ -23,7 +23,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             %XY plane to get the
             %actual front marker in the zero frame.
             %TODO test this transform.
-            %rotAngle = ThreeMarkers.getAngle(ThreeMarkers.front,ThreeMarkers.leftback,ThreeMarkers.midpoint);
+            %rotAngle = vtm.getAngle(vtm.front,vtm.leftback,vtm.midpoint);
             %yValue = vtm.points_psi_0(1,1:2)*[cos(rotAngle) -...
             %     sin(rotAngle); sin(rotAngle) cos(rotAngle)];
             %vtm.points_psi_0(3,1:2) = yValue;
@@ -36,8 +36,8 @@ classdef ViconThreeMarkers < ThreeMarkers
             H_T_0(1:3,4)  = [0 0 0]';
             %and error
             H_T_0(4,1:3)  = [0 0 0];
-            ThreeMarkers.H_0_T = H_T_0';
-            ThreeMarkers.quaternion = matrix2quaternion(ThreeMarkers.H_0_T)';
+            vtm.H_0_T = H_T_0';
+            vtm.quaternion = matrix2quaternion(vtm.H_0_T)';
             %Recalculate position with no translation added to screw.
             vtm.points_T = H_T_0\vtm.points_0;
 
