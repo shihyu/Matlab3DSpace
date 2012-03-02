@@ -6,8 +6,8 @@ format long;
 filename = '~/aa_sofie_data/bicycle-instrumentation/imu-round-2/imu-round2.h5'
 node=1;
 %run = '/zaxisnode1_2'
-run = '/zaxisnode1'
-%run = '/xaxisnode1_2'
+%run = '/zaxisnode1'
+run = '/xaxisnode1_2'
 %run = '/xaxisnode2'
 %run = '/yaxisnode1'         %Does not synchronise.
 %run = '/yaxisnode1_2'
@@ -16,52 +16,23 @@ run = '/zaxisnode1'
 plotGraphs = 0;
 makeMovie = 0;
 
-%Get the data..
-[quaternions, rbt,lbt,fot] = getdata(filename,run,node);
-
-%quat = quaternions(2,:);
+%SampleRates
 Fs = 120
-%Double speed movie.
 Fs_movie = 120/15;
 Fs_quat = 200
-quaternions = resample(quaternions(:,1:4),Fs,Fs_quat);
-hdiffOld = zeros(4,8);
-minSize = min(size(rbt,1),size(quaternions,1));
-%minSize =2500;
-y_v = zeros(1,minSize);
-y_i = zeros(1,minSize);
+%Get the data..
+[quaternions, rbt,lbt,fot] = getdata(filename,run,node);
+quaternions = resample(quaternions(:,1:5),Fs,Fs_quat);
 
-H_0_V_t = [];
-H_1_I_t = [];
-
-%Loop to create H matrixs and calculate diff's in rotation matrix's
-for i = 1:minSize
-    %Get the vicon points.
-    cvt = ViconThreeMarkers(rbt(i,1:3),...
-        lbt(i,1:3),fot(i,1:3),rbt(i,4));
-    qvt = QuaternionsThreeMarkers(quaternions(i,1:4),rbt(i,4));
-    %Save the cvt
-    H_0_V_t = [H_0_V_t cvt];
-    %Save the quaternions.
-    H_1_I_t = [H_1_I_t qvt];
-    
-    %Calculate the difference between H matrix's from last point
-    y_v(i) = cvt.calculateRotDiff(cvt.getH(),hdiffOld(1:4,1:4));
-    y_i(i) = cvt.calculateRotDiff(qvt.getH(),hdiffOld(1:4,5:8));
-    %Save current H matrix for next iteration.
-    hdiffOld = [cvt.getH() qvt.getH()];
-end
-clear fot;
-clear rbt;
-clear lbt;
-size(H_1_I_t)
+%Create Objects and sync metrics.
+[metric_v,metric_i,H_0_V_t,H_1_I_t] = createObjects(rbt,lbt,fot,quaternions);
+%Synchronise
 [H_0_V_t,H_1_I_t] = ...
-    synchronise(y_v,y_i,H_0_V_t,H_1_I_t,Fs,300);
-size(H_1_I_t)
-grid on;
-clear Riv;
-clear RvI;
-%Find new end.getH()c
+    synchronise(metric_v,metric_i,H_0_V_t,H_1_I_t,Fs,600);
+clear metric_i;
+clear metric_v;
+
+%Find new end.
 minSize = min(size(H_0_V_t,2),size(H_1_I_t,2));
 
 %Get the estimated H Matrix: Least Means square solution

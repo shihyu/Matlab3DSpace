@@ -32,6 +32,12 @@ classdef ThreeMarkers < handle
                 (norm(marker1-zeropoint)*norm(marker2-zeropoint)));
         end
         
+        function [ angDiff ] = angleDifference(x,y)
+            %ANGLEDIFFERENCE Summary of this function goes here
+            %   Detailed explanation goes here
+            angDiff = atan2(sin(x-y), cos(x-y));
+        end
+        
         function [ errorQuat,errorEuler ] = quaternionerror(q1,q2)
             %QUATERNIONERROR Calculates Error between two Quaternions.
             errorQuat =  quaternionproduct(q1,...
@@ -69,7 +75,7 @@ classdef ThreeMarkers < handle
             rotmat = tm.H_0_T(1:3,1:3);
         end
         
-         function plot_T(tm)
+        function plot_T(tm)
             tm.plot(tm.points_T,'--k');
         end
         function plot_0(tm)
