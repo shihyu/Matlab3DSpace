@@ -22,7 +22,7 @@ assertElementsAlmostEqual(H,eye(4,4));
 
 function test_QuaternionsThreeMarkers
 quat = [1,0,0,0,0];
-qvt = QuaternionsThreeMarkers(quat(1,1:4),quat(1,5));
+qvt = QuaternionsThreeMarkers([quat(1,1:5)]);
 assertEqual(qvt.getH,eye(4,4));
 assertEqual(qvt.get0,qvt.getT);
 assertEqual(qvt.getT,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
@@ -48,8 +48,8 @@ front = [0 1 0];
 theTimestamp = 2.3;
 cvt = ViconThreeMarkers(rightback,...
         leftback,front,theTimestamp);
-assertEqual(cvt.getH,[-1 0 0 0; 0 1 0 0; 0 0 -1 0; 0 0 0 1]);
-assertEqual([-1 1 0 0; 0 0 1 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,[-1 0 0 0; 0 1 0 0; 0 0 -1 0; 0 0 0 1]);
+assertElementsAlmostEqual([-1 1 0 0; 0 0 1 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
 cvt.getQ
 
 rightback = [1 1 2];
@@ -142,12 +142,14 @@ assertElementsAlmostEqual(ThreeMarkers.angleDifference(x,y),0);
 assertElementsAlmostEqual(ThreeMarkers.angleDifference(y,x),0);
 
 function test_synchronise
+clear all
+close all
 Fs = 120;
 data1 = [0 1 0 0 0];
 data2 = [0 0 1 0 0];
 metric1 = [0 1 0 0 0];
 metric2 = [0 0 1 0 0];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1)
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,4)
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0]);
 assertEqual(data1(1:4),result2);
@@ -197,5 +199,27 @@ H = [ 1     0           0        0
  quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0]);
 assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
+
+
+function test_threeMarkerMinusComparison
+quat = [1,0,0,0,0];
+qvt = QuaternionsThreeMarkers([quat(1,1:5)]);
+quat = [0.8,0.2,0,0,0];
+qvt1 = QuaternionsThreeMarkers([quat(1,1:5)]);
+quat = [1.0,0,0,0,0];
+qvt2 = QuaternionsThreeMarkers([quat(1,1:5)]);
+assertEqual(qvt,qvt)
+assertEqual(qvt,qvt2)
+if (qvt==qvt2)
+    diff = qvt-qvt1;
+    qvt1.getQ
+    assertEqual(diff,ThreeMarkers([0.8 -0.2 0 0]));
+    qvt1Conj = qvt1'
+    qvt1Conj.getQ
+    prod = qvt.*qvt1.*qvt1';
+    DP=display(qvt)
+    assertEqual(prod,qvt)
+end
+
 
 

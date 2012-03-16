@@ -55,6 +55,36 @@ classdef ThreeMarkers < handle
     end
     
     methods
+         function qtm = ThreeMarkers(quaternion)
+            qtm.H_0_T = quaternion2matrix(quaternion);
+            qtm.quaternion = quaternion;
+            qtm.points_T = qtm.H_0_T*qtm.points_0;
+            qtm.timestamp = 0.0;
+        end
+        
+        
+        function r = minus(obj1,obj2)
+            % MINUS Implement obj1 - obj2 for DocPolynom
+            r = ThreeMarkers(ThreeMarkers.quaternionerror(...
+                obj1.getQ,obj2.getQ)');
+        end
+        
+        function r = ctranspose(obj1)
+            % CTRANSPOSE Gets the conjugate.
+            r = ThreeMarkers(quaternionconjugate(obj1.getQ)');
+        end 
+        
+        function isEqual = eq(obj1,obj2)
+            isEqual = (obj1.getQ == obj2.getQ);
+        end
+        
+        function product = times(obj1,obj2)
+            product = ThreeMarkers(quaternionproduct(obj1.getQ,obj2.getQ)');
+        end
+        
+        function showQ = display(tm)
+            showQ = tm.getQ;
+        end
         function [timestamp] = getTimeStamp(tm)
             timestamp = tm.timestamp;
         end

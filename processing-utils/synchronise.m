@@ -45,20 +45,20 @@ else
         num2str(max_lags_21) ' '  num2str(max_21)];
 end
 
-Threshold = max(metric_1(theStart:theStart+numberOfSamples));
-
-newStart = find(metric_1>Threshold*2,1);
-newStart = newStart -100;
-if newStart <0
-    newStart = 0;
-end
-
-data_1 = data_1(newStart:size(data_1,2));
-data_2 = data_2(newStart:size(data_2,2));
-
-N=min(size(data_1,2),size(data_2,2));
-plot(t(newStart:N),metric_1(newStart:N),'--k')
-plot(t(newStart:N),metric_2(newStart:N),'--m')
-title(theTitle)
+% Threshold = max(metric_1(theStart:theStart+numberOfSamples));
+% 
+% newStart = find(metric_1>Threshold*2,1);
+% newStart = newStart -100;
+% if newStart <0
+%     newStart = 0;
+% end
+% 
+% data_1 = data_1(newStart:size(data_1,2));
+% data_2 = data_2(newStart:size(data_2,2));
+% 
+% N=min(size(data_1,2),size(data_2,2));
+% plot(t(newStart:N),metric_1(newStart:N),'--k')
+% plot(t(newStart:N),metric_2(newStart:N),'--m')
+% title(theTitle)
 end
 
