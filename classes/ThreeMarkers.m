@@ -13,7 +13,7 @@ classdef ThreeMarkers < handle
         timestamp = 0;
         points_T = zeros(4);
         H_0_T = zeros(4);
-        quaternion = [0 0 0 0];
+        quaternion = [1 0 0 0];
     end
     methods (Access = protected,Static)
         function [normedPoint] = normWithOffset(point,reference)
@@ -80,6 +80,10 @@ classdef ThreeMarkers < handle
         end
         function plot_0(tm)
             tm.plot(tm.points_0,'--m');
+        end
+        
+        function [quat] = toNumeric(tm)
+            quat = [ tm.getQ() tm.getTimeStamp ];
         end
     end
 end
