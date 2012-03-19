@@ -40,8 +40,8 @@ classdef ThreeMarkers < handle
         
         function [ errorQuat,errorEuler ] = quaternionerror(q1,q2)
             %QUATERNIONERROR Calculates Error between two Quaternions.
-            errorQuat =  quaternionproduct(q1,...
-                quaternionconjugate(q2));
+            errorQuat =  quatnormalize(quatmultiply(q1,...
+                quatconj(q2)));
             errorEuler = invrpy(quaternion2matrix(errorQuat));
         end
         
@@ -66,12 +66,12 @@ classdef ThreeMarkers < handle
         function r = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for DocPolynom
             r = ThreeMarkers(ThreeMarkers.quaternionerror(...
-                obj1.getQ,obj2.getQ)');
+                obj1.getQ,obj2.getQ));
         end
         
         function r = ctranspose(obj1)
             % CTRANSPOSE Gets the conjugate.
-            r = ThreeMarkers(quaternionconjugate(obj1.getQ)');
+            r = ThreeMarkers(quatnormalize(quatconj(obj1.getQ)));
         end 
         
         function isEqual = eq(obj1,obj2)
@@ -79,7 +79,9 @@ classdef ThreeMarkers < handle
         end
         
         function product = times(obj1,obj2)
-            product = ThreeMarkers(quaternionproduct(obj1.getQ,obj2.getQ)');
+            size(obj1.getQ)
+            product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
+                obj2.getQ)));
         end
         
         function showQ = display(tm)

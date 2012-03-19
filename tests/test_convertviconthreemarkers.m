@@ -203,23 +203,27 @@ assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
 
 function test_threeMarkerMinusComparison
 quat = [1,0,0,0,0];
-qvt = QuaternionsThreeMarkers([quat(1,1:5)]);
+qvt = QuaternionsThreeMarkers(quat(1,1:5));
 quat = [0.8,0.2,0,0,0];
-qvt1 = QuaternionsThreeMarkers([quat(1,1:5)]);
+qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
 quat = [1.0,0,0,0,0];
-qvt2 = QuaternionsThreeMarkers([quat(1,1:5)]);
+qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
 assertEqual(qvt,qvt)
 assertEqual(qvt,qvt2)
-if (qvt==qvt2)
-    diff = qvt-qvt1;
-    qvt1.getQ
-    assertEqual(diff,ThreeMarkers([0.8 -0.2 0 0]));
-    qvt1Conj = qvt1'
-    qvt1Conj.getQ
-    prod = qvt.*qvt1.*qvt1';
-    DP=display(qvt)
-    assertEqual(prod,qvt)
-end
+
+diff = qvt-qvt1;
+qvt1Cal = qvt.*qvt1';
+display('Results')
+display(qvt1Cal)
+display(diff)
+assertElementsAlmostEqual(qvt1Cal.getQ,diff.getQ);
+qvt1Conj = qvt1'
+qvt1Conj.getQ
+prod = qvt.*qvt1.*qvt1';
+DP=display(qvt)
+QVT=display(prod)
+assertEqual(prod.getQ,qvt.getQ)
+
 
 
 
