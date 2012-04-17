@@ -1,6 +1,31 @@
 classdef ViconThreeMarkers < ThreeMarkers
     %VICONTHREEMARKERS Handles an equilateral triangle configuration
     % of Vicon markers.
+    
+    methods (Static)
+        function vtm_t = readData(filename,runName,...
+                rightBackName,leftBackName,frontName)
+            %READDATA Reads the VICON three markers in
+            % and creates the ViconThreeMarker object.
+            reader = c3dReader(filename,runName);
+            rightBack = reader.readMarker(rightBackName);
+            leftBack = reader.readMarker(leftBackName);
+            front = reader.readMarker(frontName);
+            display('Right Back')
+            display(size(rightBack));
+            display('Left Back')
+            display(size(leftBack));
+            display('Front')
+            display(size(front));
+            vtm_t = [];
+            for i = 1:size(rightBack,1)
+                vtm_t =[vtm_t ViconThreeMarkers(rightBack(i,1:3),...
+                        leftBack(i,1:3),front(i,1:3),rightBack(i))];
+            end
+        end
+    end
+    
+    
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
                 front,timestamp)
@@ -41,5 +66,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm.timestamp = timestamp;
         end
     end
+    
+
 end
 

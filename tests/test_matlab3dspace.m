@@ -1,4 +1,5 @@
 function test_suite = test_matlab3dspace
+% MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 function test_calculateEst
 rightback = [1 0 0];
@@ -215,3 +216,10 @@ prod = qvt.*qvt1.*qvt1';
 DP=display(qvt)
 QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
+
+
+function test_viconthreemarkers_readData
+filename='test-data/test-data.h5';
+runName = '/vicon';
+vtm_t = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
+assertEqual(size(vtm_t),[1 5136]);
