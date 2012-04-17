@@ -1,6 +1,7 @@
 classdef ThreeMarkers < handle
-    %THREEMARKERS Summary of this class goes here
-    %   Detailed explanation goes here
+    %THREEMARKERS Base class that builds homogenous matrixs,
+    % quaternions, global reference frame and plot functions
+    % for 3D data.
     
     properties (Constant)
         points_0 = [
@@ -64,7 +65,7 @@ classdef ThreeMarkers < handle
         
         
         function r = minus(obj1,obj2)
-            % MINUS Implement obj1 - obj2 for DocPolynom
+            % MINUS Implement obj1 - obj2 for Quaternions
             r = ThreeMarkers(ThreeMarkers.quaternionerror(...
                 obj1.getQ,obj2.getQ));
         end

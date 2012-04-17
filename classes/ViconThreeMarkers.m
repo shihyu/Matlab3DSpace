@@ -1,7 +1,6 @@
 classdef ViconThreeMarkers < ThreeMarkers
-    %ViconThreeMarkers Creates an object contains all the marker in the
-    %local frame, and the marker transfered to the global frame
-    %with medthods to get the H matrix between them ie H_T_0.
+    %VICONTHREEMARKERS Handles an equilateral triangle configuration
+    % of Vicon markers.
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
                 front,timestamp)

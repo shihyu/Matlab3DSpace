@@ -1,7 +1,6 @@
 function [ H_I_V_est ] = calculateChangeofGlobalFrames(H_0_V_t,H_1_I_t,startEst,numberOfFrames)
-%CALCULATECHANGEOFGLOBALFRAMES Summary of this function goes here
-%   Detailed explanation goes here
-%Get the estimated H Matrix: Least Means square solution
+%CALCULATECHANGEOFGLOBALFRAMES Get the estimated H Matrix:
+% Least Means square solution
 %from within the Still part of the experiment.
 points_v = [];
 points_i = [];

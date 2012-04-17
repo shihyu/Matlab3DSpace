@@ -1,5 +1,5 @@
 function [ metric_v,metric_i,ctm_t,qtm_t ] = createObjects(rbt,lbt,fot,quaternions)
-%CALCULATESYNCHORNISATIONMETRIC Calculates the metrics to use
+%CREATEOBJECTS Calculates the metrics to use
 %for synchronisation between ThreeMarker objects.
 t_v = rbt(:,4);
 t_i = quaternions(:,5);

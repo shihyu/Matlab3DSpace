@@ -1,4 +1,6 @@
 function plotSensor(point,style)
+%PLOTSENCOR Plots the 3D representation of the point in space in
+% an easy to understand configuration.
 
 %midpoint = [point(1,1);point(2,1);point(3,1);]+[point(1,2);point(2,2);point(3,2);]/2;
 %Create the normalized matrix of the points.
