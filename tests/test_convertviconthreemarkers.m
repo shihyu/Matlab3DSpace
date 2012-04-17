@@ -225,5 +225,13 @@ QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
 
-
-
+function test_synchronise
+Fs = 120;
+data1 = [0 1 0 0 0];
+data2 = [0 0 1 0 0];
+metric1 = [0 1 0 0 0];
+metric2 = [0 0 1 0 0];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1)
+assertEqual(data1,result1);
+assertEqual(result2,[0 1 0 0]);
+assertEqual(data1(1:4),result2);
