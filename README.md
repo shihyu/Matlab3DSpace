@@ -2,9 +2,10 @@
 
 Introduction to MATLAB3DSPACE
 ============
-Matlab package that creates provides utilities to work with 3D data from various formats.
+Matlab package provides utilities to work with 3D data from various formats.
 
-It uses quaternions and screw theory to process, plot and synchronise data from various sources.
+It uses quaternions and screw theory to process, plot and synchronise data
+from various sources.
 
 Contact
 -------
@@ -18,10 +19,10 @@ The code will be the documentation.
 
 Dependencies
 ------------
+matlab - xunit for unit testing.http://www.mathworks.com/matlabcentral/fileexchange/22846-matlab-xunit-test-framework
 sofiehdfformat - https://github.com/agcooke/Sofie-HDF-Format
 aerospace toolbox - For quaternions.
 
 Install
 ===========
 Clone from git hub or download a latest tag.
-
