@@ -1,13 +1,5 @@
-function test_suite = test_arrayToString
-%test_arrayToString Unit test for arrayToString.
-
-%   Steven L. Eddins
-%   Copyright 2009 The MathWorks, Inc.
-
-
-
+function test_suite = test_matlab3dspace
 initTestSuite;
-
 function test_calculateEst
 rightback = [1 0 0];
 leftback = [-1 0 0];
@@ -223,15 +215,3 @@ prod = qvt.*qvt1.*qvt1';
 DP=display(qvt)
 QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
-
-
-function test_synchronise
-Fs = 120;
-data1 = [0 1 0 0 0];
-data2 = [0 0 1 0 0];
-metric1 = [0 1 0 0 0];
-metric2 = [0 0 1 0 0];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1)
-assertEqual(data1,result1);
-assertEqual(result2,[0 1 0 0]);
-assertEqual(data1(1:4),result2);
