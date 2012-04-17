@@ -53,15 +53,26 @@ classdef ThreeMarkers < handle
         function [points_0] = get0()
             points_0 = ThreeMarkers.points_0;
         end
+        
+        function plotRun(tm_t)
+            %PLOTRUN Plays back a run.
+            for i = 1:size(tm_t,2)
+                tm_t(i).plotT();
+                grid on
+                axis([-2 2 -2 2 -2 2]);
+                drawnow;
+            end
+        end
     end
     
     methods
-         function qtm = ThreeMarkers(quaternion)
+        function qtm = ThreeMarkers(quaternion)
             qtm.H_0_T = quaternion2matrix(quaternion);
             qtm.quaternion = quaternion;
             qtm.points_T = qtm.H_0_T*qtm.points_0;
             qtm.timestamp = 0.0;
         end
+        
         
         
         function r = minus(obj1,obj2)
@@ -73,7 +84,7 @@ classdef ThreeMarkers < handle
         function r = ctranspose(obj1)
             % CTRANSPOSE Gets the conjugate.
             r = ThreeMarkers(quatnormalize(quatconj(obj1.getQ)));
-        end 
+        end
         
         function isEqual = eq(obj1,obj2)
             isEqual = (obj1.getQ == obj2.getQ);
@@ -108,10 +119,10 @@ classdef ThreeMarkers < handle
             rotmat = tm.H_0_T(1:3,1:3);
         end
         
-        function plot_T(tm)
+        function plotT(tm)
             tm.plot(tm.points_T,'--k');
         end
-        function plot_0(tm)
+        function plot0(tm)
             tm.plot(tm.points_0,'--m');
         end
         

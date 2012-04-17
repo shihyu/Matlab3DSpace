@@ -222,4 +222,6 @@ function test_viconthreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 vtm_t = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
+vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 5136]);
+ThreeMarkers.plotRun(vtm_t);
