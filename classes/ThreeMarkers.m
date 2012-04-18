@@ -27,6 +27,7 @@ classdef ThreeMarkers < handle
         
     end
     methods (Static)
+              
         function angle = getAngle(marker1,marker2,zeropoint)
             angle = acos(dot(marker1-zeropoint,...
                 marker2-zeropoint)/...
