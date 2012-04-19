@@ -218,7 +218,7 @@ QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
 
-function test_viconthreemarkers_readData
+function teeeest_viconthreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 vtm_t = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
@@ -229,9 +229,9 @@ close all;
 
 function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
-runName = '/vicon';
-vtm_t = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
+runName = '/promove';
+vtm_t = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
 vtm_t(1).plotT()
-assertEqual(size(vtm_t),[1 5136]);
+assertEqual(size(vtm_t),[1 724]);
 close all;
-%ThreeMarkers.plotRun(vtm_t);
+ThreeMarkers.plotRun(vtm_t);
