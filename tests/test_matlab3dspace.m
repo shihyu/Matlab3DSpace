@@ -218,7 +218,7 @@ QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
 
-function teeeest_viconthreemarkers_readData
+function test_viconthreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 vtm_t = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
