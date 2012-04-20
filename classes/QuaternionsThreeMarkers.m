@@ -1,7 +1,8 @@
 classdef QuaternionsThreeMarkers < ThreeMarkers
     methods (Static)
         
-        function qtm_t = readData(filename,runName,nodeId,Fs_wanted,Fs_recorded)
+        function [qtm_t metrics] = readData(filename,...
+                runName,nodeId,Fs_wanted,Fs_recorded)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
             reader = promoveReader(filename,runName);
@@ -11,8 +12,15 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             end
             qtm_t = [];
             %display(size(q,1))
-            parfor i = 1:size(q,1)
-                qtm_t =[qtm_t QuaternionsThreeMarkers(q(i,:))];
+            N=size(q,1);
+            metrics = zeros(1,N);
+            hdiff = zeros(4,4);
+
+            for i = 1:size(q,1)
+                qtm = QuaternionsThreeMarkers(q(i,:))
+                qtm_t =[qtm_t qtm];
+                metrics(i) = qtm.calculateRotDiff(qtm.getH(),hdiff);
+                hdiff = qtm.getH();
             end
         end
     end

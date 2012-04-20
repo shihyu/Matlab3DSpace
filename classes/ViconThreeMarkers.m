@@ -3,7 +3,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     % of Vicon markers.
     
     methods (Static)
-        function vtm_t = readData(filename,runName,...
+        function [vtm_t metrics] = readData(filename,runName,...
                 rightBackName,leftBackName,frontName)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
@@ -18,9 +18,16 @@ classdef ViconThreeMarkers < ThreeMarkers
             display('Front')
             display(size(front));
             vtm_t = [];
-            parfor i = 1:size(rightBack,1)
-                vtm_t =[vtm_t ViconThreeMarkers(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i))];
+            
+            N=size(rightBack,1)
+            metrics = zeros(1,N);
+            hdiff = zeros(4,4);
+            for i = 1:size(rightBack,1)
+                vtm = ViconThreeMarkers(rightBack(i,1:3),...
+                        leftBack(i,1:3),front(i,1:3),rightBack(i));
+                vtm_t =[vtm_t vtm];                    
+                metrics(i) = vtm.calculateRotDiff(vtm.getH(),hdiff);
+                hdiff = vtm.getH();
             end
         end
     end
