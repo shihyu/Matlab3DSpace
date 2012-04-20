@@ -16,11 +16,11 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             metrics = zeros(1,N);
             hdiff = zeros(4,4);
 
-            for i = 1:size(q,1)
+            parfor i = 1:size(q,1)
                 qtm = QuaternionsThreeMarkers(q(i,:))
                 qtm_t =[qtm_t qtm];
-                metrics(i) = qtm.calculateRotDiff(qtm.getH(),hdiff);
-                hdiff = qtm.getH();
+                %metrics(i) = qtm.calculateRotDiff(qtm.getH(),hdiff);
+                %hdiff = qtm.getH();
             end
         end
     end

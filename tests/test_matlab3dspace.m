@@ -234,4 +234,4 @@ runName = '/promove';
 vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 724]);
 close all;
-ThreeMarkers.plotRun(vtm_t);
+%ThreeMarkers.plotRun(vtm_t);

@@ -22,12 +22,11 @@ classdef ViconThreeMarkers < ThreeMarkers
             N=size(rightBack,1)
             metrics = zeros(1,N);
             hdiff = zeros(4,4);
-            for i = 1:size(rightBack,1)
+            parfor i = 1:size(rightBack,1)
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
                         leftBack(i,1:3),front(i,1:3),rightBack(i));
-                vtm_t =[vtm_t vtm];                    
-                metrics(i) = vtm.calculateRotDiff(vtm.getH(),hdiff);
-                hdiff = vtm.getH();
+                vtm_t =[vtm_t vtm];
+                %hdiff = vtm.getH();
             end
         end
     end
