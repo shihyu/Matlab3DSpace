@@ -65,6 +65,8 @@ classdef ThreeMarkers < handle
         end
         
         function [metrics] = calculateSyncMetrics(tm_t)
+            % CALCULATESYNCMETRICS Calculates the
+            % metric used for synchronisation algorithmns.
             tm_t0 = [tm_t(1) tm_t ];
             metrics = zeros(size(tm_t));
             parfor i = 1:size(tm_t,2)

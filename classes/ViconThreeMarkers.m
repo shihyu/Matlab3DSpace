@@ -30,10 +30,6 @@ classdef ViconThreeMarkers < ThreeMarkers
             end
         end
         
-        function [metrics] = calculateSyncMetrics(tm_t)
-            tm_t0 = [tm_t(1) tm_t ];
-            metrics = tm_t-tm_t0;
-        end
     end
     
     
