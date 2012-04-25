@@ -24,7 +24,6 @@ classdef ThreeMarkers < handle
         function plot(point,style)
             plotSensor(point,style);
         end
-        
     end
     methods (Static)
               
@@ -64,6 +63,16 @@ classdef ThreeMarkers < handle
                 drawnow;
             end
         end
+        
+        function [metrics] = calculateSyncMetrics(tm_t)
+            tm_t0 = [tm_t(1) tm_t ];
+            metrics = zeros(size(tm_t));
+            parfor i = 1:size(tm_t,2)
+                metrics(i) = ThreeMarkers.calculateRotDiff(...
+                    tm_t(i).getH,...
+                    tm_t0(i).getH);
+            end
+        end
     end
     
     methods
@@ -77,7 +86,8 @@ classdef ThreeMarkers < handle
         
         
         function r = minus(obj1,obj2)
-            % MINUS Implement obj1 - obj2 for Quaternions
+            % MINUS Implement obj1 - obj2 for Quaternions: The
+            % difference/error between them.
             r = ThreeMarkers(ThreeMarkers.quaternionerror(...
                 obj1.getQ,obj2.getQ));
         end

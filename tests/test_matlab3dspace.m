@@ -221,7 +221,7 @@ assertEqual(prod.getQ,qvt.getQ)
 function test_viconthreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/vicon';
-[vtm_t metrics] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
+[vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
 vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 5136]);
 close all;
@@ -230,8 +230,13 @@ close all;
 function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
-[vtm_t metrics] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
 vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 724]);
 close all;
+
+[metrics] = ThreeMarkers.calculateSyncMetrics(vtm_t);
+%More tests need to make sure it makes sense.
+assertEqual(size(metrics),size(vtm_t));
+
 %ThreeMarkers.plotRun(vtm_t);
