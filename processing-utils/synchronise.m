@@ -25,30 +25,27 @@ subplot(2,1,2);
 hold on;
 %Get correlation.
 R12 = xcorr(metric_1',metric_2');
-R21 = xcorr(metric_2',metric_1');
-R=R12(1:N);
-R12=R;
-R=R21(1:N);
-R21=R;
-
-[max_12,max_lags_12]=max(R12)
-[max_21,max_lags_21]=max(R21)
-N=min(size(data_1,2),size(data_2,2));
-
+[max_12,max_lags_12]=max(R12);
+display(['SIZE correlation: R12:' num2str(size(R12,1))...
+    ' MAX12:' num2str(max_12)  ...
+    ' MAXLAGS12:' num2str(max_lags_12) ' N:' num2str(N)])
 %Adjust input data.
-if (max(max_12,max_21) == max_12)
-    display('Syncrohonising: Vicon ahead of IMU');
-    data_2 = data_2(N2-max_lags_12:size(data_2,2));
-    metric_2 = metric_2(N2-max_lags_12:size(metric_2,2));
+if (max_lags_12 < N)
+    Nstart = N-max_lags_12+1
+    theTitle = ['Syncrohonising: 1 ahead of 2: Shifting:' ...
+        num2str(Nstart)];
+    display(theTitle);
+    data_2 = data_2(Nstart:size(data_2,2));
+    metric_2 = metric_2(Nstart:size(metric_2,2));
     N2 = size(metric_2,2)
-    theTitle = [' Synchronising: Vicon ahead of IMU by '...
-        num2str(max_lags_12) ' '  num2str(max_12) ]
 else
-    data_1 = data_1(N1-max_lags_21:size(data_1,2));
-    metric_1 = metric_1(N1-max_lags_21:size(metric_1,2));
-    N1 = size(metric_1,1)
-    theTitle = ['Syncrohonising: IMU ahead of Vicon by ' ...
-        num2str(max_lags_21) ' '  num2str(max_21)];
+    Nstart = max_lags_12-N+1
+    theTitle = ['Syncrohonising: 2 ahead of 1: Shifting:' ...
+        num2str(Nstart)];
+    display(theTitle);
+    data_1 = data_1(Nstart:size(data_1,2));
+    metric_1 = metric_1(Nstart:size(metric_1,2));
+    N1 = size(metric_1,2)
 end
 
 % Threshold = max(metric_1(theStart:theStart+numberOfSamples));

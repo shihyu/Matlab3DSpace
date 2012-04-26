@@ -139,15 +139,74 @@ clear all
 close all
 Fs = 120;
 data1 = [0 1 0 0 0];
-data2 = [0 0 1 0 0];
+data2 = [0 0 0 1 0 0];
 metric1 = [0 1 0 0 0];
-metric2 = [0 0 1 0 0];
+metric2 = [0 0 0 1 0 0];
 [result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,4)
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0]);
 assertEqual(data1(1:4),result2);
 close all;
+clear all
+close all
+Fs = 120;
+data1 = [0 0 0 1 0 0];
+data2 = [0 1 0 0 0];
+metric1 = [0 0 0 1 0 0];
+metric2 = [0 1 0 0 0];
 
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,4)
+assertEqual(data2,result2);
+assertEqual(result1,[0 1 0 0]);
+assertEqual(data2(1:4),result1);
+
+Fs = 120;
+data1 = [0 1 0 0 2 0 0 1];
+data2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+metric1 = [0 1 0 0 2 0 0 1];
+metric2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,4)
+assertEqual(data1,result1);
+assertEqual(result2,[0 1 0 0 4 0 0 2 0 1 1 3]);
+
+Fs = 120;
+data1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+data2 = [0 1 0 0 2 0 0 1];
+metric1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+metric2 = [0 1 0 0 2 0 0 1];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,4)
+assertEqual(data2,result2);
+assertEqual(result1,[0 1 0 0 4 0 0 2 0 1 1 3]);
+
+Fs = 1;
+data1 = [0 1 0 0 2 0 0 1];
+data2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+metric1 = [0 1 0 0 2 0 0 1];
+metric2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,4)
+assertEqual(data1,result1);
+assertEqual(result2,[0 1 0 0 4 0 0 2 0 1 1 3]);
+
+Fs = 1;
+data1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+data2 = [0 1 0 0 2 0 0 1];
+metric1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
+metric2 = [0 1 0 0 2 0 0 1];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,4)
+assertEqual(data2,...
+    result2);
+assertEqual(result1,[0  1 0 0 4 0 0 2 0 1 1 3]);
+
+Fs = 1;
+data1 = [0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3];
+data2 = [0 1 0 0 2 0 0 1];
+metric1 = [0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3];
+metric2 = [0 1 0 0 2 0 0 1];
+[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,4)
+assertEqual(data2,...
+    result2);
+assertEqual(result1,[0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
+%close all;
 
 function test_quaternionerror
 rightback = [1 0 0];
@@ -218,7 +277,7 @@ QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
 
-function test_viconthreemarkers_readData
+function teest_viconthreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
@@ -227,7 +286,7 @@ assertEqual(size(vtm_t),[1 5136]);
 close all;
 %ThreeMarkers.plotRun(vtm_t);
 
-function test_promovethreemarkers_readData
+function teest_promovethreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
