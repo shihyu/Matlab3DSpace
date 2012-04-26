@@ -298,6 +298,9 @@ close all;
 %More tests need to make sure it makes sense.
 assertEqual(size(metrics),size(vtm_t));
 
-ThreeMarkers.plotRun(vtm_t(1:3));
-figure
-ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);
+%ThreeMarkers.plotRun(vtm_t(1:3));
+%figure
+%ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);
+H = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
+   vtm_t(1:3),1,3);
+assertElementsAlmostEqual(H,eye(4));
