@@ -286,7 +286,7 @@ assertEqual(size(vtm_t),[1 5136]);
 close all;
 %ThreeMarkers.plotRun(vtm_t);
 
-function teest_promovethreemarkers_readData
+function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
@@ -298,4 +298,6 @@ close all;
 %More tests need to make sure it makes sense.
 assertEqual(size(metrics),size(vtm_t));
 
-%ThreeMarkers.plotRun(vtm_t);
+ThreeMarkers.plotRun(vtm_t(1:3));
+figure
+ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);

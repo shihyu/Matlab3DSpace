@@ -1,6 +1,6 @@
 function [ data_1,data_2 ] = synchronise(metric_1,metric_2,data_1,data_2,Fs,theStart,numberOfSamples)
-%SYNCRHONISE Summary of this function goes here
-%   Detailed explanation goes here
+%SYNCRHONISE Performs simple cross-correlation syncrhonisation between two
+%signals using the metric_1 and metric_2 as the correlation signal.
 
 display('Syncrohonising:');
 N1 = size(data_1,2);

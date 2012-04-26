@@ -1,4 +1,4 @@
-classdef ThreeMarkers < handle
+classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %THREEMARKERS Base class that builds homogenous matrixs,
     % quaternions, global reference frame and plot functions
     % for 3D data.
@@ -56,10 +56,20 @@ classdef ThreeMarkers < handle
         
         function plotRun(tm_t)
             %PLOTRUN Plays back a run.
+            parallelPlots = size(tm_t,1);
+            m=ceil(parallelPlots/2);
+            if parallelPlots == 1
+                n=1;
+            else
+                n=2;
+            end
             for i = 1:size(tm_t,2)
-                tm_t(i).plotT();
-                grid on
-                axis([-2 2 -2 2 -2 2]);
+                for j = 1:parallelPlots
+                    subplot(m,n,j);
+                    tm_t(j,i).plotT();
+                    grid on
+                    axis([-2 2 -2 2 -2 2]);
+                end
                 drawnow;
             end
         end
