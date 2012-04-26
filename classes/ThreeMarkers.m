@@ -54,7 +54,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             points_0 = ThreeMarkers.points_0;
         end
         
-        function plotRun(tm_t)
+        function plotRun(tm_t,Quat_est)
             %PLOTRUN Plays back a run.
             parallelPlots = size(tm_t,1);
             m=ceil(parallelPlots/2);
@@ -66,7 +66,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             for i = 1:size(tm_t,2)
                 for j = 1:parallelPlots
                     subplot(m,n,j);
-                    tm_t(j,i).plotT();
+                    if j ~= 1
+                        Transformed = Quat_est.*tm_t(j,i);
+                        Transformed.plotT();
+                    else
+                        tm_t(j,i).plotT();
+                    end
                     grid on
                     axis([-2 2 -2 2 -2 2]);
                 end
@@ -74,7 +79,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [H_1_0_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
+        function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
                 tm_t_1,startIndex,numberOfSamples)
             % GETCHANGEOFGLOBALREFERENCEFRAMES Get the estimated change of
             % reference frame matrix.
@@ -89,6 +94,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end   
             H_1_0_est = cell2mat(p_0)*pinv(cell2mat(p_1));
             H_1_0_est(1:3,4) = 0;
+            H_1_0_est(4,1:3) = 0;
+            H_1_0_est(4,4) = 1;
+            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est')');
+            
         end
         
         function [metrics] = calculateSyncMetrics(tm_t)

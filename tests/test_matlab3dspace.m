@@ -253,7 +253,7 @@ H = [ 1     0           0        0
 assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
 
 
-function test_threeMarkerMinusComparison
+function test_threeMarkerMinusComparisonMultiply
 quat = [1,0,0,0,0];
 qvt = QuaternionsThreeMarkers(quat(1,1:5));
 quat = [0.8,0.2,0,0,0];
@@ -300,7 +300,8 @@ assertEqual(size(metrics),size(vtm_t));
 
 %ThreeMarkers.plotRun(vtm_t(1:3));
 %figure
-%ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);
-H = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
+tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
    vtm_t(1:3),1,3);
-assertElementsAlmostEqual(H,eye(4));
+assertElementsAlmostEqual(tm_est.getH,eye(4));
+tm_est.getQ
+ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)],tm_est);
