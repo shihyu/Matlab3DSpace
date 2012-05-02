@@ -132,6 +132,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function diff = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them, they can also be row vectors.
+            %
             display(class(obj1(1)))
             if isscalar(obj1)
                 display('Calculating error (scalar):')
@@ -141,11 +142,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 display('Calculating error (vector):')
                 diff = cell(1,size(obj1,2));
                 parfor i = 1:size(obj1,2)
-                    diff{i} = ThreeMarkers(...
-                        ThreeMarkers.quaternionerror(...
+                    diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
                         obj1(i).getQ,obj2(i).getQ));
                 end
-                %diff =cell2mat(diff1);
+                %diff =cell2mat(diff);
             end
         end
         
