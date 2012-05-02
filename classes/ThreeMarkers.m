@@ -41,8 +41,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [ errorQuat,errorEuler ] = quaternionerror(q1,q2)
             %QUATERNIONERROR Calculates Error between two Quaternions.
-            errorQuat =  quatnormalize(quatmultiply(q1,...
-                quatconj(q2)));
+            errorQuat =  quaternionnormalise(quaternionproduct(q1,...
+                quaternionconjugate(q2)))';
             errorEuler = invrpy(quaternion2matrix(errorQuat));
         end
         
@@ -132,7 +132,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function r = ctranspose(obj1)
             % CTRANSPOSE Gets the conjugate.
-            r = ThreeMarkers(quatnormalize(quatconj(obj1.getQ)));
+            r = ThreeMarkers(quaternionnormalise(...
+                quaternionconjugate(obj1.getQ))');
         end
         
         function isEqual = eq(obj1,obj2)
@@ -141,8 +142,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function product = times(obj1,obj2)
             size(obj1.getQ)
-            product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
-                obj2.getQ)));
+%             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
+%                 obj2.getQ)));
+           product = ThreeMarkers(quaternionnormalise(...
+               quaternionproduct(obj1.getQ,...
+                obj2.getQ)'));
+             
         end
         
         function showQ = display(tm)
