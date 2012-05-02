@@ -276,6 +276,26 @@ DP=display(qvt)
 QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
+quat = [1,0,0,0,0];
+qvt = QuaternionsThreeMarkers(quat(1,1:5));
+quat = [0.8,0.2,0,0,0];
+qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
+quat = [1.0,0,0,0,0];
+qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
+
+arrayQs = [qvt qvt1 qvt2];
+arrayBs = [qvt; qvt1; qvt2];
+display('Array Diff: ');
+display(size(arrayQs));
+diffQs = arrayQs-arrayBs
+assertTrue(ismatrix(diffQs))
+assertEqual(size(diffQs),[1,3]);
+for i = 1:3
+    obj = diffQs{i};
+    display(obj)
+    assertEqual(obj.getQ,[1,0,0,0]);
+end
+
 
 function teest_viconthreemarkers_readData
 filename='test-data/test-data.h5';
@@ -305,3 +325,5 @@ tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
 assertElementsAlmostEqual(tm_est.getH,eye(4));
 tm_est.getQ
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)],tm_est);
+close all;
+

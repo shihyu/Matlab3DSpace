@@ -26,7 +26,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
     end
     methods (Static)
-              
+        
         function angle = getAngle(marker1,marker2,zeropoint)
             angle = acos(dot(marker1-zeropoint,...
                 marker2-zeropoint)/...
@@ -91,7 +91,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 p_0{i} = tm_t_0(i).getT;
                 p_1{i} = tm_t_1(i).getT;
                 %p_1(:,(i-1)*4+1:i*4) = tm_t_1(i).getT;
-            end   
+            end
             H_1_0_est = cell2mat(p_0)*pinv(cell2mat(p_1));
             H_1_0_est(1:3,4) = 0;
             H_1_0_est(4,1:3) = 0;
@@ -121,13 +121,32 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             qtm.timestamp = 0.0;
         end
         
+%         function sref = subsref(obj,s)
+%             obj(i) is disabled
+%             error('ThreeMarkers:subsref',...
+%                     'Indexing of ThreeMarkers not supported.')
+%         end
         
         
-        function r = minus(obj1,obj2)
-            % MINUS Implement obj1 - obj2 for Quaternions: The
-            % difference/error between them.
-            r = ThreeMarkers(ThreeMarkers.quaternionerror(...
-                obj1.getQ,obj2.getQ));
+        
+        function diff = minus(obj1,obj2)
+            % MINUS Implement obj1 - obj2 for ThreeMarkers: The
+            % difference/error between them, they can also be row vectors.
+            display(class(obj1(1)))
+            if isscalar(obj1)
+                display('Calculating error (scalar):')
+                diff = ThreeMarkers(ThreeMarkers.quaternionerror(...
+                    obj1.getQ,obj2.getQ));
+            else
+                display('Calculating error (vector):')
+                diff = cell(1,size(obj1,2));
+                parfor i = 1:size(obj1,2)
+                    diff{i} = ThreeMarkers(...
+                        ThreeMarkers.quaternionerror(...
+                        obj1(i).getQ,obj2(i).getQ));
+                end
+                %diff =cell2mat(diff1);
+            end
         end
         
         function r = ctranspose(obj1)
@@ -142,12 +161,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function product = times(obj1,obj2)
             size(obj1.getQ)
-%             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
-%                 obj2.getQ)));
-           product = ThreeMarkers(quaternionnormalise(...
-               quaternionproduct(obj1.getQ,...
+            %             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
+            %                 obj2.getQ)));
+            product = ThreeMarkers(quaternionnormalise(...
+                quaternionproduct(obj1.getQ,...
                 obj2.getQ)'));
-             
+            
         end
         
         function showQ = display(tm)
