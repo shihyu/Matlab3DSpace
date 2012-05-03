@@ -225,7 +225,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % MTIMES only works if tm_est is a ThreeMarker.
             minSize = size(tm_t2,2);
             tm_2est = cell(1,minSize);
-            display(['IS SCALAR:' num2str(isscalar(tm_est))]);
+            %display(['IS SCALAR:' num2str(isscalar(tm_est))]);
             if isscalar(tm_est)
                 parfor i=1:minSize
                     tm_2est{i} = tm_t2{i}.*tm_est;
