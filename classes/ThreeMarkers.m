@@ -150,7 +150,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             H_1_0_est(4,4) = 1;
             %display('Estimated H')
             %H_1_0_est
-            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est')');
+            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est)');
             
         end
         
@@ -218,14 +218,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [tm_2est] = mtimes(...
-                tm_t2,tm_est)
+                tm_est,tm_t2)
             % MTIMES only works if tm_est is a ThreeMarker.
             minSize = size(tm_t2,2);
             tm_2est = cell(1,minSize);
             %display(['IS SCALAR:' num2str(isscalar(tm_est))]);
             if isscalar(tm_est)
                 parfor i=1:minSize
-                    tm_2est{i} = tm_t2{i}.*tm_est;
+                    tm_2est{i} = tm_est.*tm_t2{i};
                 end
             else
                 error('matlab3Dspace:mtimes',['MTIMES only works for second ThreeMarker as a'...
