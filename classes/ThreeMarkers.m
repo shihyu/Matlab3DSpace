@@ -39,11 +39,19 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             angDiff = atan2(sin(x-y), cos(x-y));
         end
         
-        function [ errorQuat,errorEuler ] = quaternionerror(q1,q2)
+        function [ errorQuat] = quaternionerror(q1,q2)
             %QUATERNIONERROR Calculates Error between two Quaternions.
             errorQuat =  quaternionnormalise(quaternionproduct(q1,...
                 quaternionconjugate(q2)))';
             errorEuler = invrpy(quaternion2matrix(errorQuat));
+        end
+        function [ eulerAngles] = quaternion2euler(q1,inDegrees)
+            %QUATERNION2EULER Get the roll pitch and yaw if a quaternion
+            eulerAngles = invrpy(quaternion2matrix(q1));
+            if inDegrees==true
+                %display('Converting to degrees')
+                eulerAngles = eulerAngles./pi.*180;
+            end
         end
         
         function [Hdiff] = calculateRotDiff(H,H_old)
@@ -77,6 +85,40 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 end
                 drawnow;
             end
+        end
+        
+        function [roll,pitch,yaw]=plotDiff(tm_t1,tm_t2,inDegrees,Fs)
+            minSize = min(size(tm_t1,2),size(tm_t2,2));
+            roll = zeros(1,minSize());
+            pitch = zeros(1,minSize());
+            yaw = zeros(1,minSize());
+            parfor i=1:minSize
+                diff= tm_t1(i)-tm_t2(i);
+                euler = diff.getRPY(inDegrees);
+                roll(i)=euler(1);
+                pitch(i)=euler(2);
+                yaw(i)=euler(3);
+            end
+            if inDegrees
+                YMIN=-180;
+                YMAX=180;
+            else
+                YMIN=-pi/2;
+                YMAX=pi/2;
+            end
+            t = 0:1/Fs:(minSize-1)/Fs;
+            subplot(3,1,1);
+            plot(t,roll);
+            grid on
+            ylim([YMIN YMAX]) 
+            subplot(3,1,2);
+            plot(t,pitch);
+            grid on
+            ylim([YMIN YMAX]) 
+            subplot(3,1,3);
+            plot(t,yaw);
+            grid on
+            ylim([YMIN YMAX]) 
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -121,13 +163,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             qtm.timestamp = 0.0;
         end
         
-%         function sref = subsref(obj,s)
-%             obj(i) is disabled
-%             error('ThreeMarkers:subsref',...
-%                     'Indexing of ThreeMarkers not supported.')
-%         end
-        
-        
         
         function diff = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
@@ -135,11 +170,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %
             display(class(obj1(1)))
             if isscalar(obj1)
-                display('Calculating error (scalar):')
+                %display('Calculating error (scalar):')
                 diff = ThreeMarkers(ThreeMarkers.quaternionerror(...
                     obj1.getQ,obj2.getQ));
             else
-                display('Calculating error (vector):')
+                %display('Calculating error (vector):')
                 diff = cell(1,size(obj1,2));
                 parfor i = 1:size(obj1,2)
                     diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
@@ -182,6 +217,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [H_0_T] = getH(tm)
             H_0_T = tm.H_0_T;
+        end
+        
+        function [euler]=getRPY(tm,inDegrees)
+            euler = ThreeMarkers.quaternion2euler(...
+                tm.getQ,inDegrees);
         end
         
         function [quaternion]=getQ(tm)

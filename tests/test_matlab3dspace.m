@@ -296,6 +296,22 @@ for i = 1:3
     assertEqual(obj.getQ,[1,0,0,0]);
 end
 
+function test_threeMarkerQuaternion2euler()
+quat = [1,0,0,0,0];
+euler = ThreeMarkers.quaternion2euler(quat,false)
+assertEqual(euler,[0 0 0]);
+eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
+assertEqual(euler,[0 0 0]);
+quat = [ cos(30/180*pi) sin(30/180*pi) 0 0];
+format long;
+euler = ThreeMarkers.quaternion2euler(quat,false)
+assertElementsAlmostEqual(euler,[0 0  1.047197551196598]);
+eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
+assertEqual(eulerDeg,[0 0 60]);
+
+tm = ThreeMarkers([ cos(30/180*pi) sin(30/180*pi) 0 0]);
+euler = tm.getRPY(true);
+assertEqual(eulerDeg,[0 0 60]);
 
 function teest_viconthreemarkers_readData
 filename='test-data/test-data.h5';
@@ -325,5 +341,14 @@ tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
 assertElementsAlmostEqual(tm_est.getH,eye(4));
 tm_est.getQ
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)],tm_est);
-close all;
+
+figure;
+[roll,pitch,yaw]=ThreeMarkers.plotDiff(...
+    vtm_t(1:3),vtm_t(2:4),true,120);
+
+[roll,pitch,yaw]=ThreeMarkers.plotDiff(...
+    vtm_t(1:3),vtm_t(1:3),true,120);
+assertElementsAlmostEqual(max(roll),0);
+assertElementsAlmostEqual(max(pitch),0);
+assertElementsAlmostEqual(max(yaw),0);
 
