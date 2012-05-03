@@ -146,7 +146,6 @@ metric2 = [0 0 0 1 0 0];
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0]);
 assertEqual(data1(1:4),result2);
-close all;
 clear all
 close all
 Fs = 120;
@@ -319,7 +318,6 @@ runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
 vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 5136]);
-close all;
 %ThreeMarkers.plotRun(vtm_t);
 
 function test_promovethreemarkers_readData
@@ -328,7 +326,6 @@ runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
-close all;
 
 [metrics] = ThreeMarkers.calculateSyncMetrics(vtm_t);
 %More tests need to make sure it makes sense.
@@ -337,18 +334,22 @@ assertEqual(size(metrics),size(vtm_t));
 %ThreeMarkers.plotRun(vtm_t(1:3));
 %figure
 size(vtm_t)
+display('Testing change of Global Frame');
 tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t,...
-   vtm_t,1,3);
+   vtm_t,1,3)
+display(['Returned value: ' class(tm_est)]);
+assertTrue(isa(tm_est,'ThreeMarkers'));
 assertElementsAlmostEqual(tm_est.getH,eye(4));
-tm_est.getQ
-ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)],tm_est);
+assertElementsAlmostEqual(tm_est.getQ,[1 0 0 0]);
+vmt_t2 = vtm_t(1:3)*tm_est;
+ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);
 vtm_t2 = vtm_t*tm_est;
 try
  vtm_t*[tm_est tm_est];
 catch exception
     assertEqual(exception.identifier,'matlab3Dspace:mtimes');
 end
-ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)],tm_est);
+ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)]);
 
 figure;
 [roll,pitch,yaw]=ThreeMarkers.plotDiff(...

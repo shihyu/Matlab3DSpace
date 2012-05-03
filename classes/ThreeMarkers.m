@@ -62,7 +62,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             points_0 = ThreeMarkers.points_0;
         end
         
-        function plotRun(tm_t,Quat_est)
+        function plotRun(tm_t)
             %PLOTRUN Plays back a run.
             parallelPlots = size(tm_t,1);
             m=ceil(parallelPlots/2);
@@ -74,12 +74,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             for i = 1:size(tm_t,2)
                 for j = 1:parallelPlots
                     subplot(m,n,j);
-                    if j ~= 1
-                        Transformed = Quat_est.*tm_t{j,i};
-                        Transformed.plotT();
-                    else
-                        tm_t{j,i}.plotT();
-                    end
+                    tm_t{j,i}.plotT();
                     grid on
                     axis([-2 2 -2 2 -2 2]);
                 end
@@ -153,6 +148,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             H_1_0_est(1:3,4) = 0;
             H_1_0_est(4,1:3) = 0;
             H_1_0_est(4,4) = 1;
+            %display('Estimated H')
+            %H_1_0_est
             tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est')');
             
         end
