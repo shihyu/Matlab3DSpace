@@ -17,16 +17,12 @@ classdef ViconThreeMarkers < ThreeMarkers
             display(size(leftBack));
             display('Front')
             display(size(front));
-            vtm_t = [];
-            
             N=size(rightBack,1)
-            metrics = zeros(1,N);
-            hdiff = zeros(4,4);
-            parfor i = 1:size(rightBack,1)
+            vtm_t = cell(1,N);
+            parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
                         leftBack(i,1:3),front(i,1:3),rightBack(i));
-                vtm_t =[vtm_t vtm];
-                %hdiff = vtm.getH();
+                vtm_t{i} = vtm;
             end
         end
         

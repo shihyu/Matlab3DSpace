@@ -9,9 +9,9 @@ theTimestamp = 2.3;
 cvt = ViconThreeMarkers(rightback,...
         leftback,front,theTimestamp)
 assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
-cvt_t = [cvt cvt cvt cvt];
-H = calculateChangeofGlobalFrames(cvt_t,cvt_t,1,2);
-assertElementsAlmostEqual(H,eye(4,4));
+cvt_t = {cvt cvt cvt cvt};
+tm = ThreeMarkers.getChangeOfGlobalReferenceFrames(cvt_t,cvt_t,1,2);
+assertElementsAlmostEqual(tm.getH,eye(4,4));
 
 function test_QuaternionsThreeMarkers
 quat = [1,0,0,0,0];
@@ -283,12 +283,12 @@ qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
 quat = [1.0,0,0,0,0];
 qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
 
-arrayQs = [qvt qvt1 qvt2];
-arrayBs = [qvt; qvt1; qvt2];
+arrayQs = {qvt qvt1 qvt2};
+arrayBs = {qvt; qvt1; qvt2};
 display('Array Diff: ');
 display(size(arrayQs));
-diffQs = arrayQs-arrayBs
-assertTrue(ismatrix(diffQs))
+diffQs = ThreeMarkers.cellminus(arrayQs,arrayBs);
+assertTrue(iscell(diffQs))
 assertEqual(size(diffQs),[1,3]);
 for i = 1:3
     obj = diffQs{i};
@@ -326,7 +326,7 @@ function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
-vtm_t(1).plotT()
+vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
 close all;
 
@@ -336,11 +336,19 @@ assertEqual(size(metrics),size(vtm_t));
 
 %ThreeMarkers.plotRun(vtm_t(1:3));
 %figure
-tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t(1:3),...
-   vtm_t(1:3),1,3);
+size(vtm_t)
+tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t,...
+   vtm_t,1,3);
 assertElementsAlmostEqual(tm_est.getH,eye(4));
 tm_est.getQ
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)],tm_est);
+vtm_t2 = vtm_t*tm_est;
+try
+ vtm_t*[tm_est tm_est];
+catch exception
+    assertEqual(exception.identifier,'matlab3Dspace:mtimes');
+end
+ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)],tm_est);
 
 figure;
 [roll,pitch,yaw]=ThreeMarkers.plotDiff(...

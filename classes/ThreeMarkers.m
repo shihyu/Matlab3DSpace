@@ -75,10 +75,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 for j = 1:parallelPlots
                     subplot(m,n,j);
                     if j ~= 1
-                        Transformed = Quat_est.*tm_t(j,i);
+                        Transformed = Quat_est.*tm_t{j,i};
                         Transformed.plotT();
                     else
-                        tm_t(j,i).plotT();
+                        tm_t{j,i}.plotT();
                     end
                     grid on
                     axis([-2 2 -2 2 -2 2]);
@@ -93,7 +93,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             pitch = zeros(1,minSize());
             yaw = zeros(1,minSize());
             parfor i=1:minSize
-                diff= tm_t1(i)-tm_t2(i);
+                diff= tm_t1{i}-tm_t2{i};
                 euler = diff.getRPY(inDegrees);
                 roll(i)=euler(1);
                 pitch(i)=euler(2);
@@ -102,23 +102,37 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             if inDegrees
                 YMIN=-180;
                 YMAX=180;
+                YLABEL='(degrees)';
             else
+                YLABEL='(radians)';
                 YMIN=-pi/2;
                 YMAX=pi/2;
             end
+            XLABEL=['1/Fs Fs=' num2str(Fs)];
             t = 0:1/Fs:(minSize-1)/Fs;
+            
             subplot(3,1,1);
             plot(t,roll);
             grid on
-            ylim([YMIN YMAX]) 
+            ylim([YMIN YMAX])
+            title(['ROLL: maximum error: ' num2str(max(abs(roll)))]);
+            ylabel(YLABEL);
+            xlabel(XLABEL);
             subplot(3,1,2);
             plot(t,pitch);
             grid on
-            ylim([YMIN YMAX]) 
+            ylim([YMIN YMAX])
+            title(['PITCH: maximum error: ' num2str(max(abs(pitch)))]);
+            ylabel(YLABEL);
+            xlabel(XLABEL);
+            
             subplot(3,1,3);
             plot(t,yaw);
             grid on
-            ylim([YMIN YMAX]) 
+            ylim([YMIN YMAX])
+            title(['YAW: maximum error: ' num2str(max(abs(yaw)))]);
+            ylabel(YLABEL);
+            xlabel(XLABEL);
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -127,11 +141,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % reference frame matrix.
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
+            size(tm_t_0)
             p_0 = cell(1,numberOfSamples);
             p_1 = cell(1,numberOfSamples);
             parfor i = 1:numberOfSamples
-                p_0{i} = tm_t_0(i).getT;
-                p_1{i} = tm_t_1(i).getT;
+                p_0{i} = tm_t_0{i}.getT;
+                p_1{i} = tm_t_1{i}.getT;
                 %p_1(:,(i-1)*4+1:i*4) = tm_t_1(i).getT;
             end
             H_1_0_est = cell2mat(p_0)*pinv(cell2mat(p_1));
@@ -149,9 +164,22 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             metrics = zeros(size(tm_t));
             parfor i = 1:size(tm_t,2)
                 metrics(i) = ThreeMarkers.calculateRotDiff(...
-                    tm_t(i).getH,...
-                    tm_t0(i).getH);
+                    tm_t{i}.getH,...
+                    tm_t0{i}.getH);
             end
+        end
+        
+        function diff = cellminus(obj1,obj2)
+            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers: The
+            % difference/error between them.
+            %display(class(obj1(1)))
+           
+            %display('Calculating error (vector):')
+            diff = cell(1,size(obj1,2));
+            parfor i = 1:size(obj1,2)
+                diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
+                    obj1{i}.getQ,obj2{i}.getQ));
+            end     
         end
     end
     
@@ -168,22 +196,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them, they can also be row vectors.
             %
-            display(class(obj1(1)))
-            if isscalar(obj1)
-                %display('Calculating error (scalar):')
-                diff = ThreeMarkers(ThreeMarkers.quaternionerror(...
+            %display(class(obj1(1)))
+            diff = ThreeMarkers(ThreeMarkers.quaternionerror(...
                     obj1.getQ,obj2.getQ));
-            else
-                %display('Calculating error (vector):')
-                diff = cell(1,size(obj1,2));
-                parfor i = 1:size(obj1,2)
-                    diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
-                        obj1(i).getQ,obj2(i).getQ));
-                end
-                %diff =cell2mat(diff);
-            end
         end
-        
+         
         function r = ctranspose(obj1)
             % CTRANSPOSE Gets the conjugate.
             r = ThreeMarkers(quaternionnormalise(...
@@ -195,13 +212,29 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function product = times(obj1,obj2)
-            size(obj1.getQ)
             %             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
             %                 obj2.getQ)));
             product = ThreeMarkers(quaternionnormalise(...
                 quaternionproduct(obj1.getQ,...
                 obj2.getQ)'));
             
+        end
+        
+        function [tm_2est] = mtimes(...
+                tm_t2,tm_est)
+            % MTIMES only works if tm_est is a ThreeMarker.
+            minSize = size(tm_t2,2);
+            tm_2est = cell(1,minSize);
+            display(['IS SCALAR:' num2str(isscalar(tm_est))]);
+            if isscalar(tm_est)
+                parfor i=1:minSize
+                    tm_2est{i} = tm_t2{i}.*tm_est;
+                end
+            else
+                error('matlab3Dspace:mtimes',['MTIMES only works for second ThreeMarker as a'...
+                    'scalar: size(tm_est): ' num2str(size(tm_est))]);
+                    
+            end
         end
         
         function showQ = display(tm)
