@@ -111,14 +111,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             ylim([YMIN YMAX])
             title(['ROLL: maximum error: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
-            xlabel(XLABEL);
+            %xlabel(XLABEL);
             subplot(3,1,2);
             plot(t,pitch);
             grid on
             ylim([YMIN YMAX])
             title(['PITCH: maximum error: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
-            xlabel(XLABEL);
+            %xlabel(XLABEL);
             
             subplot(3,1,3);
             plot(t,yaw);
@@ -135,7 +135,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % reference frame matrix.
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
-            size(tm_t_0)
+%             size(tm_t_0)
             p_0 = cell(1,numberOfSamples);
             p_1 = cell(1,numberOfSamples);
             parfor i = 1:numberOfSamples
