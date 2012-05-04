@@ -94,14 +94,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 pitch(i)=euler(2);
                 yaw(i)=euler(3);
             end
+            YMAX = max(max(abs(roll)),max(abs(pitch)));
+            YMAX = max(YMAX,max(abs(yaw)));
+            YMIN=-YMAX;
             if inDegrees
-                YMIN=-180;
-                YMAX=180;
                 YLABEL='(degrees)';
             else
                 YLABEL='(radians)';
-                YMIN=-pi/2;
-                YMAX=pi/2;
             end
             XLABEL=['1/Fs Fs=' num2str(Fs)];
             t = 0:1/Fs:(minSize-1)/Fs;

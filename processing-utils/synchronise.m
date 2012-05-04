@@ -1,4 +1,4 @@
-function [ data_1,data_2 ] = synchronise(metric_1,metric_2,data_1,data_2,Fs,theStart,numberOfSamples)
+function [ data_1,data_2] = synchronise(metric_1,metric_2,data_1,data_2,Fs,theStart,numberOfSamples)
 %SYNCRHONISE Performs simple cross-correlation syncrhonisation between two
 %signals using the metric_1 and metric_2 as the correlation signal.
 
@@ -13,7 +13,7 @@ N = N-(theStart-1);
 N1 = N1-(theStart-1);
 N2 = N2-(theStart-1);
 t = [0:1/Fs:N/Fs-1/Fs];
-figure
+
 subplot(2,1,1);
 hold on;
 plot(t(1:N1),metric_1(1:N1),'--k');
@@ -32,7 +32,7 @@ display(['SIZE correlation: R12:' num2str(size(R12,1))...
 %Adjust input data.
 if (max_lags_12 < N)
     Nstart = N-max_lags_12+1
-    theTitle = ['Syncrohonising: 1 ahead of 2: Shifting:' ...
+    theTitle = ['Synchronising: 1 ahead of 2: Shifting:' ...
         num2str(Nstart)];
     display(theTitle);
     data_2 = data_2(Nstart:size(data_2,2));
@@ -40,7 +40,7 @@ if (max_lags_12 < N)
     N2 = size(metric_2,2)
 else
     Nstart = max_lags_12-N+1
-    theTitle = ['Syncrohonising: 2 ahead of 1: Shifting:' ...
+    theTitle = ['Synchronising: 2 ahead of 1: Shifting:' ...
         num2str(Nstart)];
     display(theTitle);
     data_1 = data_1(Nstart:size(data_1,2));
