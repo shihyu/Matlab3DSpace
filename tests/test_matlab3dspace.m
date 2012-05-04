@@ -341,9 +341,9 @@ display(['Returned value: ' class(tm_est)]);
 assertTrue(isa(tm_est,'ThreeMarkers'));
 assertElementsAlmostEqual(tm_est.getH,eye(4));
 assertElementsAlmostEqual(tm_est.getQ,[1 0 0 0]);
-vmt_t2 = vtm_t(1:3)*tm_est;
+vmt_t2 = tm_est*vtm_t(1:3);
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t(1:3)]);
-vtm_t2 = vtm_t*tm_est;
+vtm_t2 = tm_est*vtm_t;
 try
  vtm_t*[tm_est tm_est];
 catch exception

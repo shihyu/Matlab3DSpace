@@ -227,7 +227,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     tm_2est{i} = tm_est.*tm_t2{i};
                 end
             else
-                error('matlab3Dspace:mtimes',['MTIMES only works for second ThreeMarker as a'...
+                error('matlab3Dspace:mtimes',['MTIMES only works for first ThreeMarker as a'...
                     'scalar: size(tm_est): ' num2str(size(tm_est))]);
                     
             end
