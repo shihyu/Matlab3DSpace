@@ -320,10 +320,15 @@ vtm_t(1).plotT()
 assertEqual(size(vtm_t),[1 5136]);
 %ThreeMarkers.plotRun(vtm_t);
 
-function test_promovethreemarkers_readData
+function quatReadNonExistantNode
 filename='test-data/test-data.h5';
 runName = '/promove2';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+
+function test_promovethreemarkers_readData
+filename='test-data/test-data.h5';
+assertExceptionThrown(@quatReadNonExistantNode,...
+    'QuaternionsThreeMarkers:readData')
 
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
