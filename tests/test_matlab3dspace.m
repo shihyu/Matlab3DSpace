@@ -322,6 +322,9 @@ assertEqual(size(vtm_t),[1 5136]);
 
 function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
+runName = '/promove2';
+[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
 vtm_t{1}.plotT()
@@ -362,4 +365,5 @@ assertTrue(max(yaw)>0);
 assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
+
 
