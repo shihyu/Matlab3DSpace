@@ -7,6 +7,10 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             % and creates the ViconThreeMarker object.
             reader = promoveReader(filename,runName);
             q = reader.readNodeData(nodeId);
+            if isempty(q)
+                error('QuaternionsThreeMarkers:readData',...
+                    'The Node does not have any values to read.');
+            end
             if Fs_wanted ~= Fs_recorded
                 q = resample(q(:,1:5),Fs_wanted,Fs_recorded);
             end
