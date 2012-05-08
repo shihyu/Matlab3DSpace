@@ -82,7 +82,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [roll,pitch,yaw,diff_t]=plotDiff(tm_t1,tm_t2,inDegrees,Fs)
+        function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,inDegrees)
             minSize = min(size(tm_t1,2),size(tm_t2,2));
             roll = zeros(1,minSize());
             pitch = zeros(1,minSize());
@@ -96,6 +96,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 yaw(i)=euler(3);
                 diff_t{i}=diff;
             end
+            
+        end
+        
+        function [roll,pitch,yaw,diff_t]= plotDiff(tm_t1,tm_t2,...
+                inDegrees,Fs)
+            [roll,pitch,yaw,diff_t] = ThreeMarkers.getDiff(tm_t1,...
+                    tm_t2,inDegrees);
+            minSize = min(size(tm_t1,2),size(tm_t2,2));
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
@@ -106,26 +114,28 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
             XLABEL=['1/Fs Fs=' num2str(Fs)];
             t = 0:1/Fs:(minSize-1)/Fs;
-            
+            hold on;
             subplot(3,1,1);
             plot(t,roll);
-            grid on
-            ylim([YMIN YMAX])
+            grid on;
+             hold on;
+            %ylim([YMIN YMAX])
             title(['ROLL: maximum error: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,2);
             plot(t,pitch);
-            grid on
-            ylim([YMIN YMAX])
+            hold on;
+            grid on;          
+            %ylim([YMIN YMAX])
             title(['PITCH: maximum error: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
-            
             subplot(3,1,3);
             plot(t,yaw);
-            grid on
-            ylim([YMIN YMAX])
+            grid on;
+            hold on;
+            %ylim([YMIN YMAX])
             title(['YAW: maximum error: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);

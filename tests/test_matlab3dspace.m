@@ -352,8 +352,8 @@ end
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)]);
 
 figure;
-[roll,pitch,yaw,diff_t]=ThreeMarkers.plotDiff(...
-    vtm_t(1:3),vtm_t(2:4),true,120);
+[roll,pitch,yaw,diff_t]=ThreeMarkers.getDiff(...
+    vtm_t(1:3),vtm_t(2:4),true);
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
