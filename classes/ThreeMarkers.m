@@ -82,17 +82,19 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [roll,pitch,yaw]=plotDiff(tm_t1,tm_t2,inDegrees,Fs)
+        function [roll,pitch,yaw,diff_t]=plotDiff(tm_t1,tm_t2,inDegrees,Fs)
             minSize = min(size(tm_t1,2),size(tm_t2,2));
             roll = zeros(1,minSize());
             pitch = zeros(1,minSize());
             yaw = zeros(1,minSize());
+            diff_t = cell(1,minSize());
             parfor i=1:minSize
                 diff= tm_t1{i}-tm_t2{i};
                 euler = diff.getRPY(inDegrees);
                 roll(i)=euler(1);
                 pitch(i)=euler(2);
                 yaw(i)=euler(3);
+                diff_t{i}=diff;
             end
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
