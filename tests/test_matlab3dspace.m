@@ -360,13 +360,16 @@ end
 ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)]);
 
 figure;
-[roll,pitch,yaw]=ThreeMarkers.plotDiff(...
-    vtm_t(1:3),vtm_t(2:4),true,120);
+[roll,pitch,yaw,diff_t]=ThreeMarkers.getDiff(...
+    vtm_t(1:3),vtm_t(2:4),true);
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
-[roll,pitch,yaw]=ThreeMarkers.plotDiff(...
+[roll,pitch,yaw,diff_t]=ThreeMarkers.plotDiff(...
     vtm_t(1:3),vtm_t(1:3),true,120);
+class(diff_t)
+euler=diff_t{1}.getRPY(true)
+assertEqual([0 0 0],euler)
 assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
