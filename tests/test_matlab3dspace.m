@@ -252,6 +252,42 @@ H = [ 1     0           0        0
 assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
 
 
+function test_slerp
+display('Testing slerp:')
+theta = -0.2*pi;
+H = [ 1     0           0        0
+      0  cos(theta) -sin(theta)  0
+      0  sin(theta)  cos(theta)  0
+      0     0           0        1];
+quaternion = matrix2quaternion(H)'
+quaternionNorm = quaternionnormalise(quaternion);
+assertElementsAlmostEqual(quaternion,quaternionNorm)
+
+startQ=ThreeMarkers([1 0 0 0 0]);
+endQ=ThreeMarkers([quaternion 1.0]);
+
+
+[errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0])
+assertElementsAlmostEqual(errorEuler,[0 0 theta])
+
+
+midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps) 0.5]
+
+midQ = ThreeMarkers(midQ);
+ThreeMarkers.plotRun({startQ;...
+    midQ;...
+    endQ});
+
+t = 0.0:0.001:1.0;
+tm_t = cell(1,size(t,2));
+parfor i = 1:size(t,2)
+    tm_t{i} = ThreeMarkers([slerp(startQ.getQ,...
+            endQ.getQ, t(i), eps) t(i)]);
+end
+qs = slerp(startQ.getQ,...
+            endQ.getQ, t, eps)
+ThreeMarkers.plotRun(tm_t);
+
 function test_threeMarkerMinusComparisonMultiply
 quat = [1,0,0,0,0];
 qvt = QuaternionsThreeMarkers(quat(1,1:5));
@@ -373,5 +409,5 @@ assertEqual([0 0 0],euler)
 assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
-
+close all
 
