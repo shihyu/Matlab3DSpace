@@ -271,7 +271,7 @@ endQ=ThreeMarkers([quaternion 1.0]);
 assertElementsAlmostEqual(errorEuler,[0 0 theta])
 
 
-midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps) 0.5]
+midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps)' 0.5]
 
 midQ = ThreeMarkers(midQ);
 ThreeMarkers.plotRun({startQ;...
@@ -280,13 +280,24 @@ ThreeMarkers.plotRun({startQ;...
 
 t = 0.0:0.001:1.0;
 tm_t = cell(1,size(t,2));
-parfor i = 1:size(t,2)
-    tm_t{i} = ThreeMarkers([slerp(startQ.getQ,...
-            endQ.getQ, t(i), eps) t(i)]);
+spline_t = slerp(startQ.getQ,...
+            endQ.getQ, t, eps);
+figure
+parfor i = 1:size(spline_t,2)
+    tm_t{i} = ThreeMarkers([spline_t(:,i)' t(i)]);
 end
-qs = slerp(startQ.getQ,...
-            endQ.getQ, t, eps)
 ThreeMarkers.plotRun(tm_t);
+
+startQ=ThreeMarkers([1 0 0 0]);
+endQ=ThreeMarkers([-1 0 0 0]);
+spline_t = slerp(startQ.getQ,...
+            endQ.getQ, t, eps);
+figure
+parfor i = 1:size(spline_t,2)
+    tm_t{i} = ThreeMarkers([spline_t(:,i)']);
+end
+ThreeMarkers.plotRun(tm_t);
+
 
 function test_threeMarkerMinusComparisonMultiply
 quat = [1,0,0,0,0];

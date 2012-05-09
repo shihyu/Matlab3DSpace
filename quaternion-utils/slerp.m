@@ -48,11 +48,12 @@ else
             qm=qi*(1-t)+qn*t; % avoiding divisions by number close to 0
 
         elseif (1 + C) <= eps % when teta is close by epsilon to 180 degrees the result is undefined -> no shortest direction to rotate
+            display('Almost 180')
             q2(1) = qi(4); q2(2) = -qi(3); q2(3)= qi(2); q2(4) = -qi(1); % rotating one of the unit quaternions by 90 degrees -> q2
-            qm=qi*(sin((1-t)*(pi/2)))+q2*sin(t*(pi/2));
-
+            qm=qi'*sin((ones(size(t))-t).*(pi/2))+q2'*sin(t.*(pi/2));
+            
         else
-            qm=qi*(sin((1-t)*teta))/sin(teta)+qn*sin(t*teta)/sin(teta);
+            qm=qi'*sin((ones(size(t))-t).*teta)./sin(teta)+qn'*sin(t.*teta)./sin(teta);
         end
 end
 
