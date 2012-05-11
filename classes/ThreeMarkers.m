@@ -18,7 +18,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     end
     methods (Access = protected,Static)
         function [normedPoint] = normWithOffset(point,reference)
-            normedPoint = (point-reference)/norm(point-reference)+reference;
+            normedPoint = (point-reference)/norm(point-reference)+...
+                reference;
         end
         
         function plot(point,style)
@@ -37,21 +38,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %ANGLEDIFFERENCE Summary of this function goes here
             %   Detailed explanation goes here
             angDiff = atan2(sin(x-y), cos(x-y));
-        end
-        
-        function [ errorQuat] = quaternionerror(q1,q2)
-            %QUATERNIONERROR Calculates Error between two Quaternions.
-            errorQuat =  quaternionnormalise(quaternionproduct(q1,...
-                quaternionconjugate(q2)))';
-            errorEuler = invrpy(quaternion2matrix(errorQuat));
-        end
-        function [ eulerAngles] = quaternion2euler(q1,inDegrees)
-            %QUATERNION2EULER Get the roll pitch and yaw if a quaternion
-            eulerAngles = invrpy(quaternion2matrix(q1));
-            if inDegrees==true
-                %display('Converting to degrees')
-                eulerAngles = eulerAngles./pi.*180;
-            end
         end
         
         function [Hdiff] = calculateRotDiff(H,H_old)
@@ -82,7 +68,22 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
+        function diff = cellminus(obj1,obj2)
+            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers: The
+            % difference/error between them.
+            %display(class(obj1(1)))
+           
+            %display('Calculating error (vector):')
+            diff = cell(1,size(obj1,2));
+            parfor i = 1:size(obj1,2)
+                diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
+                    obj1{i}.getQ,obj2{i}.getQ));
+            end     
+        end
+        
         function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,inDegrees)
+            %GETDIFF Same as cellminus() but calculates the roll pitch
+            %yaw values during the calculation as well.
             minSize = min(size(tm_t1,2),size(tm_t2,2));
             roll = zeros(1,minSize());
             pitch = zeros(1,minSize());
@@ -96,7 +97,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 yaw(i)=euler(3);
                 diff_t{i}=diff;
             end
-            
         end
         
         function [roll,pitch,yaw,diff_t]= plotDiff(tm_t1,tm_t2,...
@@ -176,19 +176,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     tm_t0{i}.getH);
             end
         end
-        
-        function diff = cellminus(obj1,obj2)
-            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers: The
-            % difference/error between them.
-            %display(class(obj1(1)))
-           
-            %display('Calculating error (vector):')
-            diff = cell(1,size(obj1,2));
-            parfor i = 1:size(obj1,2)
-                diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
-                    obj1{i}.getQ,obj2{i}.getQ));
-            end     
-        end
     end
     
     methods
@@ -205,7 +192,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % difference/error between them, they can also be row vectors.
             %
             %display(class(obj1(1)))
-            diff = ThreeMarkers(ThreeMarkers.quaternionerror(...
+            diff = ThreeMarkers(quaternionerror(...
                     obj1.getQ,obj2.getQ));
         end
          

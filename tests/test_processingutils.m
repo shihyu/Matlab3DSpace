@@ -1,4 +1,4 @@
-function test_suite = test_matlab3dspace
+function test_suite = test_processingutils
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 
 function test_synchronise

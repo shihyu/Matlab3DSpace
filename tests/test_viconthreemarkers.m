@@ -77,4 +77,4 @@ runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
-ThreeMarkers.plotRun(vtm_t);
+%ThreeMarkers.plotRun(vtm_t);

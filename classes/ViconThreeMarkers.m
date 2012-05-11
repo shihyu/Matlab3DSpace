@@ -63,7 +63,8 @@ classdef ViconThreeMarkers < ThreeMarkers
             H_T_0(1:3,4)  = [0 0 0]';
             %and error
             H_T_0(4,1:3)  = [0 0 0];
-            H_0_T = H_T_0';
+            %H_0_T = H_T_0';
+            H_0_T = invht(H_T_0);
             quaternion = matrix2quaternion(H_0_T)';
             vtm@ThreeMarkers(quaternion)
             vtm.timestamp = timestamp;
