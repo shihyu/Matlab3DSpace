@@ -76,7 +76,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %display('Calculating error (vector):')
             diff = cell(1,size(obj1,2));
             parfor i = 1:size(obj1,2)
-                diff{i} =ThreeMarkers(ThreeMarkers.quaternionerror(...
+                diff{i} =ThreeMarkers(quaternionerror(...
                     obj1{i}.getQ,obj2{i}.getQ));
             end     
         end
@@ -198,8 +198,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
          
         function r = ctranspose(obj1)
             % CTRANSPOSE Gets the conjugate.
-            r = ThreeMarkers(quaternionnormalise(...
-                quaternionconjugate(obj1.getQ))');
+            r = ThreeMarkers(...
+                quaternionconjugate(obj1.getQ)');
         end
         
         function isEqual = eq(obj1,obj2)
@@ -209,9 +209,9 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function product = times(obj1,obj2)
             %             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
             %                 obj2.getQ)));
-            product = ThreeMarkers(quaternionnormalise(...
+            product = ThreeMarkers(...
                 quaternionproduct(obj1.getQ,...
-                obj2.getQ)'));
+                obj2.getQ)');
             
         end
         
@@ -248,7 +248,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [euler]=getRPY(tm,inDegrees)
-            euler = ThreeMarkers.quaternion2euler(...
+            euler = quaternion2euler(...
                 tm.getQ,inDegrees);
         end
         

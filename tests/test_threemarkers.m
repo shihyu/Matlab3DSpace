@@ -59,7 +59,7 @@ y = 0;
 assertElementsAlmostEqual(ThreeMarkers.angleDifference(x,y),0);
 assertElementsAlmostEqual(ThreeMarkers.angleDifference(y,x),0);
 
-function test_threeMarkerMinusComparisonMultiply
+function test_threeMarkerMinusComparisonMultiplyTranspose
 quat = [1,0,0,0,0];
 qvt = QuaternionsThreeMarkers(quat(1,1:5));
 quat = [0.8,0.2,0,0,0];
@@ -70,7 +70,10 @@ assertEqual(qvt,qvt)
 assertEqual(qvt,qvt2)
 
 diff = qvt-qvt1;
-qvt1Cal = qvt.*qvt1';
+qvtConj = qvt1';
+qvtConjFun = quaternionnormalise(quaternionconjugate(qvt1.getQ)');
+assertElementsAlmostEqual(qvtConj.getQ,qvtConjFun);
+qvt1Cal = qvt.*ThreeMarkers(qvtConjFun);
 display('Results')
 display(qvt1Cal)
 display(diff)
@@ -82,12 +85,12 @@ DP=display(qvt)
 QVT=display(prod)
 assertEqual(prod.getQ,qvt.getQ)
 
-quat = [1,0,0,0,0];
-qvt = QuaternionsThreeMarkers(quat(1,1:5));
+quat = [1,0,0,0];
+qvt =  ThreeMarkers(quat);
 quat = [0.8,0.2,0,0,0];
-qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
+qvt1 = ThreeMarkers(quat);
 quat = [1.0,0,0,0,0];
-qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
+qvt2 = ThreeMarkers(quat);
 
 arrayQs = {qvt qvt1 qvt2};
 arrayBs = {qvt; qvt1; qvt2};
@@ -99,25 +102,13 @@ assertEqual(size(diffQs),[1,3]);
 for i = 1:3
     obj = diffQs{i};
     display(obj)
-    assertEqual(obj.getQ,[1,0,0,0]);
+    assertElementsAlmostEqual(obj.getQ,[1,0,0,0]);
 end
 
 function test_threeMarkerQuaternion2euler()
-quat = [1,0,0,0,0];
-euler = ThreeMarkers.quaternion2euler(quat,false)
-assertEqual(euler,[0 0 0]);
-eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
-assertEqual(euler,[0 0 0]);
-quat = [ cos(30/180*pi) sin(30/180*pi) 0 0];
-format long;
-euler = ThreeMarkers.quaternion2euler(quat,false)
-assertElementsAlmostEqual(euler,[0 0  1.047197551196598]);
-eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
-assertEqual(eulerDeg,[0 0 60]);
-
 tm = ThreeMarkers([ cos(30/180*pi) sin(30/180*pi) 0 0]);
 euler = tm.getRPY(true);
-assertEqual(eulerDeg,[0 0 60]);
+assertEqual(euler,[0 0 60]);
 
 function teest_viconthreemarkers_readData
 filename='test-data/test-data.h5';

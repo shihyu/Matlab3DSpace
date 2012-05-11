@@ -15,7 +15,7 @@ assertEqual(cvt.getH,eye(4));
 assertEqual(cvt.get0,cvt.getT);
 q2 = matrix2quaternion(eye(4));
 [errorQuat,errorEuler] = quaternionerror(cvt.getQ,q2);
-assertEqual(errorQuat,[1 0 0 0]')
+assertEqual(errorQuat,[1 0 0 0])
 assertEqual(errorEuler,[0 0 0])
 
 theta = -2*pi;
@@ -94,62 +94,16 @@ end
 ThreeMarkers.plotRun(tm_t);
 
 
-function test_threeMarkerMinusComparisonMultiply
+
+function test_quaternion2euler()
 quat = [1,0,0,0,0];
-qvt = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [0.8,0.2,0,0,0];
-qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [1.0,0,0,0,0];
-qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
-assertEqual(qvt,qvt)
-assertEqual(qvt,qvt2)
-
-diff = qvt-qvt1;
-qvt1Cal = qvt.*qvt1';
-display('Results')
-display(qvt1Cal)
-display(diff)
-assertElementsAlmostEqual(qvt1Cal.getQ,diff.getQ);
-qvt1Conj = qvt1'
-qvt1Conj.getQ
-prod = qvt.*qvt1.*qvt1';
-DP=display(qvt)
-QVT=display(prod)
-assertEqual(prod.getQ,qvt.getQ)
-
-quat = [1,0,0,0,0];
-qvt = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [0.8,0.2,0,0,0];
-qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [1.0,0,0,0,0];
-qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
-
-arrayQs = {qvt qvt1 qvt2};
-arrayBs = {qvt; qvt1; qvt2};
-display('Array Diff: ');
-display(size(arrayQs));
-diffQs = ThreeMarkers.cellminus(arrayQs,arrayBs);
-assertTrue(iscell(diffQs))
-assertEqual(size(diffQs),[1,3]);
-for i = 1:3
-    obj = diffQs{i};
-    display(obj)
-    assertEqual(obj.getQ,[1,0,0,0]);
-end
-
-function test_threeMarkerQuaternion2euler()
-quat = [1,0,0,0,0];
-euler = ThreeMarkers.quaternion2euler(quat,false)
+euler = quaternion2euler(quat,false)
 assertEqual(euler,[0 0 0]);
-eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
+eulerDeg = quaternion2euler(quat,true)
 assertEqual(euler,[0 0 0]);
 quat = [ cos(30/180*pi) sin(30/180*pi) 0 0];
 format long;
-euler = ThreeMarkers.quaternion2euler(quat,false)
+euler = quaternion2euler(quat,false)
 assertElementsAlmostEqual(euler,[0 0  1.047197551196598]);
-eulerDeg = ThreeMarkers.quaternion2euler(quat,true)
-assertEqual(eulerDeg,[0 0 60]);
-
-tm = ThreeMarkers([ cos(30/180*pi) sin(30/180*pi) 0 0]);
-euler = tm.getRPY(true);
+eulerDeg = quaternion2euler(quat,true)
 assertEqual(eulerDeg,[0 0 60]);
