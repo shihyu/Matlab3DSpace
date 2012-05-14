@@ -93,7 +93,7 @@ quat = [1.0,0,0,0,0];
 qvt2 = ThreeMarkers(quat);
 
 arrayQs = {qvt qvt1 qvt2};
-arrayBs = {qvt; qvt1; qvt2};
+arrayBs = {qvt qvt1 qvt2};
 display('Array Diff: ');
 display(size(arrayQs));
 diffQs = ThreeMarkers.cellminus(arrayQs,arrayBs);
@@ -105,29 +105,8 @@ for i = 1:3
     assertElementsAlmostEqual(obj.getQ,[1,0,0,0]);
 end
 
-function test_threeMarkerQuaternion2euler()
-tm = ThreeMarkers([ cos(30/180*pi) sin(30/180*pi) 0 0]);
-euler = tm.getRPY(true);
-assertEqual(euler,[0 0 60]);
-
-function teest_viconthreemarkers_readData
-filename='test-data/test-data.h5';
-runName = '/vicon';
-[vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
-vtm_t(1).plotT()
-assertEqual(size(vtm_t),[1 5136]);
-%ThreeMarkers.plotRun(vtm_t);
-
-function quatReadNonExistantNode
-filename='test-data/test-data.h5';
-runName = '/promove2';
-[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
-
 function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
-assertExceptionThrown(@quatReadNonExistantNode,...
-    'QuaternionsThreeMarkers:readData')
-
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
 vtm_t{1}.plotT()
@@ -163,8 +142,11 @@ figure;
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
-[roll,pitch,yaw,diff_t]=ThreeMarkers.plotDiff(...
-    vtm_t(1:3),vtm_t(1:3),true,120);
+diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
+[roll,pitch,yaw]=ThreeMarkers.getRPYt(...
+    diff_t,true,120);
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
+
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
 assertEqual([0 0 0],euler)
@@ -172,4 +154,27 @@ assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
 close all
+
+diff_t = ThreeMarkers.cellminus(vtm_t(1:2),vtm_t(1:3));
+assertEqual(size(diff_t),[1,2]);
+diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:2));
+assertEqual(size(diff_t),[1,2]);
+
+function test_threemarkersgetRPHt
+filename='test-data/test-data.h5';
+runName = '/promove';
+[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+[roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true,200);
+assertEqual(size(roll),size(pitch),size(yaw));
+
+function test_callibrate
+quat = [1,0,0,0];
+qvt =  ThreeMarkers(quat);
+quat = [0.8,0.2,0,0,0];
+qvt1 = ThreeMarkers(quat);
+quat = [0.8,0.6,0,0,0];
+qvt2 = ThreeMarkers(quat);
+tm_t = {qvt,qvt1,qvt2};
+tm_t = ThreeMarkers.callibrate(tm_t,1,3);
+assertElementsAlmostEqual(tm_t{1}.getQ,[ 0.957601107188393  -0.288097413233032 0 0])
 

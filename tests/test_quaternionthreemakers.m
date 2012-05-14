@@ -54,8 +54,10 @@ figure;
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
-[roll,pitch,yaw,diff_t]=ThreeMarkers.plotDiff(...
-    vtm_t(1:3),vtm_t(1:3),true,120);
+diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
+[roll,pitch,yaw]=ThreeMarkers.getRPYt(...
+    diff_t,true,120);
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
 assertEqual([0 0 0],euler)

@@ -68,14 +68,16 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
+        
         function diff = cellminus(obj1,obj2)
             % CELL MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them.
             %display(class(obj1(1)))
            
             %display('Calculating error (vector):')
-            diff = cell(1,size(obj1,2));
-            parfor i = 1:size(obj1,2)
+            minSize = min(size(obj1,2),size(obj2,2));
+            diff = cell(1,minSize);
+            parfor i = 1:minSize
                 diff{i} =ThreeMarkers(quaternionerror(...
                     obj1{i}.getQ,obj2{i}.getQ));
             end     
@@ -99,11 +101,20 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [roll,pitch,yaw,diff_t]= plotDiff(tm_t1,tm_t2,...
-                inDegrees,Fs)
-            [roll,pitch,yaw,diff_t] = ThreeMarkers.getDiff(tm_t1,...
-                    tm_t2,inDegrees);
-            minSize = min(size(tm_t1,2),size(tm_t2,2));
+        function [roll,pitch,yaw] = getRPYt(tm_t,inDegrees,Fs)
+            minSize = size(tm_t,2);
+            roll = zeros(1,minSize());
+            pitch = zeros(1,minSize());
+            yaw = zeros(1,minSize());
+            parfor i=1:minSize
+                euler = tm_t{i}.getRPY(inDegrees);
+                roll(i)=euler(1);
+                pitch(i)=euler(2);
+                yaw(i)=euler(3);
+            end
+        end
+        
+        function plotRPY(roll,pitch,yaw,inDegrees,Fs)
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
@@ -113,6 +124,9 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 YLABEL='(radians)';
             end
             XLABEL=['1/Fs Fs=' num2str(Fs)];
+            
+            minSize = size(roll,2);
+            
             t = 0:1/Fs:(minSize-1)/Fs;
             hold on;
             subplot(3,1,1);
@@ -120,7 +134,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             grid on;
              hold on;
             %ylim([YMIN YMAX])
-            title(['ROLL: maximum error: ' num2str(max(abs(roll)))]);
+            title(['YAW(z): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,2);
@@ -128,7 +142,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             hold on;
             grid on;          
             %ylim([YMIN YMAX])
-            title(['PITCH: maximum error: ' num2str(max(abs(pitch)))]);
+            title(['ROLL(y): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,3);
@@ -136,7 +150,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             grid on;
             hold on;
             %ylim([YMIN YMAX])
-            title(['YAW: maximum error: ' num2str(max(abs(yaw)))]);
+            title(['PITCH(x): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
         end
@@ -163,6 +177,21 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %H_1_0_est
             tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est)');
             
+        end
+        
+        function [tm_t] = callibrate(tm_t,startIndex,numberOfSamples)
+            %CALLIBRATE Changes the samples to the zero frame using
+            %an estimate of the initial orientation from the start of
+            %the run where the sensor was held still in a known
+            %direction.
+            N=numberOfSamples+startIndex;
+            zeroRun = cell(1,N);
+            parfor i = 1:N
+                zeroRun{i} = ThreeMarkers([1 0 0 0]);
+            end
+            tm_est = getChangeOfGlobalReferenceFrames(zeroRun,...
+                tm_t,startIndex,numberOfSamples)
+            tm_t = tm_est*tm_t;
         end
         
         function [metrics] = calculateSyncMetrics(tm_t)
