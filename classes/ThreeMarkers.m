@@ -119,8 +119,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             [roll_t,pitch_t,yaw_t] = ThreeMarkers.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
             parfor i=1:minSize
-                [roll_t(i),pitch_t(i),yaw_t(i)]=...
-                    ThreeMarkers.getRPYtProcess(tm_t,inDegrees,i);
+                euler = tm_t{i}.getRPY(inDegrees);
+                roll_t(i)=euler(1);
+                pitch_t(i)=euler(2);
+                yaw_t(i)=euler(3);
             end
         end
         
@@ -223,7 +225,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 tm_t,startIndex,numberOfSamples);
             tm_t_c = tm_t;
             parfor i =  startIndex:size(tm_t,2)
-                tm_t_c{i} = ThreeMarkers.callibrateProcess(tm_t,i,tm_est);
+                tm_t_c{i} = tm_est.*tm_t{i};
             end
             tm_t_c = tm_t_c(startIndex:length(tm_t_c));
         end
