@@ -164,7 +164,10 @@ function test_threemarkersgetRPHt
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
-[roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true,200);
+[roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true);
+assertTrue(roll(1)>0);
+assertTrue(pitch(1)~=0);
+assertTrue(yaw(1)~=0);
 assertEqual(size(roll),size(pitch),size(yaw));
 
 function test_callibrate

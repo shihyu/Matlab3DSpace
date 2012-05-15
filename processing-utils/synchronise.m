@@ -1,4 +1,4 @@
-function [ data_1,data_2] = synchronise(metric_1,...
+function [ data_1,data_2,corrValue] = synchronise(metric_1,...
     metric_2,data_1,data_2,...
     Fs,theStart,numberOfSamples)
 %SYNCRHONISE Performs simple cross-correlation syncrhonisation between two
@@ -8,9 +8,13 @@ function [ data_1,data_2] = synchronise(metric_1,...
 N1 = size(data_1,2);
 N2 = size(data_2,2);
 N=max(N1,N2);
+
 %Synchronise over a subset of the matrix's
 metric_1 = metric_1(theStart:N1);
 metric_2 = metric_2(theStart:N2);
+metric_1 = metric_1./norm(metric_1);
+metric_2 = metric_2./norm(metric_2);
+
 N = N-(theStart-1);
 N1 = N1-(theStart-1);
 N2 = N2-(theStart-1);
@@ -26,8 +30,8 @@ grid on;
 subplot(2,1,2);
 hold on;
 %Get correlation.
-R12 = xcorr(metric_1',metric_2');
-[max_12,max_lags_12]=max(R12);
+[R12] = xcorr(metric_1',metric_2');
+[corrValue,max_lags_12]=max(R12);
 % display(['SIZE correlation: R12:' num2str(size(R12,1))...
 %     ' MAX12:' num2str(max_12)  ...
 %     ' MAXLAGS12:' num2str(max_lags_12) ' N:' num2str(N)])
@@ -39,6 +43,7 @@ if (max_lags_12 < N)
     %display(theTitle);
     data_2 = data_2(Nstart:size(data_2,2));
     metric_2 = metric_2(Nstart:size(metric_2,2));
+    
     N2 = size(metric_2,2);
 else
     Nstart = max_lags_12-N+1;
@@ -63,6 +68,9 @@ grid on;
 % 
 plot(t(1:N1),metric_1,'--k')
 plot(t(1:N2),metric_2,'--m')
+N=min(length(metric_1),length(metric_2));
+[R12] = xcorr(metric_1(1:N)',metric_2(1:N)','coeff');
+[corrValue]=max(R12);
 title(theTitle)
 end
 

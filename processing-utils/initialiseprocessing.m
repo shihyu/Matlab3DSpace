@@ -1,4 +1,4 @@
-function [ output_args ] = inialiseprocessing()
+function initialiseprocessing()
 %initiliseprocessing Turn on MATLAB pool clear workspace and set format.
 clear all;
 close all;

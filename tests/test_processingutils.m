@@ -1,6 +1,5 @@
 function test_suite = test_processingutils
-% MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
-
+initTestSuite;
 function test_synchronise
 clear all
 close all
@@ -72,4 +71,3 @@ metric2 = [0 1 0 0 2 0 0 1];
 assertEqual(data2,...
     result2);
 assertEqual(result1,[0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
-%close all;

@@ -101,16 +101,26 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [roll,pitch,yaw] = getRPYt(tm_t,inDegrees,Fs)
+        function [roll_t,pitch_t,yaw_t] = getRPYtInit(tm_t)
             minSize = size(tm_t,2);
-            roll = zeros(1,minSize());
-            pitch = zeros(1,minSize());
-            yaw = zeros(1,minSize());
+            roll_t = zeros(1,minSize());
+            pitch_t = zeros(1,minSize());
+            yaw_t = zeros(1,minSize());
+        end
+        
+        function [roll_i,pitch_i,yaw_i]=getRPYtProcess(tm_t,inDegrees,i)
+            euler = tm_t{i}.getRPY(inDegrees);
+            roll_i=euler(1);
+            pitch_i=euler(2);
+            yaw_i=euler(3);
+        end
+        
+        function [roll_t,pitch_t,yaw_t] = getRPYt(tm_t,inDegrees)
+            [roll_t,pitch_t,yaw_t] = ThreeMarkers.getRPYtInit(tm_t);
+            minSize = size(tm_t,2);
             parfor i=1:minSize
-                euler = tm_t{i}.getRPY(inDegrees);
-                roll(i)=euler(1);
-                pitch(i)=euler(2);
-                yaw(i)=euler(3);
+                [roll_t(i),pitch_t(i),yaw_t(i)]=...
+                    ThreeMarkers.getRPYtProcess(tm_t,inDegrees,i);
             end
         end
         
@@ -179,19 +189,43 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             
         end
         
-        function [tm_t] = callibrate(tm_t,startIndex,numberOfSamples)
-            %CALLIBRATE Changes the samples to the zero frame using
-            %an estimate of the initial orientation from the start of
-            %the run where the sensor was held still in a known
-            %direction.
+        function [tm_est] = ...
+            callibrateInit(tm_t,startIndex,numberOfSamples)
+            %CALLIBRATEINIT Init loop for callibrate loop
+            %
+            
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
                 zeroRun{i} = ThreeMarkers([1 0 0 0]);
             end
             tm_est = getChangeOfGlobalReferenceFrames(zeroRun,...
-                tm_t,startIndex,numberOfSamples)
-            tm_t = tm_est*tm_t;
+                tm_t,startIndex,numberOfSamples);
+        end
+        
+        function [tm_i] = ...
+            callibrateProcess(tm_t,i,tm_est)
+            %CALLIBRATEINIT Process loop for callibrate loop
+            %
+            tm_i = tm_est.*tm_t{i};
+        end
+        
+        
+        function [tm_t_c] = ...
+            callibrate(tm_t,startIndex,numberOfSamples)
+            %CALLIBRATE Changes the samples to the zero frame using
+            %an estimate of the initial orientation from the start of
+            %the run where the sensor was held still in a known
+            %direction.
+            %
+            % Returns the tm_t(startIndex:length(tm_t)).
+            tm_est = ThreeMarkers.callibrateInit(...
+                tm_t,startIndex,numberOfSamples);
+            tm_t_c = tm_t;
+            parfor i =  startIndex:size(tm_t,2)
+                tm_t_c{i} = ThreeMarkers.callibrateProcess(tm_t,i,tm_est);
+            end
+            tm_t_c = tm_t_c(startIndex:length(tm_t_c));
         end
         
         function [metrics] = calculateSyncMetrics(tm_t)
