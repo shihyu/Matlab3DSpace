@@ -220,6 +220,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %the run where the sensor was held still in a known
             %direction.
             %
+            %You can then callibrate the data. It takes the 'average'
+            %quaternion of the 10 quaternions starting at 100 samples
+            %into the experiment and then uses this as the zero frame.
+            %All the samples in the set are then inversely rotated by
+            %this estimate quaternion.
+            %
             % Returns the tm_t(startIndex:length(tm_t)).
             tm_est = ThreeMarkers.callibrateInit(...
                 tm_t,startIndex,numberOfSamples);

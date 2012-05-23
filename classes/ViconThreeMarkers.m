@@ -1,9 +1,9 @@
 classdef ViconThreeMarkers < ThreeMarkers
     %VICONTHREEMARKERS Handles an equilateral triangle configuration
-    % of Vicon markers.
+    % of Vicon markers or any other marker systems.
     
     methods (Static)
-        function [vtm_t] = readData(filename,runName,...
+        function [vtm_t] = readDataVicon(filename,runName,...
                 rightBackName,leftBackName,frontName)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
@@ -22,6 +22,34 @@ classdef ViconThreeMarkers < ThreeMarkers
             parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
                         leftBack(i,1:3),front(i,1:3),rightBack(i));
+                vtm_t{i} = vtm;
+            end
+        end
+        
+        function [vtm_t,Fs] = readDataAdams(filename,runName,...
+                rightBackName,leftBackName,frontName)
+            %READDATA Reads the ADAMS export file three markers in
+            % and creates the ViconThreeMarker object.
+            % A 'Time' column must be present.
+            reader = adamsReader(filename,runName);
+            data = reader.readData(false);
+            t=data.Time;
+            %HACK, must generalise the readData function for adamsReader.
+            if strcmp(rightBackName,'RBO')
+                RBO = [data.RBOX data.RBOY data.RBOZ];
+                LBO = [data.LBOX data.LBOY data.LBOZ];
+                FON = [data.FONX data.FONY data.FONZ];
+            else
+                RBO = [data.RBTX data.RBTY data.RBTZ];
+                LBO = [data.LBTX data.LBTY data.LBTZ];
+                FON = [data.FTNX data.FTNY data.FTNZ];
+            end
+            N=size(t,1)
+            Fs = 1/(t(2)-t(1));
+            vtm_t = cell(1,N);
+            parfor i = 1:N
+                vtm = ViconThreeMarkers(RBO(i,1:3),...
+                    LBO(i,1:3),FON(i,1:3),t(i));
                 vtm_t{i} = vtm;
             end
         end

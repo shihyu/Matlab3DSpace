@@ -71,10 +71,22 @@ assertElementsAlmostEqual(errorEuler,[0 0 -theta])
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],cvt.getQ);
 assertElementsAlmostEqual(errorEuler,[0 0 theta])
 
-function test_viconthreemarkers_readData
+function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
-[vtm_t] = ViconThreeMarkers.readData(filename,runName,'RBO','LBO','FON');
+[vtm_t] = ViconThreeMarkers.readDataVicon(filename,runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
+%ThreeMarkers.plotRun(vtm_t);
+
+function test_viconthreemarkers_readDataAdams
+filename='test-data/markertestnew.h5';
+runName = 'testrun';
+[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBO','LBO','FON');
+vtm_t{1}.plotT()
+assertEqual(size(vtm_t),[1 501]);
+
+[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
+vtm_t{1}.plotT()
+assertEqual(size(vtm_t),[1 501]);
 %ThreeMarkers.plotRun(vtm_t);

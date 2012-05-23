@@ -12,7 +12,8 @@ assertEqual(qvt.getT,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
 function quatReadNonExistantNode
 filename='test-data/test-data.h5';
 runName = '/promove2';
-[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,...
+    runName,1,10,200);
 
 function test_promovethreemarkers_readData
 filename='test-data/test-data.h5';
@@ -20,7 +21,7 @@ assertExceptionThrown(@quatReadNonExistantNode,...
     'QuaternionsThreeMarkers:readData')
 
 runName = '/promove';
-[vtm_t] = QuaternionsThreeMarkers.readData(filename,runName,1,10,200);
+[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
 
@@ -56,7 +57,7 @@ assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
 diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
 [roll,pitch,yaw]=ThreeMarkers.getRPYt(...
-    diff_t,true,120);
+    diff_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
 class(diff_t)
 euler=diff_t{1}.getRPY(true)

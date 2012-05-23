@@ -1,10 +1,11 @@
 classdef QuaternionsThreeMarkers < ThreeMarkers
     methods (Static)
         
-        function [qtm_t] = readData(filename,...
+        function [qtm_t] = readDataPromove(filename,...
                 runName,nodeId,Fs_wanted,Fs_recorded)
-            %READDATA Reads the VICON three markers in
-            % and creates the ViconThreeMarker object.
+            %READDATA Read the quaternion data. This is static function is custom
+            %for CSV files that Intertia Technology outputs from their
+            %ProMoveGUI.
             reader = promoveReader(filename,runName);
             q = reader.readNodeData(nodeId);
             if isempty(q)
