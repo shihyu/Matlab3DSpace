@@ -86,7 +86,7 @@ runName = 'testrun';
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 501]);
 
-[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
-vtm_t{1}.plotT()
-assertEqual(size(vtm_t),[1 501]);
+[vtm_t1] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
+vtm_t1{1}.plotT()
+assertEqual(size(vtm_t1),[1 501]);
 %ThreeMarkers.plotRun(vtm_t);
