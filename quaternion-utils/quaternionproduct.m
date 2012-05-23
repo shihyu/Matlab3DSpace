@@ -15,9 +15,14 @@
 % http://www.csse.uwa.edu.au/
 
 function Q = quaternionproduct(A, B)
-
-    Q = zeros(4,1);    
-    Q(1)  =  A(1)*B(1)  -  A(2)*B(2)  -  A(3)*B(3)  -  A(4)*B(4);
-    Q(2)  =  A(1)*B(2)  +  A(2)*B(1)  +  A(3)*B(4)  -  A(4)*B(3);
-    Q(3)  =  A(1)*B(3)  -  A(2)*B(4)  +  A(3)*B(1)  +  A(4)*B(2);
-    Q(4)  =  A(1)*B(4)  +  A(2)*B(3)  -  A(3)*B(2)  +  A(4)*B(1);
+if norm(A) ~= 1.0
+    A = quaternionnormalise(A);
+end
+if norm(B) ~= 1.0
+    B = quaternionnormalise(B);
+end
+Q = zeros(4,1);
+Q(1)  =  A(1)*B(1)  -  A(2)*B(2)  -  A(3)*B(3)  -  A(4)*B(4);
+Q(2)  =  A(1)*B(2)  +  A(2)*B(1)  +  A(3)*B(4)  -  A(4)*B(3);
+Q(3)  =  A(1)*B(3)  -  A(2)*B(4)  +  A(3)*B(1)  +  A(4)*B(2);
+Q(4)  =  A(1)*B(4)  +  A(2)*B(3)  -  A(3)*B(2)  +  A(4)*B(1);

@@ -3,11 +3,11 @@ classdef ViconThreeMarkers < ThreeMarkers
     % of Vicon markers.
     
     methods (Static)
-        function [vtm_t metrics] = readData(filename,runName,...
+        function [vtm_t] = readData(filename,runName,...
                 rightBackName,leftBackName,frontName)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
-            reader = c3dReader(filename,runName);
+            reader = c3dReader(filename,runName)
             rightBack = reader.readMarker(rightBackName);
             leftBack = reader.readMarker(leftBackName);
             front = reader.readMarker(frontName);
@@ -17,18 +17,15 @@ classdef ViconThreeMarkers < ThreeMarkers
             display(size(leftBack));
             display('Front')
             display(size(front));
-            vtm_t = [];
-            
             N=size(rightBack,1)
-            metrics = zeros(1,N);
-            hdiff = zeros(4,4);
-            parfor i = 1:size(rightBack,1)
+            vtm_t = cell(1,N);
+            parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
                         leftBack(i,1:3),front(i,1:3),rightBack(i));
-                vtm_t =[vtm_t vtm];
-                %hdiff = vtm.getH();
+                vtm_t{i} = vtm;
             end
         end
+        
     end
     
     
@@ -66,7 +63,8 @@ classdef ViconThreeMarkers < ThreeMarkers
             H_T_0(1:3,4)  = [0 0 0]';
             %and error
             H_T_0(4,1:3)  = [0 0 0];
-            H_0_T = H_T_0';
+            %H_0_T = H_T_0';
+            H_0_T = invht(H_T_0);
             quaternion = matrix2quaternion(H_0_T)';
             vtm@ThreeMarkers(quaternion)
             vtm.timestamp = timestamp;

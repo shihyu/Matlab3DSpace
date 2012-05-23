@@ -21,7 +21,6 @@ Dependencies
 ------------
 matlab - xunit for unit testing.http://www.mathworks.com/matlabcentral/fileexchange/22846-matlab-xunit-test-framework
 sofiehdfformat - https://github.com/agcooke/Sofie-HDF-Format
-aerospace toolbox - For quaternions.
 
 Install
 ===========
