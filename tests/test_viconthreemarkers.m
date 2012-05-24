@@ -80,7 +80,7 @@ assertEqual(size(vtm_t),[1 5136]);
 %ThreeMarkers.plotRun(vtm_t);
 
 function test_viconthreemarkers_readDataAdams
-filename='test-data/markertestnew.h5';
+filename='test-data/test-data.h5';
 runName = 'testrun';
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
@@ -89,4 +89,8 @@ assertEqual(size(vtm_t),[1 501]);
 [vtm_t1] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
 vtm_t1{1}.plotT()
 assertEqual(size(vtm_t1),[1 501]);
+assertEqual(vtm_t1{1}.getQ-vtm_t1{1}.getQ,[0 0 0 0]);
+assertElementsAlmostEqual(vtm_t{1}.getQ-vtm_t1{1}.getQ,...
+    [-0.011371862567676   0.126304881197798  ...
+     -0.126304881197798   0.011371862567673]);
 %ThreeMarkers.plotRun(vtm_t);
