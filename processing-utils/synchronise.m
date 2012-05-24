@@ -1,8 +1,22 @@
 function [ data_1,data_2,corrValue] = synchronise(metric_1,...
     metric_2,data_1,data_2,...
-    Fs,theStart,numberOfSamples)
-%SYNCRHONISE Performs simple cross-correlation syncrhonisation between two
+    Fs,theStart,metricIsAlsoStartOfExperiment)
+%SYNCHRONISE Performs simple cross-correlation synchronisation between two
 %signals using the metric_1 and metric_2 as the correlation signal.
+%if the metricIsAlsoStartOfExperiment is true then both experiments
+%are shifted to start at the first non-zero element of the metric
+%parameters.
+
+if metricIsAlsoStartOfExperiment
+    shift1 = find(metric_1);
+    shift2 = find(metric_2);
+    shift1 = shift1(1);
+    shift2 = shift2(1);
+    metric_1 = metric_1(shift1:length(metric_1));
+    metric_2 = metric_2(shift2:length(metric_2));
+    data_1 = data_1(shift1:length(data_1));
+    data_2 = data_2(shift2:length(data_2));
+end
 
 %display('Syncrohonising:');
 N1 = size(data_1,2);
@@ -45,6 +59,7 @@ if (max_lags_12 < N)
     metric_2 = metric_2(Nstart:size(metric_2,2));
     
     N2 = size(metric_2,2);
+    
 else
     Nstart = max_lags_12-N+1;
     theTitle = ['Synchronising: Magenta ahead of Black: Shifting:' ...

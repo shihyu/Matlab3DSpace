@@ -21,7 +21,8 @@ assertExceptionThrown(@quatReadNonExistantNode,...
     'QuaternionsThreeMarkers:readData')
 
 runName = '/promove';
-[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
+[vtm_t,sync] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
+assertFalse(any(sync))
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
 
@@ -66,4 +67,11 @@ assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
 close all
+
+function test_promovethreemarkers_readData_withSync
+filename='test-data/test-data.h5';
+runName = '/newpromovewithsync';
+
+[vtm_t,sync] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,200,200);
+assertTrue(any(sync))
 
