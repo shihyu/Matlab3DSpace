@@ -1,6 +1,6 @@
-function [steering_angle,roll_angle,figures] = getBicycleAngles(figures,...
+function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = getbicycleangles(figures,...
     filename,runName,Fs1,Fs2,...
-    node1,node2,callibrateStart,plotRuns)
+    node1,node2,callibrateStart,plotRuns,synchroniseTheImus)
 %GETBICYCLEANGLES Processes a run in an experiment and calculates the
 % steering and roll angles with the plots as well.
 display(['%%%%%%%%%%%%%%Processing RUN:' runName ' %%%%%%%%%%%%%%'])
@@ -17,14 +17,23 @@ if isempty(figures)
         'Name','Callibrated Roll Pitch Yaw.');
     figRollSteerSync = figure('visible','on','WindowStyle','docked',...
         'Name','Synchronised Roll Pitch Yaw.');
+    figSpeed = figure('visible','on','WindowStyle','docked',...
+        'Name','Forward velocity.');
     figures = [figSteer,figSync,figRollSteer,...
         figRollSteerCall,figRollSteerSync];
 else
+    delete(figures(1));
     figSteer=figures(1);
+    delete(figures(2));
     figSync = figures(2);
+    delete(figures(3));
     figRollSteer = figures(3);
+    delete(figures(4));
     figRollSteerCall = figures(4);
+    delete(figures(5));
     figRollSteerSync = figures(5);
+    delete(figures(6));
+    figSpeed = figures(6);
 end
 display('FIGURES CREATED')
 toc
@@ -38,17 +47,43 @@ display('GETTING DATA');
 if exist(processedFilename,'file')
     load(processedFilename);
 else
-    steering_t = QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+    [steering_t,steering_sync_t] = ...
+        QuaternionsThreeMarkers.readDataPromove(filename,runName,...
         node1,Fs1,Fs2);
-    roll_t = QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+    [roll_t,roll_sync_t] = ...
+        QuaternionsThreeMarkers.readDataPromove(filename,runName,...
         node2,Fs1,Fs2);
+    theAntReader = antReader(filename,runName);
+    [speed,cadence,ant_t,ant_sync,ant_sync_t] = theAntReader.readVelocityCadence();
     save(processedFilename,'steering_t');
+    save(processedFilename,'steering_sync_t','-append');
     save(processedFilename,'roll_t','-append');
+    save(processedFilename,'roll_sync_t','-append');
+    save(processedFilename,'speed','-append');
+    save(processedFilename,'cadence','-append');
+    save(processedFilename,'ant_t','-append');
+    save(processedFilename,'ant_sync','-append');
+    save(processedFilename,'ant_sync_t','-append');
 end
 display('DATA RECEIVED');
 toc
 
-
+display('PLOTTING FORWARD INFORMATION');
+%Synchronise.
+if any(ant_sync_t)
+    speed =  speed(ant_t>=ant_sync_t(1));
+    cadence =  cadence(ant_t>=ant_sync_t(1));
+    ant_t =  ant_t(ant_t>=ant_sync_t(1));
+end
+ant_t =ant_t-repmat(ant_t(1),size(ant_t));
+set(0,'CurrentFigure',figSpeed)
+subplot(2,1,1)
+plot(ant_t,speed);
+title('Forward Velocity: ');
+subplot(2,1,2)
+plot(ant_t,cadence);
+title('Pedaling Cadence: ');
+display('FORWARD VELOCITY PLOTTED');
 
 display('CALCULATING ROLL PITCH YAW: roll sensor.');
 %PLOT ROLL SENSOR
@@ -92,45 +127,61 @@ ThreeMarkers.plotRPY(...
     roll_s,pitch_s,yaw_s,true,Fs2);
 display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS');
 
-display('SYNCING SENSORS');
+display('SYNCING SENSORS ON MANUAL VALUES');
 set(0,'CurrentFigure',figSync);
 hold on;
-[roll_t_r,steering_t_r,rollMax] = synchronise(roll_r,...
-    roll_s,roll_t,steering_t,...
-    Fs1,1,1);
-[roll_t_p,steering_t_p,pitchMax] = synchronise(pitch_r,...
-    pitch_s,roll_t,steering_t,...
-    Fs1,1,1);
-[roll_t_y,steering_t_y,yawMax] = synchronise(yaw_r,...
-    yaw_s,roll_t,steering_t,...
-    Fs1,1,1);
-totalMax = max([rollMax pitchMax yawMax]);
-if rollMax == totalMax
-    display('SYNCING ON ROLL ANGLE');
-    roll_t = roll_t_r;
-    steering_t = steering_t_r;
-elseif pitchMax == totalMax
-    display('SYNCING ON PITCH ANGLE');
-    roll_t = roll_t_p;
-    steering_t = steering_t_p;
-else
-    display('SYNCING ON YAW ANGLE');
-    roll_t = roll_t_y;
-    steering_t = steering_t_y;
+if any(roll_sync_t)
+    if any(steering_sync_t)
+    [roll_t,steering_t] = synchronise(roll_sync_t,...
+         steering_sync_t,roll_t,steering_t,...
+         Fs1,1,1);
+    end
 end
-display('FINISHED');
+display('FINISHED MANUAL SYNC');
 
+if synchroniseTheImus
+    display('SYNCING SENSORS');
+    set(0,'CurrentFigure',figSync);
+    hold on;
+    [roll_t,steering_t,rollMax] = synchronise(roll_sync_t,...
+         steering_sync_t,roll_t,steering_t,...
+         Fs1,1,1);
+%     [roll_t_r,steering_t_r,rollMax] = synchronise(roll_r,...
+%         roll_s,roll_t,steering_t,...
+%         Fs1,1,1);
+%     [roll_t_p,steering_t_p,pitchMax] = synchronise(pitch_r,...
+%         pitch_s,roll_t,steering_t,...
+%         Fs1,1,1);
+%     [roll_t_y,steering_t_y,yawMax] = synchronise(yaw_r,...
+%         yaw_s,roll_t,steering_t,...
+%         Fs1,1,1);
+%     totalMax = max([rollMax pitchMax yawMax]);
+%     if rollMax == totalMax
+%         display('SYNCING ON ROLL ANGLE');
+%         roll_t = roll_t_r;
+%         steering_t = steering_t_r;
+%     elseif pitchMax == totalMax
+%         display('SYNCING ON PITCH ANGLE');
+%         roll_t = roll_t_p;
+%         steering_t = steering_t_p;
+%     else
+%         display('SYNCING ON YAW ANGLE');
+%         roll_t = roll_t_y;
+%         steering_t = steering_t_y;
+%     end
+%     display('FINISHED');
 
-display('PLOTTING ROLL PITCH YAW: SENSORS SYNCHRONISED');
-[roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
-[roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
-set(0,'CurrentFigure',figRollSteerSync)
-hold on;
-ThreeMarkers.plotRPY(...
-    roll_r,pitch_r,yaw_r,true,Fs1);
-ThreeMarkers.plotRPY(...
-    roll_s,pitch_s,yaw_s,true,Fs2);
-display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS SYNC');
+    display('PLOTTING ROLL PITCH YAW: SENSORS SYNCHRONISED');
+    [roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
+    [roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+    set(0,'CurrentFigure',figRollSteerSync)
+    hold on;
+    ThreeMarkers.plotRPY(...
+        roll_r,pitch_r,yaw_r,true,Fs1);
+    ThreeMarkers.plotRPY(...
+        roll_s,pitch_s,yaw_s,true,Fs2);
+    display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS SYNC');
+end
 
 display(['CALCULATING STEERING ANGLE ON CALLIBRATED' ...
     ' AND SYNCRHONISED DATA']);
