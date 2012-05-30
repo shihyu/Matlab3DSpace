@@ -2,7 +2,7 @@
 %%%%     SLERP     %%%%%%
 %%%%%%%%%%%%%%%%%
 
-%        Sagi Dalyot %
+%        Sagi Dalyot - Adapted by Adrian Cooke to a vectorised version.%
 
 %       This routine aims for calculating a unit quaternion,  describing a rotation matrix,
 %       which lies between two known unit quaternions - q1 and q2,

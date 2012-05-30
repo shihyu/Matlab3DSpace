@@ -60,7 +60,12 @@ classdef ViconThreeMarkers < ThreeMarkers
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
                 front,timestamp)
-            timestamp = timestamp;
+            %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
+            %Calculates and creates the quaternion of the plane represented
+            %by the three markers. rightback,leftback and front are Nx3
+            %matrices containg the x,y and z measurements of the
+            %point/marker in 3D space. Front is on the positive Y axis,
+            %rightback and leftback are on the X axis.
             midpoint = (rightback+leftback)/2;
             front = ThreeMarkers.normWithOffset(front,midpoint);
             rightback = ThreeMarkers.normWithOffset(rightback,midpoint);

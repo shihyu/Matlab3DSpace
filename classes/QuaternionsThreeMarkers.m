@@ -1,4 +1,7 @@
 classdef QuaternionsThreeMarkers < ThreeMarkers
+    %QuaternionsThreeMarkers Contains static data to help with the reading
+    %of data from InertiaTechnology sensors using the SOFIE-HDF-FORMAT
+    %library.
     methods (Static)
         
         function [qtm_t,sync] = readDataPromove(filename,...
@@ -29,6 +32,9 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
     
     methods
         function qtm = QuaternionsThreeMarkers(quaternionTimestamp)
+            %QuaternionsThreeMarkers(quaternionTimestamp) - The same as for
+            %ThreeMarkers,except that the time stamp is also recored as the
+            %5 element in the quaternion vector.
             quaternion = quaternionTimestamp(1:4);
             timestamp = quaternionTimestamp(5);
             qtm@ThreeMarkers(quaternion)
