@@ -3,6 +3,14 @@ function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = getbicycleang
     node1,node2,callibrateStart,plotRuns,synchroniseTheImus)
 %GETBICYCLEANGLES Processes a run in an experiment and calculates the
 % steering and roll angles with the plots as well.
+% RETURNS:
+% steering_angle - The Steering angle for the run.
+% roll_angle - The roll angle for the run.
+% speed - The forward velocity for the run.
+% cadence - The pedaling cadence for the run.
+% ant_t - The time vector for the speed and cadence measurements.
+% figures - A list of the figures handles, in case you want to export 
+% by using laprint or something.
 display(['%%%%%%%%%%%%%%Processing RUN:' runName ' %%%%%%%%%%%%%%'])
 tic
 display('CREATING FIGURES')
@@ -69,7 +77,7 @@ display('DATA RECEIVED');
 toc
 
 display('PLOTTING FORWARD INFORMATION');
-%Synchronise.
+%Synchronise:
 if any(ant_sync_t)
     speed =  speed(ant_t>=ant_sync_t(1));
     cadence =  cadence(ant_t>=ant_sync_t(1));

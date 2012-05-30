@@ -35,21 +35,27 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [ angDiff ] = angleDifference(x,y)
-            %ANGLEDIFFERENCE Summary of this function goes here
-            %   Detailed explanation goes here
+            %ANGLEDIFFERENCE Get difference between two angles.
             angDiff = atan2(sin(x-y), cos(x-y));
         end
         
         function [Hdiff] = calculateRotDiff(H,H_old)
+            %CALCULATEROTDIFF Calculates a simple
+            %metric to use for syncrhonisation.
             Hdiff = sum(sum(abs(H(1:3,1:3)-H_old(1:3,1:3))));
         end
         
         function [points_0] = get0()
+            %GET0 Gets the zero Frame (global reference frame)
+            %used for this sample.
             points_0 = ThreeMarkers.points_0;
         end
         
         function plotRun(tm_t)
-            %PLOTRUN Plays back a run.
+            %PLOTRUN Plays back a run
+            %tm_t must be a row cell vector. If you would like to
+            %plot values side by side then create a matrix of
+            %row cell vectors, with each row being a run to plot.
             parallelPlots = size(tm_t,1);
             m=ceil(parallelPlots/2);
             if parallelPlots == 1
@@ -70,8 +76,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         
         function diff = cellminus(obj1,obj2)
-            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers: The
-            % difference/error between them.
+            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers when using
+            % cells.
             %display(class(obj1(1)))
            
             %display('Calculating error (vector):')
@@ -102,6 +108,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [roll_t,pitch_t,yaw_t] = getRPYtInit(tm_t)
+            %GETRPYTINIT(tm_t)
+            %Initialise the GETRPYT function. This is used if you
+            %would like to create your own parforloop to
+            %process the data. Normally just use getRPYt(tm_t,inDegrees)
             minSize = size(tm_t,2);
             roll_t = zeros(1,minSize());
             pitch_t = zeros(1,minSize());
@@ -109,6 +119,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [roll_i,pitch_i,yaw_i]=getRPYtProcess(tm_t,inDegrees,i)
+            %GETRPYTPROCESS(tm_t)
+            %Processing step for the GETRPYT function. This is used if you
+            %would like to create your own parforloop to
+            %process the data. Normally just use getRPYt(tm_t,inDegrees)
             euler = tm_t{i}.getRPY(inDegrees);
             roll_i=euler(1);
             pitch_i=euler(2);
@@ -116,6 +130,9 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [roll_t,pitch_t,yaw_t] = getRPYt(tm_t,inDegrees)
+            %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
+            %of the run tm_t and set inDegrees to true if you
+            %would like to see the results in degrees. False for radians.
             [roll_t,pitch_t,yaw_t] = ThreeMarkers.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
             parfor i=1:minSize
@@ -127,6 +144,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function plotRPY(roll,pitch,yaw,inDegrees,Fs)
+            %PLOTRPY(roll,pitch,yaw,inDegrees,Fs)
+            %PLOT the Roll Pitch and Yaw for the run.
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
@@ -169,8 +188,19 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
                 tm_t_1,startIndex,numberOfSamples)
-            % GETCHANGEOFGLOBALREFERENCEFRAMES Get the estimated change of
-            % reference frame matrix.
+            % GETCHANGEOFGLOBALREFERENCEFRAMES(tm_t_0,tm_t_1,startIndex,
+            %numberOfSamples) Get the estimated change of
+            % reference frame ThreeMarker object.
+            %tm_t_0 - The base measurements which you would like to use
+            %to get the estimated ThreeMarkers object with respect to.
+            %tm_t_1 - the measurements that you would like to get
+            %the change of reference frame for.
+            %startIndex - where in the data you would like to use to
+            %estimate the change.
+            %numberOfSamples - the number of samples from the startIndex
+            %that you would like to use for the estimation.
+            %RETURN tm_est - The ThreeMarkers object that represents
+            % the change from tm_t_1 to tm_t0. Thus use it as tm_est*tm_t_1
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
 %             size(tm_t_0)
@@ -193,9 +223,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [tm_est] = ...
             callibrateInit(tm_t,startIndex,numberOfSamples)
-            %CALLIBRATEINIT Init loop for callibrate loop
-            %
-            
+            %CALLIBRATEINIT Init loop for callibrate loop            
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
@@ -208,7 +236,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [tm_i] = ...
             callibrateProcess(tm_t,i,tm_est)
             %CALLIBRATEINIT Process loop for callibrate loop
-            %
             tm_i = tm_est.*tm_t{i};
         end
         
@@ -221,10 +248,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %direction.
             %
             %You can then callibrate the data. It takes the 'average'
-            %quaternion of the 10 quaternions starting at 100 samples
+            %quaternion of the numberOfSamples quaternions starting at
+            %startIndex samples
             %into the experiment and then uses this as the zero frame.
             %All the samples in the set are then inversely rotated by
-            %this estimate quaternion.
+            %this estimated quaternion.
             %
             % Returns the tm_t(startIndex:length(tm_t)).
             tm_est = ThreeMarkers.callibrateInit(...
@@ -237,7 +265,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [metrics] = calculateSyncMetrics(tm_t)
-            % CALCULATESYNCMETRICS Calculates the
+            % CALCULATESYNCMETRICS Calculates the simple
             % metric used for synchronisation algorithmns.
             tm_t0 = [tm_t(1) tm_t ];
             metrics = zeros(size(tm_t));
@@ -251,6 +279,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     
     methods
         function qtm = ThreeMarkers(quaternion)
+            %THREEMARKER(quaternion) Creates the ThreeMarker object
+            % which takes a 4x1 or 1x4 quaternion vector as input.
             qtm.H_0_T = quaternion2matrix(quaternion);
             qtm.quaternion = quaternion;
             qtm.points_T = qtm.H_0_T*qtm.points_0;
@@ -261,24 +291,28 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function diff = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them, they can also be row vectors.
-            %
+           
             %display(class(obj1(1)))
             diff = ThreeMarkers(quaternionerror(...
                     obj1.getQ,obj2.getQ));
         end
          
         function r = ctranspose(obj1)
-            % CTRANSPOSE Gets the conjugate.
+            % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
                 quaternionconjugate(obj1.getQ)');
         end
         
         function isEqual = eq(obj1,obj2)
+            % EQUAL Operator Objects are equal if their quaternions 
+            %are equal.
             isEqual = (obj1.getQ == obj2.getQ);
         end
         
         function product = times(obj1,obj2)
-            %             product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
+            %SCALAR multiplication operator
+           
+            %product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
             %                 obj2.getQ)));
             product = ThreeMarkers(...
                 quaternionproduct(obj1.getQ,...
@@ -288,7 +322,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [tm_2est] = mtimes(...
                 tm_est,tm_t2)
-            % MTIMES only works if tm_est is a ThreeMarker.
+            % MTIMES MATRIX MULIPLICATION OPERATOR only works if tm_est 
+            %is a ThreeMarker.
             minSize = size(tm_t2,2);
             tm_2est = cell(1,minSize);
             %display(['IS SCALAR:' num2str(isscalar(tm_est))]);
@@ -297,48 +332,64 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     tm_2est{i} = tm_est.*tm_t2{i};
                 end
             else
-                error('matlab3Dspace:mtimes',['MTIMES only works for first ThreeMarker as a'...
+                error('matlab3Dspace:mtimes',...
+                    ['MTIMES only works for first ThreeMarker as a'...
                     'scalar: size(tm_est): ' num2str(size(tm_est))]);
                     
             end
         end
         
         function showQ = display(tm)
+            %THE DEFAULT DIPLAY FOR THREEMARKERS OBJECT (Quaternion Shown)
             showQ = tm.getQ;
         end
         function [timestamp] = getTimeStamp(tm)
+            %GETTIMESTAMP(tm) Gets the time stamp for the THREMARKERS
+            %OBJECT
             timestamp = tm.timestamp;
         end
         
         function [points_T] = getT(tm)
+            %GETT(tm) gets the repesentation of the 0-frame rotated by the
+            %quaternion.
             points_T = tm.points_T;
         end
         
         function [H_0_T] = getH(tm)
+            %GETH(tm) Gets the Homogenous (Screw theory) rotation matrix of
+            %that represents the quaternion.
             H_0_T = tm.H_0_T;
         end
         
         function [euler]=getRPY(tm,inDegrees)
+            %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
+            %object, set inDegrees to true to get the values in degrees.
             euler = quaternion2euler(...
                 tm.getQ,inDegrees);
         end
         
         function [quaternion]=getQ(tm)
+            %GETQ(tm) Get the quaternion for the object.
             quaternion = tm.quaternion;
         end
         
         function [rotmat] = getRotationMatrix(tm)
+            %GETROTATIONMATRIC Get the rotation matrix for the object.
             rotmat = tm.H_0_T(1:3,1:3);
         end
         
         function plotT(tm)
+            %PLOTT(tm) Plot the zero frame rotated by the rotation matrix,
+            %ie the object at T.
             tm.plot(tm.points_T,'--k');
         end
         function plot0(tm)
+            %PLOT0(tm) Plot the zero frame.
             tm.plot(tm.points_0,'--m');
         end
         
         function [quat] = toNumeric(tm)
+            %TONUMERIC(tm) How to display the object numerically.
             quat = [ tm.getQ() tm.getTimeStamp ];
         end
     end
