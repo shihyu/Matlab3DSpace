@@ -16,7 +16,9 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
                     'The Node does not have any values to read.');
             end
             if Fs_wanted ~= Fs_recorded
+                if length(sync)==length(q)
                 sync = resample(sync,Fs_wanted,Fs_recorded);
+                end
                 q = resample(q(:,1:5),Fs_wanted,Fs_recorded);
             end
             
@@ -28,6 +30,17 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
                 qtm_t{i} = qtm;
             end
         end
+        
+        function [qtm_t,sync] = readDataRaw(filename,...
+                runName,Fs_wanted,Fs_recorded)
+            %READDATA Read the quaternion data. This reads from a raw
+            %recording file. Ie with quat1 quat2 quat3 quat4 and
+            %timestamp.
+            [qtm_t,sync] = QuaternionsThreeMarkers.readDataPromove(...
+                filename,...
+                runName,-1,Fs_wanted,Fs_recorded);
+        end
+        
     end
     
     methods
