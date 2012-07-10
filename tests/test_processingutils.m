@@ -77,3 +77,11 @@ assertEqual(result1,[0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
 assertEqual([1 0 0 2 0 0 1],...
     result2);
 assertEqual(result1,[ 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
+
+function test_getbicycleangles
+filename='test-data/test-data.h5';
+runName = 'testrun';
+figures = [];
+[roll_angle,steering_angle] = getbicycleangles(figures,...
+    filename,runName,...
+    200,200,1,2,1,0,false,0);
