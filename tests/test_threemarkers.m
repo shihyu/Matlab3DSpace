@@ -142,6 +142,7 @@ runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 
 [metrics] = ThreeMarkers.calculateSyncMetrics(vtm_t);
 %More tests need to make sure it makes sense.
@@ -153,6 +154,9 @@ size(vtm_t)
 display('Testing change of Global Frame');
 tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t,...
    vtm_t,1,3)
+
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
+
 display(['Returned value: ' class(tm_est)]);
 assertTrue(isa(tm_est,'ThreeMarkers'));
 assertElementsAlmostEqual(tm_est.getH,eye(4));
@@ -170,13 +174,17 @@ ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)]);
 figure;
 [roll,pitch,yaw,diff_t]=ThreeMarkers.getDiff(...
     vtm_t(1:3),vtm_t(2:4),true);
+assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
-[roll,pitch,yaw]=ThreeMarkers.getRPYt(...
+[roll,pitch,yaw,t]=ThreeMarkers.getRPYt(...
     diff_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
+assertEqual(t(1),diff_t{1}.getTimestamp);
+assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
@@ -194,7 +202,8 @@ assertEqual(size(diff_t),[1,2]);
 function test_threemarkersgetRPHt
 filename='test-data/test-data.h5';
 runName = '/promove';
-[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
+[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,...
+    10,200);
 [roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true);
 assertTrue(roll(1)>0);
 assertTrue(pitch(1)~=0);

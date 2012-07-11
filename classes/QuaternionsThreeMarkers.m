@@ -6,9 +6,10 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
         
         function [qtm_t,sync] = readDataPromove(filename,...
                 runName,nodeId,Fs_wanted,Fs_recorded)
-            %READDATA Read the quaternion data. This is static function is custom
-            %for CSV files that Intertia Technology outputs from their
-            %ProMoveGUI.
+            %READDATA Read the quaternion data. This is static function is
+            %custom for CSV files that Intertia Technology outputs from
+            %their ProMoveGUI. Set nodeId to -1 if you must read all the
+            %data in the file as if it was from one node.
             reader = promoveReader(filename,runName);
             [q,sync] = reader.readNodeData(nodeId);
             if isempty(q)

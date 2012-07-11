@@ -21,7 +21,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i));
+                        leftBack(i,1:3),front(i,1:3),rightBack(i,4));
                 vtm_t{i} = vtm;
             end
         end
