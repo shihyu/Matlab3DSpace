@@ -26,6 +26,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             plotSensor(point,style);
         end
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %STATIC FUNCTIONS: Operate using ThreeMarkers.theFunctionName...
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
         
         function angle = getAngle(marker1,marker2,zeropoint)
@@ -277,6 +284,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %METHODS FROM BELOW HERE: Operate only on the objects!
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         function qtm = ThreeMarkers(quaternion)
             %THREEMARKER(quaternion) Creates the ThreeMarker object
@@ -291,16 +303,21 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function diff = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them, they can also be row vectors.
-           
+            % Keeps the first ones time stamp.
+            
             %display(class(obj1(1)))
+            theTimestamp = obj1.getTimestamp;
             diff = ThreeMarkers(quaternionerror(...
                     obj1.getQ,obj2.getQ));
+%             display(['The timestamp: ' theTimestamp]);
+            diff = diff.setTimestamp(obj1.getTimestamp);
         end
          
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
                 quaternionconjugate(obj1.getQ)');
+            r = r.setTimestamp(obj1.getTimestamp);
         end
         
         function isEqual = eq(obj1,obj2)
@@ -311,12 +328,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function product = times(obj1,obj2)
             %SCALAR multiplication operator
-           
-            %product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
-            %                 obj2.getQ)));
+            %Time stamp of second argument is maintained.
             product = ThreeMarkers(...
                 quaternionproduct(obj1.getQ,...
                 obj2.getQ)');
+            product = product.setTimestamp(obj2.getTimestamp());
             
         end
         
@@ -341,12 +357,18 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function showQ = display(tm)
             %THE DEFAULT DIPLAY FOR THREEMARKERS OBJECT (Quaternion Shown)
-            showQ = tm.getQ;
+            showQ = [ tm.getQ() tm.getTimestamp ];
         end
-        function [timestamp] = getTimeStamp(tm)
+        function [timestamp] = getTimestamp(tm)
             %GETTIMESTAMP(tm) Gets the time stamp for the THREMARKERS
             %OBJECT
             timestamp = tm.timestamp;
+        end
+        
+        function [tm] = setTimestamp(tm,timestamp)
+            %SETTIMESTAMP(tm) Sets the time stamp for the THREMARKERS
+            %OBJECT
+            tm.timestamp = timestamp;
         end
         
         function [points_T] = getT(tm)
@@ -390,7 +412,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [quat] = toNumeric(tm)
             %TONUMERIC(tm) How to display the object numerically.
-            quat = [ tm.getQ() tm.getTimeStamp ];
+            quat = [ tm.getQ() tm.getTimestamp ];
         end
     end
 end

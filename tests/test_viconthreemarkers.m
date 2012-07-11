@@ -13,8 +13,8 @@ assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
 
 assertEqual(cvt.getH,eye(4));
 assertEqual(cvt.get0,cvt.getT);
-cvt.getQ
-
+assertEqual(cvt.getQ,[1 0 0 0]);
+assertEqual(cvt.getTimestamp(),2.3);
 
 rightback = [-1 0 0];
 leftback = [1 0 0];

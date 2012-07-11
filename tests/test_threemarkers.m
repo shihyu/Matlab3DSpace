@@ -6,13 +6,30 @@ function test_calculateEst
 rightback = [1 0 0];
 leftback = [-1 0 0];
 front = [0 1 0];
-theTimestamp = 2.3;
+theTimestamp = 2.4;
 cvt = ViconThreeMarkers(rightback,...
-        leftback,front,theTimestamp)
+        leftback,front,theTimestamp);
+assertEqual(cvt.getTimestamp(),2.4);
 assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
-cvt_t = {cvt cvt cvt cvt};
+cvt1 = cvt;
+cvt1 = cvt1.setTimestamp(2.5);
+cvt2 = cvt;
+cvt2 = cvt2.setTimestamp(2.6);
+cvt3 = cvt;
+cvt3 = cvt3.setTimestamp(2.7);
+cvt_t = {cvt cvt1 cvt2 cvt3};
 tm = ThreeMarkers.getChangeOfGlobalReferenceFrames(cvt_t,cvt_t,1,2);
 assertElementsAlmostEqual(tm.getH,eye(4,4));
+tm.getTimestamp
+assertEqual(cvt_t{1}.getTimestamp(),2.4);
+assertEqual(cvt_t{2}.getTimestamp(),2.5);
+assertEqual(cvt_t{3}.getTimestamp(),2.6);
+assertEqual(cvt_t{4}.getTimestamp(),2.7);
+cvt_t =  tm*cvt_t;
+assertEqual(cvt_t{1}.getTimestamp(),2.4);
+assertEqual(cvt_t{2}.getTimestamp(),2.5);
+assertEqual(cvt_t{3}.getTimestamp(),2.6);
+assertEqual(cvt_t{4}.getTimestamp(),2.7);
 
 
 
@@ -60,20 +77,33 @@ assertElementsAlmostEqual(ThreeMarkers.angleDifference(x,y),0);
 assertElementsAlmostEqual(ThreeMarkers.angleDifference(y,x),0);
 
 function test_threeMarkerMinusComparisonMultiplyTranspose
-quat = [1,0,0,0,0];
+quat = [1,0,0,0,1.1];
 qvt = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [0.8,0.2,0,0,0];
+quat = [0.8,0.2,0,0,2];
 qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [1.0,0,0,0,0];
+quat = [1.0,0,0,0,3];
 qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
 assertEqual(qvt,qvt)
-assertEqual(qvt,qvt2)
+assertEqual(qvt.getTimestamp(),1.1);
+assertEqual(qvt1.getTimestamp(),2);
 
 diff = qvt-qvt1;
+assertEqual(diff.getTimestamp(),1.1);
+
+diff = diff.setTimestamp(1.5);
+assertEqual(diff.getTimestamp(),1.5);
+
 qvtConj = qvt1';
-qvtConjFun = quaternionnormalise(quaternionconjugate(qvt1.getQ)');
+assertEqual(qvtConj.getTimestamp,qvt1.getTimestamp)
+assertEqual(qvtConj.getTimestamp,2)
+qvtConjFun = quaternionconjugate(qvt1.getQ)';
 assertElementsAlmostEqual(qvtConj.getQ,qvtConjFun);
-qvt1Cal = qvt.*ThreeMarkers(qvtConjFun);
+
+qvtConjFun = ThreeMarkers(qvtConjFun);
+qvtConjFun = qvtConjFun.setTimestamp(9.0)
+qvt1Cal = qvt.*qvtConjFun;
+assertEqual(qvt1Cal.getTimestamp,9.0);
+
 display('Results')
 display(qvt1Cal)
 display(diff)
@@ -103,6 +133,7 @@ for i = 1:3
     obj = diffQs{i};
     display(obj)
     assertElementsAlmostEqual(obj.getQ,[1,0,0,0]);
+    assertEqual(arrayQs{i}.getTimestamp,diffQs{i}.getTimestamp);
 end
 
 function test_promovethreemarkers_readData
@@ -173,11 +204,16 @@ assertEqual(size(roll),size(pitch),size(yaw));
 function test_callibrate
 quat = [1,0,0,0];
 qvt =  ThreeMarkers(quat);
+qvt = qvt.setTimestamp(7.8);
 quat = [0.8,0.2,0,0,0];
 qvt1 = ThreeMarkers(quat);
 quat = [0.8,0.6,0,0,0];
 qvt2 = ThreeMarkers(quat);
+qvt2 = qvt2.setTimestamp(9.5);
 tm_t = {qvt,qvt1,qvt2};
 tm_t = ThreeMarkers.callibrate(tm_t,1,3);
 assertElementsAlmostEqual(tm_t{1}.getQ,[ 0.957601107188393  -0.288097413233032 0 0])
-
+assertEqual(tm_t{1}.getTimestamp,qvt.getTimestamp)
+assertEqual(tm_t{1}.getTimestamp,7.8)
+assertEqual(tm_t{3}.getTimestamp,qvt2.getTimestamp)
+assertEqual(tm_t{3}.getTimestamp,9.5)
