@@ -25,6 +25,19 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function plot(point,style)
             plotSensor(point,style);
         end
+        
+        function plotAngle(t,data,type,theLabel)
+        %PLOTANGLE Used in th plotRPY function.
+          if type==0
+                plot(t,data);
+            elseif type==1
+                stem(t,data);
+            else
+                ts = timeseries(data,t);
+                ts.TimeInfo.Units = theLabel;
+                ts.plot('--mo','MarkerSize',3);
+          end
+        end
     end
     
     
@@ -34,6 +47,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
+        
+        function [t,tm_t] = sortAccordingToTimestamp(t,tm_t)
+            %SORTS the run according to the timestamps.
+            %TESTS NEED TO BE WRITTEN.
+            [t,indexes] = sort(t);
+            tm_t = tm_t(indexes);
+        end
         
         function angle = getAngle(marker1,marker2,zeropoint)
             angle = acos(dot(marker1-zeropoint,...
@@ -149,6 +169,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 yaw_t(i)=euler(3);
                 t(i) = tm_t{i}.getTimestamp();
             end
+            %Sort data in ascending orders.
+            t_orig = t;
+            [t,roll_t] = ThreeMarkers.sortAccordingToTimestamp(t,roll_t);
+            [t,pitch_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+                pitch_t);
+            [t,yaw_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+                yaw_t);
         end
         
         function plotRPY(roll,pitch,yaw,inDegrees,Fs,varargin)
@@ -157,9 +184,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
-            
+            typeOfPlot=1;
             if length(varargin)>0
-                t = varargin{1}
+                t = varargin{1};
+                if length(varargin)==2
+                    typeOfPlot=varargin{2};
+                end
             else
                 minSize = length(roll);
                 t = 0:1/Fs:(minSize-1)/Fs;
@@ -170,32 +200,32 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 YLABEL='(radians)';
             end
             XLABEL=['1/Fs Fs=' num2str(Fs)];
+            XMIN = min(t);
+            XMAX = max(t);
             
-            minSize = size(roll,2);
-            
-            t = 0:1/Fs:(minSize-1)/Fs;
             hold on;
             subplot(3,1,1);
-            plot(t,roll);
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
             grid on;
             hold on;
-            %ylim([YMIN YMAX])
+            xlim([XMIN XMAX])
             title(['YAW(z): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,2);
-            plot(t,pitch);
+            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
             hold on;
             grid on;
-            %ylim([YMIN YMAX])
+            xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,3);
-            plot(t,yaw);
+            ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
             %ylim([YMIN YMAX])
+            xlim([XMIN XMAX])
             title(['PITCH(x): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
