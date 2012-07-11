@@ -183,6 +183,7 @@ diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
 [roll,pitch,yaw,t]=ThreeMarkers.getRPYt(...
     diff_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t);
 assertEqual(t(1),diff_t{1}.getTimestamp);
 assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
