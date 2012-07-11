@@ -86,13 +86,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % CELL MINUS Implement obj1 - obj2 for ThreeMarkers when using
             % cells.
             %display(class(obj1(1)))
-           
+            
             %display('Calculating error (vector):')
             minSize = min(size(obj1,2),size(obj2,2));
             diff = cell(1,minSize);
             parfor i = 1:minSize
                 diff{i} = obj1{i}-obj2{i};
-            end     
+            end
         end
         
         function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,inDegrees)
@@ -151,12 +151,19 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function plotRPY(roll,pitch,yaw,inDegrees,Fs)
+        function plotRPY(roll,pitch,yaw,inDegrees,Fs,varargin)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs)
             %PLOT the Roll Pitch and Yaw for the run.
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
+            
+            if length(varargin)>0
+                t = varargin{1}
+            else
+                minSize = length(roll);
+                t = 0:1/Fs:(minSize-1)/Fs;
+            end
             if inDegrees
                 YLABEL='(degrees)';
             else
@@ -171,7 +178,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             subplot(3,1,1);
             plot(t,roll);
             grid on;
-             hold on;
+            hold on;
             %ylim([YMIN YMAX])
             title(['YAW(z): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
@@ -179,7 +186,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             subplot(3,1,2);
             plot(t,pitch);
             hold on;
-            grid on;          
+            grid on;
             %ylim([YMIN YMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
@@ -211,7 +218,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % the change from tm_t_1 to tm_t0. Thus use it as tm_est*tm_t_1
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
-%             size(tm_t_0)
+            %             size(tm_t_0)
             p_0 = cell(1,numberOfSamples);
             p_1 = cell(1,numberOfSamples);
             parfor i = 1:numberOfSamples
@@ -230,8 +237,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [tm_est] = ...
-            callibrateInit(tm_t,startIndex,numberOfSamples)
-            %CALLIBRATEINIT Init loop for callibrate loop            
+                callibrateInit(tm_t,startIndex,numberOfSamples)
+            %CALLIBRATEINIT Init loop for callibrate loop
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
@@ -242,7 +249,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [tm_t_c] = ...
-            callibrate(tm_t,startIndex,numberOfSamples)
+                callibrate(tm_t,startIndex,numberOfSamples)
             %CALLIBRATE Changes the samples to the zero frame using
             %an estimate of the initial orientation from the start of
             %the run where the sensor was held still in a known
@@ -301,11 +308,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             
             %display(class(obj1(1)))
             diff = ThreeMarkers(quaternionerror(...
-                    obj1.getQ,obj2.getQ));
-%             display(['The timestamp: ' theTimestamp]);
+                obj1.getQ,obj2.getQ));
+            %             display(['The timestamp: ' theTimestamp]);
             diff = diff.setTimestamp(obj1.getTimestamp);
         end
-         
+        
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
@@ -314,7 +321,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function isEqual = eq(obj1,obj2)
-            % EQUAL Operator Objects are equal if their quaternions 
+            % EQUAL Operator Objects are equal if their quaternions
             %are equal.
             isEqual = (obj1.getQ == obj2.getQ);
         end
@@ -331,7 +338,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [tm_2est] = mtimes(...
                 tm_est,tm_t2)
-            % MTIMES MATRIX MULIPLICATION OPERATOR only works if tm_est 
+            % MTIMES MATRIX MULIPLICATION OPERATOR only works if tm_est
             %is a scalar ThreeMarker.
             minSize = size(tm_t2,2);
             tm_2est = cell(1,minSize);
@@ -344,7 +351,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 error('matlab3Dspace:mtimes',...
                     ['MTIMES only works for first ThreeMarker as a'...
                     'scalar: size(tm_est): ' num2str(size(tm_est))]);
-                    
+                
             end
         end
         
