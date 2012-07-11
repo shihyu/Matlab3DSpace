@@ -13,8 +13,8 @@ assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
 
 assertEqual(cvt.getH,eye(4));
 assertEqual(cvt.get0,cvt.getT);
-cvt.getQ
-
+assertEqual(cvt.getQ,[1 0 0 0]);
+assertEqual(cvt.getTimestamp(),2.3);
 
 rightback = [-1 0 0];
 leftback = [1 0 0];
@@ -74,10 +74,19 @@ assertElementsAlmostEqual(errorEuler,[0 0 theta])
 function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
-[vtm_t] = ViconThreeMarkers.readDataVicon(filename,runName,'RBO','LBO','FON');
+[vtm_t] = ViconThreeMarkers.readDataVicon(filename,...
+    runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
-%ThreeMarkers.plotRun(vtm_t);
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 0.008333333333333);
+assertElementsAlmostEqual(vtm_t{2}.getTimestamp, 0.016666666666667);
+current = vtm_t{1}.getTimestamp();
+for i = 2:length(vtm_t)
+    assertTrue(vtm_t{i}.getTimestamp>current);
+    assertElementsAlmostEqual(1/(vtm_t{i}.getTimestamp-current),...
+    120);
+    current = vtm_t{i}.getTimestamp();
+end
 
 function test_viconthreemarkers_readDataAdams
 filename='test-data/test-data.h5';
@@ -85,6 +94,13 @@ runName = 'testrun';
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 501]);
+current = vtm_t{1}.getTimestamp();
+for i = 2:length(vtm_t)
+    assertTrue(vtm_t{i}.getTimestamp>current);
+    assertElementsAlmostEqual(1/(vtm_t{i}.getTimestamp-current),...
+    33.333333333333336);
+    current = vtm_t{i}.getTimestamp();
+end
 
 [vtm_t1] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
 vtm_t1{1}.plotT()
