@@ -1,6 +1,15 @@
-function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = getbicycleangles(figures,...
-    filename,runName,Fs1,Fs2,...
-    node1,node2,callibrateStart,plotRuns,synchroniseTheImus,imuOrAdams)
+function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = ...
+    getbicycleangles(figures,...
+    filename,...
+    runName,...
+    Fs_plot,...
+    Fs_ImuMeasured,...
+    steeringImuNodeId,...
+    rollingImuNodeId,...
+    callibrateStart,...
+    plotRuns,...
+    synchroniseTheImus,...
+    imuOrAdams)
 %GETBICYCLEANGLES Processes a run in an experiment and calculates the
 % steering and roll angles with the plots as well.
 % RETURNS:
@@ -58,12 +67,13 @@ else
     if imuOrAdams>0
         [steering_t,steering_sync_t] = ...
             QuaternionsThreeMarkers.readDataPromove(filename,runName,...
-            node1,Fs1,Fs2);
+            steeringImuNodeId,Fs_plot,Fs_ImuMeasured);
         [roll_t,roll_sync_t] = ...
             QuaternionsThreeMarkers.readDataPromove(filename,runName,...
-            node2,Fs1,Fs2);
+            rollingImuNodeId,Fs_plot,Fs_ImuMeasured);
         theAntReader = antReader(filename,runName);
-        [speed,cadence,ant_t,ant_sync,ant_sync_t] = theAntReader.readVelocityCadence();
+        [speed,cadence,ant_t,ant_sync,ant_sync_t] = ...
+            theAntReader.readVelocityCadence();
         save(processedFilename,'speed','-append');
         save(processedFilename,'cadence','-append');
         save(processedFilename,'ant_t','-append');
@@ -71,9 +81,11 @@ else
         save(processedFilename,'ant_sync_t','-append');
     else
         [steering_t,steering_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,'RBO','LBO','FON');;
+            ViconThreeMarkers.readDataAdams(filename,runName,...
+            'RBO','LBO','FON');;
         [roll_t,roll_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');;
+            ViconThreeMarkers.readDataAdams(filename,runName,...
+            'RBT','LBT','FTN');;
     end
     
     save(processedFilename,'steering_t');
@@ -109,7 +121,7 @@ display('CALCULATING ROLL PITCH YAW: roll sensor.');
 set(0,'CurrentFigure',figRollSteer)
 hold on;
 ThreeMarkers.plotRPY(...
-    roll_r,pitch_r,yaw_r,true,Fs1);
+    roll_r,pitch_r,yaw_r,true,Fs_plot);
 display('ROLL PITCH YAW CALCULATED');
 
 display('CALLIBRATING');
@@ -125,7 +137,7 @@ display('CALCULATING ROLL PITCH YAW: steering sensor.');
 set(0,'CurrentFigure',figRollSteer)
 hold on;
 ThreeMarkers.plotRPY(...
-    roll_s,pitch_s,yaw_s,true,Fs2);
+    roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
 display('ROLL PITCH YAW CALCULATED');
 
 display('CALLIBRATING');
@@ -140,9 +152,9 @@ display('PLOTTING ROLL PITCH YAW: SENSORS');
 set(0,'CurrentFigure',figRollSteerCall)
 hold on;
 ThreeMarkers.plotRPY(...
-    roll_r,pitch_r,yaw_r,true,Fs1);
+    roll_r,pitch_r,yaw_r,true,Fs_plot);
 ThreeMarkers.plotRPY(...
-    roll_s,pitch_s,yaw_s,true,Fs2);
+    roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
 display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS');
 
 if imuOrAdams>0
@@ -154,7 +166,7 @@ if imuOrAdams>0
         if any(steering_sync_t)
             [roll_t,steering_t] = synchronise(roll_sync_t,...
                 steering_sync_t,roll_t,steering_t,...
-                Fs1,1,1);
+                Fs_plot,1,1);
         end
     end
     display('FINISHED MANUAL SYNC');
@@ -165,16 +177,16 @@ if imuOrAdams>0
         hold on;
         [roll_t,steering_t,rollMax] = synchronise(roll_sync_t,...
             steering_sync_t,roll_t,steering_t,...
-            Fs1,1,1);
+            Fs_plot,1,1);
         %     [roll_t_r,steering_t_r,rollMax] = synchronise(roll_r,...
         %         roll_s,roll_t,steering_t,...
-        %         Fs1,1,1);
+        %         Fs_plot,1,1);
         %     [roll_t_p,steering_t_p,pitchMax] = synchronise(pitch_r,...
         %         pitch_s,roll_t,steering_t,...
-        %         Fs1,1,1);
+        %         Fs_plot,1,1);
         %     [roll_t_y,steering_t_y,yawMax] = synchronise(yaw_r,...
         %         yaw_s,roll_t,steering_t,...
-        %         Fs1,1,1);
+        %         Fs_plot,1,1);
         %     totalMax = max([rollMax pitchMax yawMax]);
         %     if rollMax == totalMax
         %         display('SYNCING ON ROLL ANGLE');
@@ -197,9 +209,9 @@ if imuOrAdams>0
         set(0,'CurrentFigure',figRollSteerSync)
         hold on;
         ThreeMarkers.plotRPY(...
-            roll_r,pitch_r,yaw_r,true,Fs1);
+            roll_r,pitch_r,yaw_r,true,Fs_plot);
         ThreeMarkers.plotRPY(...
-            roll_s,pitch_s,yaw_s,true,Fs2);
+            roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
         display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS SYNC');
     end
 end
@@ -210,7 +222,7 @@ set(0,'CurrentFigure',figSteer)
 diff_t = ThreeMarkers.cellminus(roll_t,steering_t);
 [roll_d,pitch_d,yaw_d]=ThreeMarkers.getRPYt(diff_t,true);
 ThreeMarkers.plotRPY(...
-    roll_d,pitch_d,yaw_d,true,Fs1);
+    roll_d,pitch_d,yaw_d,true,Fs_plot);
 display('STEERING ANGLE CALCULATED');
 
 steering_angle = yaw_d;

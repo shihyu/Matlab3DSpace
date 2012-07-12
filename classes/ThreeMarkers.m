@@ -25,8 +25,35 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function plot(point,style)
             plotSensor(point,style);
         end
+        
+        function plotAngle(t,data,type,theLabel)
+        %PLOTANGLE Used in th plotRPY function.
+          if type==0
+                plot(t,data);
+            elseif type==1
+                stem(t,data);
+            else
+                ts = timeseries(data,t);
+                ts.TimeInfo.Units = theLabel;
+                ts.plot('--mo','MarkerSize',3);
+          end
+        end
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %STATIC FUNCTIONS: Operate using ThreeMarkers.theFunctionName...
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
+        
+        function [t,tm_t] = sortAccordingToTimestamp(t,tm_t)
+            %SORTS the run according to the timestamps.
+            %TESTS NEED TO BE WRITTEN.
+            [t,indexes] = sort(t);
+            tm_t = tm_t(indexes);
+        end
         
         function angle = getAngle(marker1,marker2,zeropoint)
             angle = acos(dot(marker1-zeropoint,...
@@ -79,14 +106,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % CELL MINUS Implement obj1 - obj2 for ThreeMarkers when using
             % cells.
             %display(class(obj1(1)))
-           
+            
             %display('Calculating error (vector):')
             minSize = min(size(obj1,2),size(obj2,2));
             diff = cell(1,minSize);
             parfor i = 1:minSize
-                diff{i} =ThreeMarkers(quaternionerror(...
-                    obj1{i}.getQ,obj2{i}.getQ));
-            end     
+                diff{i} = obj1{i}-obj2{i};
+            end
         end
         
         function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,inDegrees)
@@ -107,7 +133,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        function [roll_t,pitch_t,yaw_t] = getRPYtInit(tm_t)
+        function [roll_t,pitch_t,yaw_t,t] = getRPYtInit(tm_t)
             %GETRPYTINIT(tm_t)
             %Initialise the GETRPYT function. This is used if you
             %would like to create your own parforloop to
@@ -116,6 +142,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             roll_t = zeros(1,minSize());
             pitch_t = zeros(1,minSize());
             yaw_t = zeros(1,minSize());
+            t = zeros(1,minSize());
         end
         
         function [roll_i,pitch_i,yaw_i]=getRPYtProcess(tm_t,inDegrees,i)
@@ -129,58 +156,76 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             yaw_i=euler(3);
         end
         
-        function [roll_t,pitch_t,yaw_t] = getRPYt(tm_t,inDegrees)
+        function [roll_t,pitch_t,yaw_t,t] = getRPYt(tm_t,inDegrees)
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
             %would like to see the results in degrees. False for radians.
-            [roll_t,pitch_t,yaw_t] = ThreeMarkers.getRPYtInit(tm_t);
+            [roll_t,pitch_t,yaw_t,t] = ThreeMarkers.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
             parfor i=1:minSize
                 euler = tm_t{i}.getRPY(inDegrees);
                 roll_t(i)=euler(1);
                 pitch_t(i)=euler(2);
                 yaw_t(i)=euler(3);
+                t(i) = tm_t{i}.getTimestamp();
             end
+            %Sort data in ascending orders.
+            t_orig = t;
+            [t,roll_t] = ThreeMarkers.sortAccordingToTimestamp(t,roll_t);
+            [t,pitch_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+                pitch_t);
+            [t,yaw_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+                yaw_t);
         end
         
-        function plotRPY(roll,pitch,yaw,inDegrees,Fs)
+        function plotRPY(roll,pitch,yaw,inDegrees,Fs,varargin)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs)
             %PLOT the Roll Pitch and Yaw for the run.
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
+            typeOfPlot=1;
+            if length(varargin)>0
+                t = varargin{1};
+                if length(varargin)==2
+                    typeOfPlot=varargin{2};
+                end
+            else
+                minSize = length(roll);
+                t = 0:1/Fs:(minSize-1)/Fs;
+            end
             if inDegrees
                 YLABEL='(degrees)';
             else
                 YLABEL='(radians)';
             end
             XLABEL=['1/Fs Fs=' num2str(Fs)];
+            XMIN = min(t);
+            XMAX = max(t);
             
-            minSize = size(roll,2);
-            
-            t = 0:1/Fs:(minSize-1)/Fs;
             hold on;
             subplot(3,1,1);
-            plot(t,roll);
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
             grid on;
-             hold on;
-            %ylim([YMIN YMAX])
+            hold on;
+            xlim([XMIN XMAX])
             title(['YAW(z): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,2);
-            plot(t,pitch);
+            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
             hold on;
-            grid on;          
-            %ylim([YMIN YMAX])
+            grid on;
+            xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,3);
-            plot(t,yaw);
+            ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
             %ylim([YMIN YMAX])
+            xlim([XMIN XMAX])
             title(['PITCH(x): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
@@ -203,7 +248,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % the change from tm_t_1 to tm_t0. Thus use it as tm_est*tm_t_1
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
-%             size(tm_t_0)
+            %             size(tm_t_0)
             p_0 = cell(1,numberOfSamples);
             p_1 = cell(1,numberOfSamples);
             parfor i = 1:numberOfSamples
@@ -222,8 +267,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function [tm_est] = ...
-            callibrateInit(tm_t,startIndex,numberOfSamples)
-            %CALLIBRATEINIT Init loop for callibrate loop            
+                callibrateInit(tm_t,startIndex,numberOfSamples)
+            %CALLIBRATEINIT Init loop for callibrate loop
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
@@ -233,15 +278,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 tm_t,startIndex,numberOfSamples);
         end
         
-        function [tm_i] = ...
-            callibrateProcess(tm_t,i,tm_est)
-            %CALLIBRATEINIT Process loop for callibrate loop
-            tm_i = tm_est.*tm_t{i};
-        end
-        
-        
         function [tm_t_c] = ...
-            callibrate(tm_t,startIndex,numberOfSamples)
+                callibrate(tm_t,startIndex,numberOfSamples)
             %CALLIBRATE Changes the samples to the zero frame using
             %an estimate of the initial orientation from the start of
             %the run where the sensor was held still in a known
@@ -277,6 +315,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %METHODS FROM BELOW HERE: Operate only on the objects!
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         function qtm = ThreeMarkers(quaternion)
             %THREEMARKER(quaternion) Creates the ThreeMarker object
@@ -291,39 +334,42 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function diff = minus(obj1,obj2)
             % MINUS Implement obj1 - obj2 for ThreeMarkers: The
             % difference/error between them, they can also be row vectors.
-           
+            % Keeps the first ones time stamp.
+            
             %display(class(obj1(1)))
             diff = ThreeMarkers(quaternionerror(...
-                    obj1.getQ,obj2.getQ));
+                obj1.getQ,obj2.getQ));
+            %             display(['The timestamp: ' theTimestamp]);
+            diff = diff.setTimestamp(obj1.getTimestamp);
         end
-         
+        
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
                 quaternionconjugate(obj1.getQ)');
+            r = r.setTimestamp(obj1.getTimestamp);
         end
         
         function isEqual = eq(obj1,obj2)
-            % EQUAL Operator Objects are equal if their quaternions 
+            % EQUAL Operator Objects are equal if their quaternions
             %are equal.
             isEqual = (obj1.getQ == obj2.getQ);
         end
         
         function product = times(obj1,obj2)
             %SCALAR multiplication operator
-           
-            %product = ThreeMarkers(quatnormalize(quatmultiply(obj1.getQ,...
-            %                 obj2.getQ)));
+            %Time stamp of second argument is maintained.
             product = ThreeMarkers(...
                 quaternionproduct(obj1.getQ,...
                 obj2.getQ)');
+            product = product.setTimestamp(obj2.getTimestamp());
             
         end
         
         function [tm_2est] = mtimes(...
                 tm_est,tm_t2)
-            % MTIMES MATRIX MULIPLICATION OPERATOR only works if tm_est 
-            %is a ThreeMarker.
+            % MTIMES MATRIX MULIPLICATION OPERATOR only works if tm_est
+            %is a scalar ThreeMarker.
             minSize = size(tm_t2,2);
             tm_2est = cell(1,minSize);
             %display(['IS SCALAR:' num2str(isscalar(tm_est))]);
@@ -335,18 +381,24 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 error('matlab3Dspace:mtimes',...
                     ['MTIMES only works for first ThreeMarker as a'...
                     'scalar: size(tm_est): ' num2str(size(tm_est))]);
-                    
+                
             end
         end
         
         function showQ = display(tm)
             %THE DEFAULT DIPLAY FOR THREEMARKERS OBJECT (Quaternion Shown)
-            showQ = tm.getQ;
+            showQ = [ tm.getQ() tm.getTimestamp ];
         end
-        function [timestamp] = getTimeStamp(tm)
+        function [timestamp] = getTimestamp(tm)
             %GETTIMESTAMP(tm) Gets the time stamp for the THREMARKERS
             %OBJECT
             timestamp = tm.timestamp;
+        end
+        
+        function [tm] = setTimestamp(tm,timestamp)
+            %SETTIMESTAMP(tm) Sets the time stamp for the THREMARKERS
+            %OBJECT
+            tm.timestamp = timestamp;
         end
         
         function [points_T] = getT(tm)
@@ -390,7 +442,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function [quat] = toNumeric(tm)
             %TONUMERIC(tm) How to display the object numerically.
-            quat = [ tm.getQ() tm.getTimeStamp ];
+            quat = [ tm.getQ() tm.getTimestamp ];
         end
     end
 end

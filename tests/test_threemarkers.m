@@ -6,13 +6,30 @@ function test_calculateEst
 rightback = [1 0 0];
 leftback = [-1 0 0];
 front = [0 1 0];
-theTimestamp = 2.3;
+theTimestamp = 2.4;
 cvt = ViconThreeMarkers(rightback,...
-        leftback,front,theTimestamp)
+        leftback,front,theTimestamp);
+assertEqual(cvt.getTimestamp(),2.4);
 assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
-cvt_t = {cvt cvt cvt cvt};
+cvt1 = cvt;
+cvt1 = cvt1.setTimestamp(2.5);
+cvt2 = cvt;
+cvt2 = cvt2.setTimestamp(2.6);
+cvt3 = cvt;
+cvt3 = cvt3.setTimestamp(2.7);
+cvt_t = {cvt cvt1 cvt2 cvt3};
 tm = ThreeMarkers.getChangeOfGlobalReferenceFrames(cvt_t,cvt_t,1,2);
 assertElementsAlmostEqual(tm.getH,eye(4,4));
+tm.getTimestamp
+assertEqual(cvt_t{1}.getTimestamp(),2.4);
+assertEqual(cvt_t{2}.getTimestamp(),2.5);
+assertEqual(cvt_t{3}.getTimestamp(),2.6);
+assertEqual(cvt_t{4}.getTimestamp(),2.7);
+cvt_t =  tm*cvt_t;
+assertEqual(cvt_t{1}.getTimestamp(),2.4);
+assertEqual(cvt_t{2}.getTimestamp(),2.5);
+assertEqual(cvt_t{3}.getTimestamp(),2.6);
+assertEqual(cvt_t{4}.getTimestamp(),2.7);
 
 
 
@@ -60,20 +77,33 @@ assertElementsAlmostEqual(ThreeMarkers.angleDifference(x,y),0);
 assertElementsAlmostEqual(ThreeMarkers.angleDifference(y,x),0);
 
 function test_threeMarkerMinusComparisonMultiplyTranspose
-quat = [1,0,0,0,0];
+quat = [1,0,0,0,1.1];
 qvt = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [0.8,0.2,0,0,0];
+quat = [0.8,0.2,0,0,2];
 qvt1 = QuaternionsThreeMarkers(quat(1,1:5));
-quat = [1.0,0,0,0,0];
+quat = [1.0,0,0,0,3];
 qvt2 = QuaternionsThreeMarkers(quat(1,1:5));
 assertEqual(qvt,qvt)
-assertEqual(qvt,qvt2)
+assertEqual(qvt.getTimestamp(),1.1);
+assertEqual(qvt1.getTimestamp(),2);
 
 diff = qvt-qvt1;
+assertEqual(diff.getTimestamp(),1.1);
+
+diff = diff.setTimestamp(1.5);
+assertEqual(diff.getTimestamp(),1.5);
+
 qvtConj = qvt1';
-qvtConjFun = quaternionnormalise(quaternionconjugate(qvt1.getQ)');
+assertEqual(qvtConj.getTimestamp,qvt1.getTimestamp)
+assertEqual(qvtConj.getTimestamp,2)
+qvtConjFun = quaternionconjugate(qvt1.getQ)';
 assertElementsAlmostEqual(qvtConj.getQ,qvtConjFun);
-qvt1Cal = qvt.*ThreeMarkers(qvtConjFun);
+
+qvtConjFun = ThreeMarkers(qvtConjFun);
+qvtConjFun = qvtConjFun.setTimestamp(9.0)
+qvt1Cal = qvt.*qvtConjFun;
+assertEqual(qvt1Cal.getTimestamp,9.0);
+
 display('Results')
 display(qvt1Cal)
 display(diff)
@@ -103,6 +133,7 @@ for i = 1:3
     obj = diffQs{i};
     display(obj)
     assertElementsAlmostEqual(obj.getQ,[1,0,0,0]);
+    assertEqual(arrayQs{i}.getTimestamp,diffQs{i}.getTimestamp);
 end
 
 function test_promovethreemarkers_readData
@@ -111,6 +142,7 @@ runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 
 [metrics] = ThreeMarkers.calculateSyncMetrics(vtm_t);
 %More tests need to make sure it makes sense.
@@ -122,6 +154,9 @@ size(vtm_t)
 display('Testing change of Global Frame');
 tm_est = ThreeMarkers.getChangeOfGlobalReferenceFrames(vtm_t,...
    vtm_t,1,3)
+
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
+
 display(['Returned value: ' class(tm_est)]);
 assertTrue(isa(tm_est,'ThreeMarkers'));
 assertElementsAlmostEqual(tm_est.getH,eye(4));
@@ -139,13 +174,18 @@ ThreeMarkers.plotRun([vtm_t(1:3);vtm_t2(1:3)]);
 figure;
 [roll,pitch,yaw,diff_t]=ThreeMarkers.getDiff(...
     vtm_t(1:3),vtm_t(2:4),true);
+assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
+assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 diff_t = ThreeMarkers.cellminus(vtm_t(1:3),vtm_t(1:3));
-[roll,pitch,yaw]=ThreeMarkers.getRPYt(...
+[roll,pitch,yaw,t]=ThreeMarkers.getRPYt(...
     diff_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t);
+assertEqual(t(1),diff_t{1}.getTimestamp);
+assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
@@ -163,7 +203,8 @@ assertEqual(size(diff_t),[1,2]);
 function test_threemarkersgetRPHt
 filename='test-data/test-data.h5';
 runName = '/promove';
-[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
+[vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,...
+    10,200);
 [roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true);
 assertTrue(roll(1)>0);
 assertTrue(pitch(1)~=0);
@@ -173,11 +214,16 @@ assertEqual(size(roll),size(pitch),size(yaw));
 function test_callibrate
 quat = [1,0,0,0];
 qvt =  ThreeMarkers(quat);
+qvt = qvt.setTimestamp(7.8);
 quat = [0.8,0.2,0,0,0];
 qvt1 = ThreeMarkers(quat);
 quat = [0.8,0.6,0,0,0];
 qvt2 = ThreeMarkers(quat);
+qvt2 = qvt2.setTimestamp(9.5);
 tm_t = {qvt,qvt1,qvt2};
 tm_t = ThreeMarkers.callibrate(tm_t,1,3);
 assertElementsAlmostEqual(tm_t{1}.getQ,[ 0.957601107188393  -0.288097413233032 0 0])
-
+assertEqual(tm_t{1}.getTimestamp,qvt.getTimestamp)
+assertEqual(tm_t{1}.getTimestamp,7.8)
+assertEqual(tm_t{3}.getTimestamp,qvt2.getTimestamp)
+assertEqual(tm_t{3}.getTimestamp,9.5)
