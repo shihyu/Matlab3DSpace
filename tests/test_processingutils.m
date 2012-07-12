@@ -86,3 +86,25 @@ figures = [];
     figures,...
     filename,runName,...
     200,200,1,2,1,0,false,0);
+
+function test_synchroniseWithRespectToRPY
+filename='./test-data/test-data.h5'
+runName = 'promove'
+[steering_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
+[roll_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+    2,200,200);
+[roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
+[roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+
+[roll_t,steer_t] = synchroniseWithRespectToRPY(...
+    roll_r,pitch_r,yaw_r,roll_t,...
+    roll_s,pitch_s,yaw_s,steering_t,200);
+[roll_r,pitch_r,yaw_r,t]=ThreeMarkers.getRPYt(roll_t,true);
+[roll_s,pitch_s,yaw_s,t_s]=ThreeMarkers.getRPYt(steer_t,true);
+figure
+minSize = min(length(steering_t),length(roll_t));
+ThreeMarkers.plotRPY(...
+    roll_r(1:minSize),pitch_r(1:minSize),yaw_r(1:minSize),true,200);
+ThreeMarkers.plotRPY(...
+    roll_s(1:minSize),pitch_s(1:minSize),yaw_s(1:minSize),true,200);
+

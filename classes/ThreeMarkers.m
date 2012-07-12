@@ -179,7 +179,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function plotRPY(roll,pitch,yaw,inDegrees,Fs,varargin)
-            %PLOTRPY(roll,pitch,yaw,inDegrees,Fs)
+            %PLOTRPY(roll,pitch,yaw,inDegrees,Fs,t,type)
+            %Type
             %PLOT the Roll Pitch and Yaw for the run.
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
@@ -193,6 +194,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             else
                 minSize = length(roll);
                 t = 0:1/Fs:(minSize-1)/Fs;
+                typeOfPlot=0;
             end
             if inDegrees
                 YLABEL='(degrees)';
