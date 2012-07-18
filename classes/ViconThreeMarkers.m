@@ -21,7 +21,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i,4));
+                    leftBack(i,1:3),front(i,1:3),rightBack(i,4));
                 vtm_t{i} = vtm;
             end
         end
@@ -44,7 +44,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                 LBO = [data.LBTX data.LBTY data.LBTZ];
                 FON = [data.FTNX data.FTNY data.FTNZ];
             end
-            N=size(t,1)
+            N=size(t,1);
             Fs = 1/(t(2)-t(1));
             vtm_t = cell(1,N);
             parfor i = 1:N
@@ -67,43 +67,59 @@ classdef ViconThreeMarkers < ThreeMarkers
             %point/marker in 3D space. Front is on the positive Y axis,
             %rightback and leftback are on the X axis.
             midpoint = (rightback+leftback)/2;
-            front = ThreeMarkers.normWithOffset(front,midpoint);
-            rightback = ThreeMarkers.normWithOffset(rightback,midpoint);
-            leftback = ThreeMarkers.normWithOffset(leftback,midpoint);
-            crosspointTmp = cross(front-midpoint,...
-                leftback-midpoint)+midpoint;
-            crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
+            front  = front-midpoint;
+            rightback = rightback-midpoint;
+            leftback = leftback-midpoint;
+            %             front = ThreeMarkers.normWithOffset(front,midpoint);
+            %             rightback = ThreeMarkers.normWithOffset(rightback,midpoint);
+            %             leftback = ThreeMarkers.normWithOffset(leftback,midpoint);
+            %             crosspointTmp = cross(front-midpoint,...
+            %                 leftback-midpoint)+midpoint;
+            crosspointTmp = cross(front,...
+                leftback);
+            crosspoint = crosspointTmp;
+            %             crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
+            
             %Create the normalized matrix of the points.
             points_T = [ rightback;
                 leftback;
                 front;
                 crosspoint]';
-            
+            our_point_0=ThreeMarkers.points_0;
+            backLength = norm(rightback-leftback)/2;
+            our_point_0(1,:)=our_point_0(1,:).*backLength;
+            frontLength = norm(front-0);
+            our_point_0(2,:)=our_point_0(2,:).*frontLength;
+            crossLength = norm(crosspoint-0);
+            our_point_0(3,:)=our_point_0(3,:).*crossLength;
             %not a perfect 60 degree Triangle... so rotate on the
             %XY plane to get the
             %actual front marker in the zero frame.
             %TODO test this transform.
-            %rotAngle = vtm.getAngle(vtm.front,vtm.leftback,vtm.midpoint);
-            %yValue = vtm.points_psi_0(1,1:2)*[cos(rotAngle) -...
-            %     sin(rotAngle); sin(rotAngle) cos(rotAngle)];
-            %vtm.points_psi_0(3,1:2) = yValue;
-            
+%              rotAngle = ThreeMarkers.getAngle(front,...
+%                  leftback,...
+%                  0);
+%              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
+%                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
+%              our_point_0(3,1:2) = yValue;
             %Create the screw theory compliant points for Vikon
             points_T(4,:) = 1;
             %Get the homogenous matrix for these points
-            H_T_0 = ThreeMarkers.points_0/points_T;
+            H_T_0 = our_point_0/points_T;
+            
+            %             H_T_0 = ThreeMarkers.points_0/points_T;
             %Remove translation
             H_T_0(1:3,4)  = [0 0 0]';
             %and error
             H_T_0(4,1:3)  = [0 0 0];
             %H_0_T = H_T_0';
             H_0_T = invht(H_T_0);
-            quaternion = matrix2quaternion(H_0_T)';
-            vtm@ThreeMarkers(quaternion)
+            quaternion = quaternionnormalise(matrix2quaternion(H_0_T));
+            vtm@ThreeMarkers(quaternion);
             vtm.timestamp = timestamp;
         end
     end
     
-
+    
 end
 

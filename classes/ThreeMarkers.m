@@ -17,11 +17,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         quaternion = [1 0 0 0];
     end
     methods (Access = protected,Static)
-        function [normedPoint] = normWithOffset(point,reference)
-            normedPoint = (point-reference)/norm(point-reference)+...
-                reference;
-        end
-        
+               
         function plot(point,style)
             plotSensor(point,style);
         end
@@ -35,7 +31,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             else
                 ts = timeseries(data,t);
                 ts.TimeInfo.Units = theLabel;
-                ts.plot('--mo','MarkerSize',3);
+                ts.plot('--mo','MarkerSize',5);
           end
         end
     end
@@ -47,6 +43,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
+        function [normedPoint] = normWithOffset(point,reference)
+            normedPoint = (point-reference)/norm(point-reference)+...
+                reference;
+        end
         
         function [t,tm_t] = sortAccordingToTimestamp(t,tm_t)
             %SORTS the run according to the timestamps.
@@ -207,28 +207,28 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             
             hold on;
             subplot(3,1,1);
-            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
             xlim([XMIN XMAX])
-            title(['YAW(z): maximum angle: ' num2str(max(abs(roll)))]);
+            title(['YAW(z): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,2);
-            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
             hold on;
             grid on;
             xlim([XMIN XMAX])
-            title(['ROLL(y): maximum angle: ' num2str(max(abs(pitch)))]);
+            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
             subplot(3,1,3);
-            ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
+            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
             grid on;
             hold on;
             %ylim([YMIN YMAX])
             xlim([XMIN XMAX])
-            title(['PITCH(x): maximum angle: ' num2str(max(abs(yaw)))]);
+            title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
         end
@@ -264,7 +264,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             H_1_0_est(4,4) = 1;
             %display('Estimated H')
             %H_1_0_est
-            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est)');
+            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est));
             
         end
         
@@ -418,8 +418,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [euler]=getRPY(tm,inDegrees)
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
-            euler = quaternion2euler(...
-                tm.getQ,inDegrees);
+            %euler = quaternion2euler(tm.getQ,inDegrees);
+            euler = invrpy(tm.getH);
+            if inDegrees
+                euler = euler/pi*180;
+            end
         end
         
         function [quaternion]=getQ(tm)
