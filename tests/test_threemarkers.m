@@ -3,14 +3,14 @@ function test_suite = test_threemarkers
 initTestSuite;
 
 function test_calculateEst
-rightback = [1 0 0];
-leftback = [-1 0 0];
-front = [0 1 0];
+rightback = [0 1  0];
+leftback = [0 -1  0];
+front = [1 0  0];
 theTimestamp = 2.4;
 cvt = ViconThreeMarkers(rightback,...
         leftback,front,theTimestamp);
 assertEqual(cvt.getTimestamp(),2.4);
-assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
+assertEqual(cvt.get0,[0 0 1 0; -1 1 0  0; 0 0 0 1; 1 1 1 1]);
 cvt1 = cvt;
 cvt1 = cvt1.setTimestamp(2.5);
 cvt2 = cvt;

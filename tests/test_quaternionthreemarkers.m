@@ -1,4 +1,4 @@
-function test_suite = test_quaternionthreemakers
+function test_suite = test_quaternionthreemarkers
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
@@ -7,7 +7,7 @@ quat = [1,0,0,0,0];
 qvt = QuaternionsThreeMarkers([quat(1,1:5)]);
 assertEqual(qvt.getH,eye(4,4));
 assertEqual(qvt.get0,qvt.getT);
-assertEqual(qvt.getT,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
+assertEqual(qvt.getT,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
 function quatReadNonExistantNode
 filename='test-data/test-data.h5';

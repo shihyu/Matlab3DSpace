@@ -4,9 +4,13 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     % for 3D data.
     
     properties (Constant)
+        %The Format:[ rightback;
+                %leftback;
+                %front;
+                %crosspoint]
         points_0 = [
-            1 -1 0 0;
             0 0 1 0;
+            -1 1 0 0;
             0 0 0 1;
             1 1 1 1];
     end
@@ -206,7 +210,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             XMAX = max(t);
             
             hold on;
-            subplot(3,1,1);
+            subplot(3,1,3);
             ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
@@ -219,16 +223,16 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             hold on;
             grid on;
             xlim([XMIN XMAX])
-            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
+            title(['PITCH(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             %xlabel(XLABEL);
-            subplot(3,1,3);
+            subplot(3,1,1);
             ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
             grid on;
             hold on;
             %ylim([YMIN YMAX])
             xlim([XMIN XMAX])
-            title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
+            title(['ROLL(x): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
         end

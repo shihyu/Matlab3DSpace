@@ -3,13 +3,14 @@ function test_suite = test_quatutils
 initTestSuite;
 
 function test_quaternionerror
-rightback = [1 0 0];
-leftback = [-1 0 0];
-front = [0 1 0];
+rightback = [0 -1 0];
+leftback = [0 1  0];
+front = [1 0  0];
 theTimestamp = 2.3;
 cvt = ViconThreeMarkers(rightback,...
         leftback,front,theTimestamp);
-assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
+assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
+
 
 assertEqual(cvt.getH,eye(4));
 assertEqual(cvt.get0,cvt.getT);
