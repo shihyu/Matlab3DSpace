@@ -73,7 +73,7 @@ function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','kabsch');
+    runName,'RBO','LBO','FON','screw');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
 assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 0.008333333333333);
@@ -143,8 +143,8 @@ for samplePoint = 1:N
     %         pi/2,ThreeMarkers.getAngle(testLBO,testFON,mid))
     
     pointsR = [(testRBO-mid)',(testLBO-mid)',(testFON-mid)',(testLBO-mid)'];
-    v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0,'kabsch');
-    v_lbt = ViconThreeMarkers(testRBT,testLBT,testFTN,0,'kabsch');
+    v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0,'screw');
+    v_lbt = ViconThreeMarkers(testRBT,testLBT,testFTN,0,'screw');
     H = v_rbt.getH();
     H2 = v_lbt.getH();
     %Make sure the H matrix is invertable.
@@ -170,55 +170,81 @@ for samplePoint = 1:N
     assertElementsAlmostEqual(diffOrig3-diffOrig3_0,0);
 end;
 
-function processRun(filename,runName,adamsColumn)
-display(['==================================================']);
-display(['Processing RUN:' runName adamsColumn]);
-display(['==================================================']);
+function [ret] =  chooseData(roll,pitch,yaw,adamsColumn)
+if strcmp(adamsColumn,'Roll')==1
+    ret = roll;
+elseif strcmp(adamsColumn,'Pitch')==1
+    ret = -pitch;
+elseif strcmp(adamsColumn,'Yaw')==1
+    ret = yaw;
+elseif strcmp(adamsColumn,'yaw')==1
+    ret = yaw;
+end
 
-[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN');
 
+function processRun(filename,runName,adamsColumns)
+display(['==================================================']);
+display(['Processing RUN:' runName adamsColumns]);
+display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
-adamsData = data.(adamsColumn);
-theTime = data.Time;
-% figure
-% title('Adams data');
-% plot(theTime,adamsData);
-
-%Normal
-figure
-[roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtm_t,true);
-ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
-title(['ROLL PITCH YAW:' runName]);
-%ThreeMarkers.plotRun(vtm_t);
-
-%Kabsch
+%kobasch
+[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RBT','LBT','FTN');
+%Screw
 [vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','kabsch');
-figure
-title(['ROLL PITCH YAW (Kabsch):' runName])
-[roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
-ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
-
+    'RBT','LBT','FTN','screw');
 %Horn
-[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtmh_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','horn');
-figure
-title(['ROLL PITCH YAW (horn):' runName])
-[roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
-ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
+for i = 1:length(adamsColumns)
+    adamsColumn = adamsColumns{i}
+    adamsData = data.(adamsColumn);
+    CompareValue = cell(1,3);
+    CompareValue{1} = adamsData';
+    CompareValue{2} = adamsData';
+    CompareValue{3} = adamsData';
+    
+    MeasuredValue = cell(1,3);
+    %Normal
+    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtm_t,true);
+    MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
+   
+    %screw
+    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
+    MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
+    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
+
+    figure
+    ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+    title(['ROLL PITCH YAW:' runName])
+    MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
+    
+    figure;
+    rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
+        adamsColumn],true);
+end
+%figure
+%ThreeMarkers.plotRun(vtmk_t,1.0);
 
 function test_viconthreemarkers_adams_rollpitchyaw
 close all;
 filename='test-data/test-data.h5';
-runName = 'adams/roll';
-adamsColumn = 'Roll';
-processRun(filename,runName,adamsColumn);
 
-runName = 'adams/pitch';
-adamsColumn = 'Pitch';
-processRun(filename,runName,adamsColumn);
-runName = 'adams/yaw';
-adamsColumn = 'yaw';
+% runName = 'adams/roll';
+% adamsColumn = {'Roll'};
+% processRun(filename,runName,adamsColumn);
+
+%The Pitch is plotted wrong in Adams.
+%runName = 'adams/pitch';
+%adamsColumn = {'Pitch'};
+%processRun(filename,runName,adamsColumn);
+
+%The Yaw is plotted wrong in Adams.
+% runName = 'adams/yaw';
+% adamsColumn = {'yaw'};
+% processRun(filename,runName,adamsColumn);
+%
+runName = 'adams/rollpitchyaw';
+adamsColumn = {'Roll','Pitch','Yaw'};
 processRun(filename,runName,adamsColumn);

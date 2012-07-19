@@ -82,11 +82,15 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             points_0 = ThreeMarkers.points_0;
         end
         
-        function plotRun(tm_t)
+        function plotRun(tm_t,varargin)
             %PLOTRUN Plays back a run
             %tm_t must be a row cell vector. If you would like to
             %plot values side by side then create a matrix of
             %row cell vectors, with each row being a run to plot.
+            %Optional argument of a number can be used to make the plot
+            %pauze between plots if you want to get a better understanding
+            %of what is happening.
+           
             parallelPlots = size(tm_t,1);
             m=ceil(parallelPlots/2);
             if parallelPlots == 1
@@ -100,6 +104,9 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     tm_t{j,i}.plotT();
                     grid on
                     axis([-2 2 -2 2 -2 2]);
+                    if (~isempty(varargin))&&(~isempty(varargin{1}))
+                        pause(varargin{1});
+                    end
                 end
                 drawnow;
             end

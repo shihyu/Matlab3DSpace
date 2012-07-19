@@ -74,28 +74,34 @@ classdef ViconThreeMarkers < ThreeMarkers
                 leftback-midpoint)+midpoint;
             crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
             %not a perfect 60 degree Triangle... so rotate on the
-                %XY plane to get the
-                %actual front marker in the zero frame.
-                %TODO test this transform.
-                %              rotAngle = ThreeMarkers.getAngle(front,...
-                %                  leftback,...
-                %                  0);
-                %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
-                %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
-                %              our_point_0(3,1:2) = yValue;
+            %XY plane to get the
+            %actual front marker in the zero frame.
+            %TODO test this transform.
+            %              rotAngle = ThreeMarkers.getAngle(front,...
+            %                  leftback,...
+            %                  0);
+            %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
+            %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
+            %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
             points_T = [ rightback;
                 leftback;
                 front;
                 crosspoint]';
             if ((~isempty(varargin))&&(~isempty(varargin{1})))
-                %display(['Testing arg:' varargin{1}])
-                if (strcmp(varargin{1},'kabsch')==1)
-                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
-                        points_T);
-                    H_0_T(4,1:3)=[0 0 0];
-                    H_0_T(:,4)=[0 0 0 1]';
+                if (strcmp(varargin{1},'screw')==1)
+                    %Create the screw theory compliant points for Vikon
+                    points_T(4,:) = 1;
+                    %Get the homogenous matrix for these points
+                    H_T_0 = ThreeMarkers.points_0/points_T;
+                    %Remove translation
+                    H_T_0(1:3,4)  = [0 0 0]';
+                    %and error
+                    H_T_0(4,1:3)  = [0 0 0];
+                    %H_0_T = H_T_0';
+                    H_0_T = invht(H_T_0);
                 elseif (strcmp(varargin{1},'horn')==1)
+                    %display(['HORN:' varargin{1}])
                     [H_0_T] = absor(ThreeMarkers.points_0(1:3,:),...
                         points_T);
                     H_0_T = H_0_T.R;
@@ -103,16 +109,11 @@ classdef ViconThreeMarkers < ThreeMarkers
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
-                %Create the screw theory compliant points for Vikon
-                points_T(4,:) = 1;
-                %Get the homogenous matrix for these points
-                H_T_0 = ThreeMarkers.points_0/points_T;
-                %Remove translation
-                H_T_0(1:3,4)  = [0 0 0]';
-                %and error
-                H_T_0(4,1:3)  = [0 0 0];
-                %H_0_T = H_T_0';
-                H_0_T = invht(H_T_0);
+                %display(['KABSCH:' varargin{1}])
+                [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                    points_T);
+                H_0_T(4,1:3)=[0 0 0];
+                H_0_T(:,4)=[0 0 0 1]';
             end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
