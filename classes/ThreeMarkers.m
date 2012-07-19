@@ -333,7 +333,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 qtm.quaternion = quaternionOrH;
             else
                 qtm.H_0_T = quaternionOrH;
-                qtm.quaternion = matrix2quaternion(quaternionOrH);
+                qtm.quaternion = matrix2quaternion(quaternionOrH)';
             end
             qtm.points_T = qtm.H_0_T*qtm.points_0;
             qtm.timestamp = 0.0;

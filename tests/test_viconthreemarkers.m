@@ -73,7 +73,7 @@ function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readDataVicon(filename,...
-    runName,'RBO','LBO','FON');
+    runName,'RBO','LBO','FON','kabsch');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
 assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 0.008333333333333);
@@ -177,8 +177,7 @@ display(['==================================================']);
 
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','kabsch');
+
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
 adamsData = data.(adamsColumn);
@@ -186,13 +185,27 @@ theTime = data.Time;
 % figure
 % title('Adams data');
 % plot(theTime,adamsData);
+
+%Normal
 figure
 [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtm_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
 title(['ROLL PITCH YAW:' runName]);
 %ThreeMarkers.plotRun(vtm_t);
+
+%Kabsch
+[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RBT','LBT','FTN','kabsch');
 figure
 title(['ROLL PITCH YAW (Kabsch):' runName])
+[roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
+
+%Horn
+[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RBT','LBT','FTN','horn');
+figure
+title(['ROLL PITCH YAW (horn):' runName])
 [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
 ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,2);
 

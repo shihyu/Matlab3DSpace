@@ -4,7 +4,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     
     methods (Static)
         function [vtm_t] = readDataVicon(filename,runName,...
-                rightBackName,leftBackName,frontName)
+                rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
             reader = c3dReader(filename,runName)
@@ -21,7 +21,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
-                    leftBack(i,1:3),front(i,1:3),rightBack(i,4));
+                    leftBack(i,1:3),front(i,1:3),rightBack(i,4),varargin);
                 vtm_t{i} = vtm;
             end
         end
@@ -88,11 +88,17 @@ classdef ViconThreeMarkers < ThreeMarkers
                 leftback;
                 front;
                 crosspoint]';
-            if (~isempty(varargin{1}))
+            if ((~isempty(varargin))&&(~isempty(varargin{1})))
                 %display(['Testing arg:' varargin{1}])
                 if (strcmp(varargin{1},'kabsch')==1)
                     [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
                         points_T);
+                    H_0_T(4,1:3)=[0 0 0];
+                    H_0_T(:,4)=[0 0 0 1]';
+                elseif (strcmp(varargin{1},'horn')==1)
+                    [H_0_T] = absor(ThreeMarkers.points_0(1:3,:),...
+                        points_T);
+                    H_0_T = H_0_T.R;
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
                 end
