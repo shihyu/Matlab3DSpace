@@ -137,10 +137,10 @@ parfor samplePoint = 1:N
     testRBT = RBT(samplePoint,:);
     testLBT = LBT(samplePoint,:);
     testFTN = FTN(samplePoint,:);
-%     assertElementsAlmostEqual(...
-%         pi/2-ThreeMarkers.getAngle(testRBO,testFON,mid),0);
-%     assertElementsAlmostEqual(...
-%         pi/2,ThreeMarkers.getAngle(testLBO,testFON,mid))
+    %     assertElementsAlmostEqual(...
+    %         pi/2-ThreeMarkers.getAngle(testRBO,testFON,mid),0);
+    %     assertElementsAlmostEqual(...
+    %         pi/2,ThreeMarkers.getAngle(testLBO,testFON,mid))
     
     pointsR = [(testRBO-mid)',(testLBO-mid)',(testFON-mid)',(testLBO-mid)'];
     v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0);
@@ -198,6 +198,7 @@ filename='test-data/test-data.h5';
 runName = 'adams/roll';
 adamsColumn = 'Roll';
 processRun(filename,runName,adamsColumn);
+
 runName = 'adams/pitch';
 adamsColumn = 'Pitch';
 processRun(filename,runName,adamsColumn);

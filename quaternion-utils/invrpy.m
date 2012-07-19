@@ -19,19 +19,19 @@
 % pk at csse uwa edu au
 % http://www.csse.uwa.edu.au/
 
-function [rpy1] = invrpy(RPY)
+function [rpy1,rpy2] = invrpy(RPY)
 
     phi1 = atan2(RPY(2,1), RPY(1,1));
-    %phi2 = phi1 + pi;
+    phi2 = phi1 + pi;
     
     theta1 = atan2(-RPY(3,1), cos(phi1)*RPY(1,1) + sin(phi1)*RPY(2,1));
-    %theta2 = atan2(-RPY(3,1), cos(phi2)*RPY(1,1) + sin(phi2)*RPY(2,1));
+    theta2 = atan2(-RPY(3,1), cos(phi2)*RPY(1,1) + sin(phi2)*RPY(2,1));
     
     psi1 = atan2(sin(phi1)*RPY(1,3) - cos(phi1)*RPY(2,3), ...
                  -sin(phi1)*RPY(1,2) + cos(phi1)*RPY(2,2));
-    %psi2 = atan2(sin(phi2)*RPY(1,3) - cos(phi2)*RPY(2,3), ...
-    %             -sin(phi2)*RPY(1,2) + cos(phi2)*RPY(2,2));
+    psi2 = atan2(sin(phi2)*RPY(1,3) - cos(phi2)*RPY(2,3), ...
+                 -sin(phi2)*RPY(1,2) + cos(phi2)*RPY(2,2));
     
-    rpy1 = [psi1,theta1,phi1];
-    %rpy2 = [phi2, theta2, psi2];
+    rpy1 = [phi1,theta1,psi1];
+    rpy2 = [phi2, theta2, psi2];
     

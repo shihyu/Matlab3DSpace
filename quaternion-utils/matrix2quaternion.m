@@ -26,8 +26,8 @@
 
 function Q = matrix2quaternion(T)
 
-Q = quaternion(T(1:3,1:3))';
-return
+% Q = quaternion(T(1:3,1:3))';
+% return
 % This code follows the implementation suggested by Hartley and Zisserman
 R = T(1:3, 1:3);   % Extract rotation part of T
 
@@ -56,4 +56,4 @@ twosintheta = axis'*twosinthetav;
 
 theta = atan2(twosintheta, twocostheta);
 
-Q = [cos(theta/2); axis*sin(theta/2)];
+Q = quaternionnormalise([cos(theta/2); axis*sin(theta/2)]);

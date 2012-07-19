@@ -210,6 +210,22 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             XMAX = max(t);
             
             hold on;
+           
+            subplot(3,1,1);
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            hold on;
+            grid on;
+            xlim([XMIN XMAX])
+            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
+            ylabel(YLABEL);
+            subplot(3,1,2);
+            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
+            grid on;
+            hold on;
+            xlim([XMIN XMAX])
+            title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
+            ylabel(YLABEL);
+            xlabel(XLABEL);
             subplot(3,1,3);
             ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
@@ -217,24 +233,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             xlim([XMIN XMAX])
             title(['YAW(z): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
-            %xlabel(XLABEL);
-            subplot(3,1,2);
-            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
-            hold on;
-            grid on;
-            xlim([XMIN XMAX])
-            title(['PITCH(y): maximum angle: ' num2str(max(abs(roll)))]);
-            ylabel(YLABEL);
-            %xlabel(XLABEL);
-            subplot(3,1,1);
-            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
-            grid on;
-            hold on;
-            %ylim([YMIN YMAX])
-            xlim([XMIN XMAX])
-            title(['ROLL(x): maximum angle: ' num2str(max(abs(pitch)))]);
-            ylabel(YLABEL);
-            xlabel(XLABEL);
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -327,11 +325,16 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        function qtm = ThreeMarkers(quaternion)
+        function qtm = ThreeMarkers(quaternionOrH)
             %THREEMARKER(quaternion) Creates the ThreeMarker object
             % which takes a 4x1 or 1x4 quaternion vector as input.
-            qtm.H_0_T = quaternion2matrix(quaternion);
-            qtm.quaternion = quaternion;
+            if size(quaternionOrH) == [1,4]
+                qtm.H_0_T = quaternion2matrix(quaternionOrH);
+                qtm.quaternion = quaternionOrH;
+            else
+                qtm.H_0_T = quaternionOrH;
+                qtm.quaternion = matrix2quaternion(quaternionOrH);
+            end
             qtm.points_T = qtm.H_0_T*qtm.points_0;
             qtm.timestamp = 0.0;
         end
@@ -422,11 +425,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [euler]=getRPY(tm,inDegrees)
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
-            %euler = quaternion2euler(tm.getQ,inDegrees);
-            euler = invrpy(tm.getH);
-            if inDegrees
-                euler = euler/pi*180;
-            end
+            euler = quaternion2euler(tm.getQ,inDegrees);
+            %euler = invrpy(tm.getH);
+            %if inDegrees
+            %    euler = euler/pi*180;
+            %end
         end
         
         function [quaternion]=getQ(tm)
