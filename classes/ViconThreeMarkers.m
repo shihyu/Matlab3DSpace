@@ -27,7 +27,7 @@ classdef ViconThreeMarkers < ThreeMarkers
         end
         
         function [vtm_t,Fs] = readDataAdams(filename,runName,...
-                rightBackName,leftBackName,frontName)
+                rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the ADAMS export file three markers in
             % and creates the ViconThreeMarker object.
             % A 'Time' column must be present.
@@ -49,7 +49,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(RBO(i,1:3),...
-                    LBO(i,1:3),FON(i,1:3),t(i));
+                    LBO(i,1:3),FON(i,1:3),t(i),varargin);
                 vtm_t{i} = vtm;
             end
         end
@@ -59,7 +59,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
-                front,timestamp)
+                front,timestamp,varargin)
             %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
             %Calculates and creates the quaternion of the plane represented
             %by the three markers. rightback,leftback and front are Nx3
@@ -72,34 +72,42 @@ classdef ViconThreeMarkers < ThreeMarkers
             leftback = ThreeMarkers.normWithOffset(leftback,midpoint);
             crosspointTmp = cross(front-midpoint,...
                 leftback-midpoint)+midpoint;
-                        crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
-            
+            crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
+            %not a perfect 60 degree Triangle... so rotate on the
+                %XY plane to get the
+                %actual front marker in the zero frame.
+                %TODO test this transform.
+                %              rotAngle = ThreeMarkers.getAngle(front,...
+                %                  leftback,...
+                %                  0);
+                %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
+                %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
+                %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
             points_T = [ rightback;
                 leftback;
                 front;
                 crosspoint]';
-            %not a perfect 60 degree Triangle... so rotate on the
-            %XY plane to get the
-            %actual front marker in the zero frame.
-            %TODO test this transform.
-            %              rotAngle = ThreeMarkers.getAngle(front,...
-            %                  leftback,...
-            %                  0);
-            %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
-            %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
-            %              our_point_0(3,1:2) = yValue;
-            %Create the screw theory compliant points for Vikon
-            points_T(4,:) = 1;
-            %Get the homogenous matrix for these points
-            H_T_0 = ThreeMarkers.points_0/points_T;
-            %Remove translation
-            H_T_0(1:3,4)  = [0 0 0]';
-            %and error
-            H_T_0(4,1:3)  = [0 0 0];
-            %H_0_T = H_T_0';
-            H_0_T = invht(H_T_0);
-            
+            if (~isempty(varargin{1}))
+                %display(['Testing arg:' varargin{1}])
+                if (strcmp(varargin{1},'kabsch')==1)
+                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                        points_T);
+                    H_0_T(4,1:3)=[0 0 0];
+                    H_0_T(:,4)=[0 0 0 1]';
+                end
+            else
+                %Create the screw theory compliant points for Vikon
+                points_T(4,:) = 1;
+                %Get the homogenous matrix for these points
+                H_T_0 = ThreeMarkers.points_0/points_T;
+                %Remove translation
+                H_T_0(1:3,4)  = [0 0 0]';
+                %and error
+                H_T_0(4,1:3)  = [0 0 0];
+                %H_0_T = H_T_0';
+                H_0_T = invht(H_T_0);
+            end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
         end

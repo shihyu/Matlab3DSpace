@@ -25,9 +25,6 @@
 % The Software is provided "as is", without warranty of any kind.
 
 function Q = matrix2quaternion(T)
-
-% Q = quaternion(T(1:3,1:3))';
-% return
 % This code follows the implementation suggested by Hartley and Zisserman
 R = T(1:3, 1:3);   % Extract rotation part of T
 
