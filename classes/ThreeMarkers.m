@@ -242,6 +242,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
         end
         
+        function [roll,pitch,yaw,t] = getAndPlotRPY(theRun_t,theTitle)
+            %GETANDPLOTRYP Gets and plots the RPY for the run.
+            [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(theRun_t,true);   
+            figure('visible','on','WindowStyle','docked',...
+                'Name',theTitle);
+            ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+        end
+        
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
                 tm_t_1,startIndex,numberOfSamples)
             % GETCHANGEOFGLOBALREFERENCEFRAMES(tm_t_0,tm_t_1,startIndex,

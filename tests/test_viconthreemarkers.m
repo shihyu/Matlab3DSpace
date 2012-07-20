@@ -11,9 +11,9 @@ cvt = ViconThreeMarkers(rightback,...
     leftback,front,theTimestamp)
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
-assertEqual(cvt.getH,eye(4));
-assertEqual(cvt.get0,cvt.getT);
-assertEqual(cvt.getQ,[1 0 0 0]);
+assertElementsAlmostEqual(cvt.getH,eye(4));
+assertElementsAlmostEqual(cvt.get0,cvt.getT);
+assertElementsAlmostEqual(cvt.getQ,[1 0 0 0]);
 assertEqual(cvt.getTimestamp(),2.3);
 
 rightback = [0 1 0];
@@ -34,7 +34,7 @@ cvt = ViconThreeMarkers(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
-assertEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
+assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
 
 rightback = [0 0 -1];
 leftback = [0 0 1];
@@ -73,7 +73,7 @@ function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
 [vtm_t] = ViconThreeMarkers.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','screw');
+    runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
 assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 0.008333333333333);
@@ -143,8 +143,8 @@ for samplePoint = 1:N
     %         pi/2,ThreeMarkers.getAngle(testLBO,testFON,mid))
     
     pointsR = [(testRBO-mid)',(testLBO-mid)',(testFON-mid)',(testLBO-mid)'];
-    v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0,'screw');
-    v_lbt = ViconThreeMarkers(testRBT,testLBT,testFTN,0,'screw');
+    v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0);
+    v_lbt = ViconThreeMarkers(testRBT,testLBT,testFTN,0);
     H = v_rbt.getH();
     H2 = v_lbt.getH();
     %Make sure the H matrix is invertable.
@@ -227,7 +227,7 @@ end
 %figure
 %ThreeMarkers.plotRun(vtmk_t,1.0);
 
-function test_viconthreemarkers_adams_rollpitchyaw
+function test_adams_rollpitchyaw
 close all;
 filename='test-data/test-data.h5';
 
@@ -248,3 +248,36 @@ filename='test-data/test-data.h5';
 runName = 'adams/rollpitchyaw';
 adamsColumn = {'Roll','Pitch','Yaw'};
 processRun(filename,runName,adamsColumn);
+
+%Incorrectly created file.
+%runName = '/adams/rollpitchyawbig';
+%adamsColumn = {'Roll','Pitch','Yaw'};
+%processRun(filename,runName,adamsColumn);
+
+
+function processRunCombined(filename,runName)
+display(['==================================================']);
+display(['Processing RUN:' runName]);
+display(['==================================================']);
+%kobasch
+[one_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RB0','LB0','F0N');
+[two_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RBT','LBT','FTN');
+%ThreeMarkers.plotRun([one_t;two_t]);
+[one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPY(one_t,...
+    'ONE');
+[two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPY(two_t,...
+    'TWO');
+diff_t = ThreeMarkers.cellminus(two_t,one_t);
+[diff_roll,diff_pitch,diff_yaw,t] = ThreeMarkers.getAndPlotRPY(diff_t,...
+    'DIFF');
+
+
+function test_adams_rollpitchyaw_combined
+close all;
+filename='test-data/test-data.h5';
+runName = '/adams/pitchyawcombined';
+processRunCombined(filename,runName);
+runName = '/adams/rollyawcombined';
+processRunCombined(filename,runName);
