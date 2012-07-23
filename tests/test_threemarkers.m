@@ -3,14 +3,14 @@ function test_suite = test_threemarkers
 initTestSuite;
 
 function test_calculateEst
-rightback = [1 0 0];
-leftback = [-1 0 0];
-front = [0 1 0];
+rightback = [0 1  0];
+leftback = [0 -1  0];
+front = [1 0  0];
 theTimestamp = 2.4;
 cvt = ViconThreeMarkers(rightback,...
         leftback,front,theTimestamp);
 assertEqual(cvt.getTimestamp(),2.4);
-assertEqual(cvt.get0,[1 -1 0 0; 0 0 1 0; 0 0 0 1; 1 1 1 1]);
+assertEqual(cvt.get0,[0 0 1 0; -1 1 0  0; 0 0 0 1; 1 1 1 1]);
 cvt1 = cvt;
 cvt1 = cvt1.setTimestamp(2.5);
 cvt2 = cvt;
@@ -206,10 +206,13 @@ runName = '/promove';
 [vtm_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,...
     10,200);
 [roll,pitch,yaw] = ThreeMarkers.getRPYt(vtm_t,true);
-assertTrue(roll(1)>0);
+assertTrue(yaw(1)>0);
 assertTrue(pitch(1)~=0);
-assertTrue(yaw(1)~=0);
+assertTrue(roll(1)~=0);
 assertEqual(size(roll),size(pitch),size(yaw));
+figure
+ThreeMarkers.plotRPY(roll,pitch,yaw,true,200);
+
 
 function test_callibrate
 quat = [1,0,0,0];
@@ -221,8 +224,10 @@ quat = [0.8,0.6,0,0,0];
 qvt2 = ThreeMarkers(quat);
 qvt2 = qvt2.setTimestamp(9.5);
 tm_t = {qvt,qvt1,qvt2};
-tm_t = ThreeMarkers.callibrate(tm_t,1,3);
-assertElementsAlmostEqual(tm_t{1}.getQ,[ 0.957601107188393  -0.288097413233032 0 0])
+tm_t = ThreeMarkers.callibrate(tm_t,1,1);
+assertElementsAlmostEqual(tm_t{1}.getQ,[1 0 0 0])
+assertElementsAlmostEqual(tm_t{2}.getQ,[0.8 0.2 0 0]/norm([0.8 0.2 0 0]))
+assertElementsAlmostEqual(tm_t{3}.getQ,[0.8 0.6 0 0]/norm([0.8 0.6 0 0]))
 assertEqual(tm_t{1}.getTimestamp,qvt.getTimestamp)
 assertEqual(tm_t{1}.getTimestamp,7.8)
 assertEqual(tm_t{3}.getTimestamp,qvt2.getTimestamp)
