@@ -100,23 +100,26 @@ classdef ViconThreeMarkers < ThreeMarkers
                     H_T_0(4,1:3)  = [0 0 0];
                     %H_0_T = H_T_0';
                     H_0_T = invht(H_T_0);
-                elseif (strcmp(varargin{1},'horn')==1)
+                elseif (strcmp(varargin{1},'kabsch')==1)
                     %display(['HORN:' varargin{1}])
-                    [H_0_T] = absor(ThreeMarkers.points_0(1:3,:),...
+                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
                         points_T);
-                    H_0_T = H_0_T.R;
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
                 %display(['KABSCH:' varargin{1}])
-                [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
                     points_T);
+                H_0_T = rotInfo.R;
                 H_0_T(4,1:3)=[0 0 0];
                 H_0_T(:,4)=[0 0 0 1]';
             end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
+            if (isempty(varargin))
+                vtm.quaternion = rotInfo.q';
+            end
         end
     end
 end

@@ -188,15 +188,15 @@ display(['Processing RUN:' runName adamsColumns]);
 display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
-%kobasch
+%Horn
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
 %Screw
 [vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','screw');
-%Horn
+%kabsch
 [vtmh_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','horn');
+    'RBT','LBT','FTN','kabsch');
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
     adamsData = data.(adamsColumn);
