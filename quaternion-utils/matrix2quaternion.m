@@ -53,4 +53,4 @@ twosintheta = axis'*twosinthetav;
 
 theta = atan2(twosintheta, twocostheta);
 
-Q = quaternionnormalise([cos(theta/2); axis*sin(theta/2)]);
+Q = quaternionnormalise([cos(theta/2); axis*sin(theta/2)])';

@@ -30,25 +30,25 @@ theta = -0.2*pi;
 H = rotz(theta);
 quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0]);
-assertElementsAlmostEqual(errorEuler,[0 0 theta])
+assertElementsAlmostEqual(errorEuler,[theta 0 0])
 
 theta = -0.2*pi;
 H = rotz(theta);
 quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],quaternion);
-assertElementsAlmostEqual(errorEuler,[0 0 -theta])
+assertElementsAlmostEqual(errorEuler,[-theta 0 0])
 
 theta = -0.7*pi;
 H = rotz(theta);
 quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],quaternion);
-assertElementsAlmostEqual(errorEuler,[0 0 -1.3*pi+2*pi])
+assertElementsAlmostEqual(errorEuler,[-1.3*pi+2*pi 0 0])
 
 theta = -1.2*pi;
 H = rotz(theta);
  quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0]);
-assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
+assertElementsAlmostEqual(errorEuler,[0.8*pi 0 0])
 
 %Y
 theta = -2*pi;
@@ -105,13 +105,13 @@ theta = -0.2*pi;
 H = rotx(theta);
 quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0]);
-assertElementsAlmostEqual(errorEuler,[theta 0 0])
+assertElementsAlmostEqual(errorEuler,[0 0 theta])
 
 theta = -1.2*pi;
 H = rotx(theta);
  quaternion = matrix2quaternion(H);
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0]);
-assertElementsAlmostEqual(errorEuler,[0.8*pi 0 0])
+assertElementsAlmostEqual(errorEuler,[0 0 0.8*pi])
 
 
 function test_slerp
@@ -122,15 +122,15 @@ quaternion = matrix2quaternion(H)
 quaternionNorm = quaternionnormalise(quaternion);
 assertElementsAlmostEqual(quaternion,quaternionNorm)
 
-startQ=ThreeMarkers([1 0 0 0 0]);
-endQ=ThreeMarkers([quaternion 1.0]);
+startQ=ThreeMarkers([1 0 0 0]);
+endQ=ThreeMarkers(quaternion);
 
 
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0])
-assertElementsAlmostEqual(errorEuler,[0 0 theta])
+assertElementsAlmostEqual(errorEuler,[theta 0 0])
 
 
-midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps)' 0.5]
+midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps)']
 
 midQ = ThreeMarkers(midQ);
 ThreeMarkers.plotRun({startQ;...
@@ -183,7 +183,7 @@ assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
 assertElementsAlmostEqual([pi/7,0, 0],euler)
 
-H = roty(pi/13)*H;
+H = H*roty(pi/13);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
@@ -191,9 +191,9 @@ qtm = ThreeMarkers(quat)
 assertElementsAlmostEqual(qtm.getH-H,zeros(4))
 assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
-assertElementsAlmostEqual([pi/7,pi/13, 0],euler)
+assertElementsAlmostEqual([ pi/7,pi/13,0],euler)
 
-H = rotz(pi/9)*H;
+H = H*rotz(pi/9);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
@@ -235,8 +235,8 @@ euler = qtm2.getRPY(false)
 assertElementsAlmostEqual([0,0, pi/9],euler)
 
 qtm4 = qtm2.*qtm1.*qtm;
-H=rotz(pi/9)*roty(pi/13)*rotx(pi/7)
-newTM = ThreeMarkers(matrix2quaternion(H));
+H=rotx(pi/9)*roty(pi/13)*rotz(pi/7)
+newTM = ThreeMarkers(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
 euler = qtm4.getRPY(false)
