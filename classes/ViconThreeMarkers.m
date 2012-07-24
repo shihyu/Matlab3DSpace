@@ -35,11 +35,13 @@ classdef ViconThreeMarkers < ThreeMarkers
             data = reader.readData(false);
             t=data.Time;
             %HACK, must generalise the readData function for adamsReader.
-            if strcmp(rightBackName,'RBO')
+            if strcmp(rightBackName,'RBO')||strcmp(rightBackName,'RB0')
+                display('Reading RBO')
                 RBO = [data.RBOX data.RBOY data.RBOZ];
                 LBO = [data.LBOX data.LBOY data.LBOZ];
                 FON = [data.FONX data.FONY data.FONZ];
             else
+                display('Reading RBT')
                 RBO = [data.RBTX data.RBTY data.RBTZ];
                 LBO = [data.LBTX data.LBTY data.LBTZ];
                 FON = [data.FTNX data.FTNY data.FTNZ];

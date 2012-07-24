@@ -347,7 +347,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 qtm.H_0_T = quaternion2matrix(quaternionOrH);
                 qtm.quaternion = quaternionOrH;
             elseif size(quaternionOrH) == [4,4]
+                %Inconsistent use of order of multiplication found
+                %somewhere in the code, between H and quaternions.
                 qtm.H_0_T = quaternionOrH;
+                %Not sure why but for the H sent from ViconThreeMarkers
+                %we need to get the quaternion from the inverse matrix.
                 qtm.quaternion = matrix2quaternion(quaternionOrH');
             else
                 error('matlab3dspace:threemarkers',...
@@ -375,7 +379,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
-                quaternionconjugate(obj1.getQ)');
+                quaternionconjugate(obj1.getQ));
             r = r.setTimestamp(obj1.getTimestamp);
         end
         

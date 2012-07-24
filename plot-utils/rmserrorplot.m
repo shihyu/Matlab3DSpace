@@ -13,7 +13,8 @@ theXLabel = ['Nr. van de meting: '];
 for j = 1:length(A)
     Aj = A{j};
     Bj = B{j};
-    Verschil =  Aj-Bj;
+    minSize = min(length(Aj),length(Bj));
+    Verschil =  Aj(1:minSize)-Bj(1:minSize);
     RMS = sqrt(mean(Verschil.^2));
     RMSVector = [RMSVector, RMS];
     RMSVerschil = abs(Verschil-RMS)';
@@ -22,7 +23,7 @@ for j = 1:length(A)
     Identification = [repmat(j,RMSVerschilLengte(j),1)];
     IdentificationVector = [IdentificationVector; Identification];
     theXLabel = [theXLabel ' RMS ' num2str(j) ':' num2str(RMS) ]; 
-    if plotDifference
+    if plotDifference==true
         figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
        subplot(3,1,1);

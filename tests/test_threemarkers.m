@@ -96,7 +96,7 @@ assertEqual(diff.getTimestamp(),1.5);
 qvtConj = qvt1';
 assertEqual(qvtConj.getTimestamp,qvt1.getTimestamp)
 assertEqual(qvtConj.getTimestamp,2)
-qvtConjFun = quaternionconjugate(qvt1.getQ)';
+qvtConjFun = quaternionconjugate(qvt1.getQ);
 assertElementsAlmostEqual(qvtConj.getQ,qvtConjFun);
 
 qvtConjFun = ThreeMarkers(qvtConjFun);
