@@ -143,7 +143,7 @@ spline_t = slerp(startQ.getQ,...
             endQ.getQ, t, eps);
 figure
 parfor i = 1:size(spline_t,2)
-    tm_t{i} = ThreeMarkers([spline_t(:,i)' t(i)]);
+    tm_t{i} = QuaternionsThreeMarkers([spline_t(:,i)' t(i)]);
 end
 ThreeMarkers.plotRun(tm_t);
 
@@ -234,10 +234,12 @@ assertEqual(qtm2.getQ,quat);
 euler = qtm2.getRPY(false)
 assertElementsAlmostEqual([0,0, pi/9],euler)
 
-qtm4 = qtm2.*qtm1.*qtm;
-H=rotx(pi/9)*roty(pi/13)*rotz(pi/7)
+qtm4 = qtm.*qtm1.*qtm2;
+H=rotx(pi/7)*roty(pi/13)*rotz(pi/9)
 newTM = ThreeMarkers(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
-euler = qtm4.getRPY(false)
+euler = qtm4.getRPY(false);
+eulerNew = newTM.getRPY(false)
+assertElementsAlmostEqual(eulerNew,euler)
 assertElementsAlmostEqual([pi/7,pi/13, pi/9],euler)

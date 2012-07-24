@@ -36,9 +36,9 @@ R = T(1:3, 1:3);   % Extract rotation part of T
 % sorted by size. This may be overcautious on my part.
 d = diag(abs(d));   % Extract eigenvalues
 [s, ind] = sort(d); % Find index of smallest one
-% if d(ind(1)) > 0.001   % Hopefully it is close to 0
-%     warning(['Rotation matrix is dubious: ' num2str(d(ind(1)))]);
-% end
+if d(ind(1)) > 0.001   % Hopefully it is close to 0
+    warning(['Rotation matrix is dubious: ' num2str(d(ind(1)))]);
+end
 
 axis = v(:,ind(1)); % Extract appropriate eigenvector
 

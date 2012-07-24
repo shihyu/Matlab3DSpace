@@ -4,9 +4,8 @@ function [ eulerAngles] = quaternion2euler(theQuaternion,inDegrees,...
 %If an extra argument is give then set it to
 % 'zxz' to get ZXZ euler angles.
 %The default is xyz, the roll pitch and yaw.
-if norm(theQuaternion) ~= 1.0
-    theQuaternion = quaternionnormalise(theQuaternion);
-end
+theQuaternion = quaternionnormalise(theQuaternion);
+
 if ((~isempty(varargin))&&(~isempty(varargin{1})))
     typeOfEuler = varargin{1};
 else

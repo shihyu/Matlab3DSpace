@@ -348,7 +348,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 qtm.quaternion = quaternionOrH;
             elseif size(quaternionOrH) == [4,4]
                 qtm.H_0_T = quaternionOrH;
-                qtm.quaternion = matrix2quaternion(quaternionOrH)';
+                qtm.quaternion = matrix2quaternion(quaternionOrH);
             else
                 error('matlab3dspace:threemarkers',...
                     ['Wrong size for input quaternion or H matrix' ...
@@ -445,11 +445,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [euler]=getRPY(tm,inDegrees)
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
-            euler = quaternion2euler(tm.getQ,inDegrees);
-            %euler = invrpy(tm.getH);
-            %if inDegrees
-            %    euler = euler/pi*180;
-            %end
+            euler = quaternion2euler(tm.getQ,inDegrees,'xyz');
+%             euler = invrpy(tm.getH);
+%             if inDegrees
+%                 euler = euler/pi*180;
+%             end
         end
         
         function [quaternion]=getQ(tm)

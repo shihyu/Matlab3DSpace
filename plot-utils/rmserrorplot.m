@@ -23,6 +23,8 @@ for j = 1:length(A)
     IdentificationVector = [IdentificationVector; Identification];
     theXLabel = [theXLabel ' RMS ' num2str(j) ':' num2str(RMS) ]; 
     if plotDifference
+        figure('visible','on','WindowStyle','docked',...
+                'Name',[theTitle ' - DATA PLOT' num2str(j)]);
        subplot(3,1,1);
        plot(Aj);
        title([theTitle ' A PLOT']);
@@ -32,10 +34,11 @@ for j = 1:length(A)
        subplot(3,1,3);
        plot(Verschil);
        title([theTitle ' Error PLOT']);
-       figure
+       
     end
 end
-
+figure('visible','on','WindowStyle','docked',...
+                'Name',theTitle);
 boxplot(RMSVerschilVector, IdentificationVector, 'notch', 'on')
 xlabel (theXLabel),
 ylabel('absoluut RMS verschil: '),

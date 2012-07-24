@@ -88,6 +88,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                 leftback;
                 front;
                 crosspoint]';
+            setQuaternion = false;
             if ((~isempty(varargin))&&(~isempty(varargin{1})))
                 if (strcmp(varargin{1},'screw')==1)
                     %Create the screw theory compliant points for Vikon
@@ -111,13 +112,15 @@ classdef ViconThreeMarkers < ThreeMarkers
                 %display(['KABSCH:' varargin{1}])
                 [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
                     points_T);
-                H_0_T = rotInfo.R;
+                H_0_T = rotInfo.M;
                 H_0_T(4,1:3)=[0 0 0];
                 H_0_T(:,4)=[0 0 0 1]';
+                setQuaternion = true;
             end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
-            if (isempty(varargin))
+            if setQuaternion
+                %display('SETTING Q');
                 vtm.quaternion = rotInfo.q';
             end
         end

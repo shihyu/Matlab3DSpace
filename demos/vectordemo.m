@@ -3,7 +3,7 @@ clear all;
 clc;
 %Simple demo to find out the Roll Picth and Yaw angles of a vector.
 q1 = [0,0,0];
-q2=[1,1,1];
+q2=[2,2,0];
 %Normalises the points.
 q2_norm = ThreeMarkers.normWithOffset(q2,q1)
  
@@ -15,13 +15,18 @@ q2_0 = [1,0,0];
 %Get rotation matrix
 R = absor([q1_0',q2_0'],[q1',q2_norm'])
 quat = R.q
-R = R.R;
+norm(quat)
+R.M
+R = R.R
+
 %Lets test:
 q2_calc = (R*q2_0')'
 q2_norm
 
-%Get the roll pitch and yaw from the Rotation matrixx
+%Get the roll pitch and yaw from the Rotation matrixx - Does not seem
+%to be correct.
 [euler] = invrpy(R);
+
 %Convert to degrees from radians.
 euler = euler/pi*180;
 roll = euler(1)
@@ -30,6 +35,8 @@ yaw = euler(3)
 
 
 %Or get it from the quaternion.
-euler = quaternion2euler(quat,true,'zxz')
+eulerZXZ = quaternion2euler(quat,true,'zxz')
 
-euler = quaternion2euler(quat,true)%Defaults to XYZ.
+eulerXYZ = quaternion2euler(quat,true)%Defaults to XYZ=>ROLL PITCH YAW
+
+eulerZYX = quaternion2euler(quat,true,'zyx')%Defaults to XYZ.

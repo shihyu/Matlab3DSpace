@@ -8,7 +8,7 @@ leftback = [0 1 0];
 front = [1 0 0];
 theTimestamp = 2.3;
 cvt = ViconThreeMarkers(rightback,...
-    leftback,front,theTimestamp)
+    leftback,front,theTimestamp);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
 assertElementsAlmostEqual(cvt.getH,eye(4));
@@ -24,7 +24,7 @@ cvt = ViconThreeMarkers(rightback,...
     leftback,front,theTimestamp);
 assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
 assertElementsAlmostEqual([0 0 1 0; 1 -1 0 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
-cvt.getQ
+quat = cvt.getQ
 
 rightback = [1 1 2];
 leftback = [1 -1 2];
@@ -192,35 +192,34 @@ data = reader.readData(false);
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
 %Screw
-[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtms_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','screw');
 %kabsch
-[vtmh_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','kabsch');
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
     adamsData = data.(adamsColumn);
-    CompareValue = cell(1,3);
+    CompareValue = cell(1,1);
     CompareValue{1} = adamsData';
-    CompareValue{2} = adamsData';
-    CompareValue{3} = adamsData';
-    
-    MeasuredValue = cell(1,3);
+    %CompareValue{2} = adamsData';
+   
+    MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtm_t,true);
+    [roll,pitch,yaw,t] = ThreeMarkers.getAndPlotRPY(vtms_t,adamsColumns{i});
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
+    
+    %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
    
     %screw
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
-    MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
+%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
+%     MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
+%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
 
-    figure
-    ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
-    title(['ROLL PITCH YAW:' runName])
-    MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
-    
-    figure;
+%     figure
+%     ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+%     title(['ROLL PITCH YAW:' runName])
+%     MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
     rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
         adamsColumn],true);
 end
@@ -264,7 +263,7 @@ display(['==================================================']);
     'RB0','LB0','F0N');
 [two_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-ThreeMarkers.plotRun([one_t;two_t]);
+%ThreeMarkers.plotRun([one_t;two_t]);
 [one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPY(one_t,...
     'ONE');
 [two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPY(two_t,...
