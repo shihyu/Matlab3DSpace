@@ -346,9 +346,18 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             if size(quaternionOrH) == [1,4]
                 qtm.H_0_T = quaternion2matrix(quaternionOrH);
                 qtm.quaternion = quaternionOrH;
-            else
+            elseif size(quaternionOrH) == [4,4]
+                %Inconsistent use of order of multiplication found
+                %somewhere in the code, between H and quaternions.
                 qtm.H_0_T = quaternionOrH;
-                qtm.quaternion = matrix2quaternion(quaternionOrH)';
+                %Not sure why but for the H sent from ViconThreeMarkers
+                %we need to get the quaternion from the inverse matrix.
+                qtm.quaternion = matrix2quaternion(quaternionOrH');
+            else
+                error('matlab3dspace:threemarkers',...
+                    ['Wrong size for input quaternion or H matrix' ...
+                    mat2str(size(quaternionOrH))...
+                    ' should be 1x4 or 4x4' ]);
             end
             qtm.points_T = qtm.H_0_T*qtm.points_0;
             qtm.timestamp = 0.0;
@@ -370,7 +379,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
             r = ThreeMarkers(...
-                quaternionconjugate(obj1.getQ)');
+                quaternionconjugate(obj1.getQ));
             r = r.setTimestamp(obj1.getTimestamp);
         end
         
@@ -440,11 +449,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [euler]=getRPY(tm,inDegrees)
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
-            euler = quaternion2euler(tm.getQ,inDegrees);
-            %euler = invrpy(tm.getH);
-            %if inDegrees
-            %    euler = euler/pi*180;
-            %end
+            euler = quaternion2euler(tm.getQ,inDegrees,'xyz');
+%             euler = invrpy(tm.getH);
+%             if inDegrees
+%                 euler = euler/pi*180;
+%             end
         end
         
         function [quaternion]=getQ(tm)

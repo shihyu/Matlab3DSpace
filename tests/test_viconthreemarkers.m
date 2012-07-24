@@ -8,7 +8,7 @@ leftback = [0 1 0];
 front = [1 0 0];
 theTimestamp = 2.3;
 cvt = ViconThreeMarkers(rightback,...
-    leftback,front,theTimestamp)
+    leftback,front,theTimestamp);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
 assertElementsAlmostEqual(cvt.getH,eye(4));
@@ -24,7 +24,7 @@ cvt = ViconThreeMarkers(rightback,...
     leftback,front,theTimestamp);
 assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
 assertElementsAlmostEqual([0 0 1 0; 1 -1 0 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
-cvt.getQ
+quat = cvt.getQ
 
 rightback = [1 1 2];
 leftback = [1 -1 2];
@@ -188,44 +188,43 @@ display(['Processing RUN:' runName adamsColumns]);
 display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
-%kobasch
+%Horn
 [vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
 %Screw
-[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtms_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','screw');
-%Horn
-[vtmh_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','horn');
+%kabsch
+[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+    'RBT','LBT','FTN','kabsch');
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
-    adamsData = data.(adamsColumn);
-    CompareValue = cell(1,3);
+    adamsData = -data.(adamsColumn);
+    CompareValue = cell(1,1);
     CompareValue{1} = adamsData';
-    CompareValue{2} = adamsData';
-    CompareValue{3} = adamsData';
-    
-    MeasuredValue = cell(1,3);
+    %CompareValue{2} = adamsData';
+   
+    MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtm_t,true);
+    [roll,pitch,yaw,t] = ThreeMarkers.getAndPlotRPY(vtms_t,adamsColumns{i});
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
+    
+    %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
    
     %screw
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
-    MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
-    [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
+%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
+%     MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
+%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
 
-    figure
-    ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
-    title(['ROLL PITCH YAW:' runName])
-    MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
-    
-    figure;
+%     figure
+%     ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+%     title(['ROLL PITCH YAW:' runName])
+%     MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
     rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
         adamsColumn],true);
 end
 %figure
-%ThreeMarkers.plotRun(vtmk_t,1.0);
+%ThreeMarkers.plotRun(vtmk_t,0.1);
 
 function test_adams_rollpitchyaw
 close all;
@@ -259,19 +258,29 @@ function processRunCombined(filename,runName)
 display(['==================================================']);
 display(['Processing RUN:' runName]);
 display(['==================================================']);
+
+reader = adamsReader(filename,runName);
+data = reader.readData(false);
+
+steeringAngle = data.SteeringAngle';
+% plot(steeringAngle);
+% figure
 %kobasch
 [one_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RB0','LB0','F0N');
 [two_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-ThreeMarkers.plotRun([one_t;two_t]);
+%ThreeMarkers.plotRun(one_t,0.5);
+%ThreeMarkers.plotRun(two_t,0.5);
 [one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPY(one_t,...
-    'ONE');
+    ['SENSOR ONE ' runName]);
 [two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPY(two_t,...
-    'TWO');
+    ['SENSOR TWO ' runName]);
 diff_t = ThreeMarkers.cellminus(two_t,one_t);
 [diff_roll,diff_pitch,diff_yaw,t] = ThreeMarkers.getAndPlotRPY(diff_t,...
-    'DIFF');
+    ['SENSOR DIFFERENCE: ' runName ]);
+rmserrorplot({diff_yaw},{-steeringAngle},['RMS ERROR: ' runName ...
+    ': SteeringAngle'],true);
 
 
 function test_adams_rollpitchyaw_combined

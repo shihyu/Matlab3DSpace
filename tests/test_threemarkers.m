@@ -96,7 +96,7 @@ assertEqual(diff.getTimestamp(),1.5);
 qvtConj = qvt1';
 assertEqual(qvtConj.getTimestamp,qvt1.getTimestamp)
 assertEqual(qvtConj.getTimestamp,2)
-qvtConjFun = quaternionconjugate(qvt1.getQ)';
+qvtConjFun = quaternionconjugate(qvt1.getQ);
 assertElementsAlmostEqual(qvtConj.getQ,qvtConjFun);
 
 qvtConjFun = ThreeMarkers(qvtConjFun);
@@ -117,9 +117,9 @@ assertEqual(prod.getQ,qvt.getQ)
 
 quat = [1,0,0,0];
 qvt =  ThreeMarkers(quat);
-quat = [0.8,0.2,0,0,0];
+quat = [0.8,0.2,0,0];
 qvt1 = ThreeMarkers(quat);
-quat = [1.0,0,0,0,0];
+quat = [1.0,0,0,0];
 qvt2 = ThreeMarkers(quat);
 
 arrayQs = {qvt qvt1 qvt2};
@@ -218,9 +218,9 @@ function test_callibrate
 quat = [1,0,0,0];
 qvt =  ThreeMarkers(quat);
 qvt = qvt.setTimestamp(7.8);
-quat = [0.8,0.2,0,0,0];
+quat = [0.8,0.2,0,0];
 qvt1 = ThreeMarkers(quat);
-quat = [0.8,0.6,0,0,0];
+quat = [0.8,0.6,0,0];
 qvt2 = ThreeMarkers(quat);
 qvt2 = qvt2.setTimestamp(9.5);
 tm_t = {qvt,qvt1,qvt2};

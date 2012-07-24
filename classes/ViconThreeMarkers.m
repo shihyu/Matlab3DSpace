@@ -35,11 +35,13 @@ classdef ViconThreeMarkers < ThreeMarkers
             data = reader.readData(false);
             t=data.Time;
             %HACK, must generalise the readData function for adamsReader.
-            if strcmp(rightBackName,'RBO')
+            if strcmp(rightBackName,'RBO')||strcmp(rightBackName,'RB0')
+                display('Reading RBO')
                 RBO = [data.RBOX data.RBOY data.RBOZ];
                 LBO = [data.LBOX data.LBOY data.LBOZ];
                 FON = [data.FONX data.FONY data.FONZ];
             else
+                display('Reading RBT')
                 RBO = [data.RBTX data.RBTY data.RBTZ];
                 LBO = [data.LBTX data.LBTY data.LBTZ];
                 FON = [data.FTNX data.FTNY data.FTNZ];
@@ -88,6 +90,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                 leftback;
                 front;
                 crosspoint]';
+            setQuaternion = false;
             if ((~isempty(varargin))&&(~isempty(varargin{1})))
                 if (strcmp(varargin{1},'screw')==1)
                     %Create the screw theory compliant points for Vikon
@@ -100,23 +103,28 @@ classdef ViconThreeMarkers < ThreeMarkers
                     H_T_0(4,1:3)  = [0 0 0];
                     %H_0_T = H_T_0';
                     H_0_T = invht(H_T_0);
-                elseif (strcmp(varargin{1},'horn')==1)
+                elseif (strcmp(varargin{1},'kabsch')==1)
                     %display(['HORN:' varargin{1}])
-                    [H_0_T] = absor(ThreeMarkers.points_0(1:3,:),...
+                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
                         points_T);
-                    H_0_T = H_0_T.R;
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
                 %display(['KABSCH:' varargin{1}])
-                [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
                     points_T);
+                H_0_T = rotInfo.M;
                 H_0_T(4,1:3)=[0 0 0];
                 H_0_T(:,4)=[0 0 0 1]';
+                setQuaternion = true;
             end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
+%             if setQuaternion
+%                 %display('SETTING Q');
+%                 vtm.quaternion = rotInfo.q';
+%             end
         end
     end
 end
