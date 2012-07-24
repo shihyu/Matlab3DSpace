@@ -119,10 +119,10 @@ classdef ViconThreeMarkers < ThreeMarkers
             end
             vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
-            if setQuaternion
-                %display('SETTING Q');
-                vtm.quaternion = rotInfo.q';
-            end
+%             if setQuaternion
+%                 %display('SETTING Q');
+%                 vtm.quaternion = rotInfo.q';
+%             end
         end
     end
 end

@@ -348,7 +348,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 qtm.quaternion = quaternionOrH;
             elseif size(quaternionOrH) == [4,4]
                 qtm.H_0_T = quaternionOrH;
-                qtm.quaternion = matrix2quaternion(quaternionOrH);
+                qtm.quaternion = matrix2quaternion(quaternionOrH');
             else
                 error('matlab3dspace:threemarkers',...
                     ['Wrong size for input quaternion or H matrix' ...

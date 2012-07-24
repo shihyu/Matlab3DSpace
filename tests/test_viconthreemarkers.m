@@ -199,7 +199,7 @@ data = reader.readData(false);
     'RBT','LBT','FTN','kabsch');
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
-    adamsData = data.(adamsColumn);
+    adamsData = -data.(adamsColumn);
     CompareValue = cell(1,1);
     CompareValue{1} = adamsData';
     %CompareValue{2} = adamsData';
@@ -224,7 +224,7 @@ for i = 1:length(adamsColumns)
         adamsColumn],true);
 end
 %figure
-%ThreeMarkers.plotRun(vtmk_t,1.0);
+ThreeMarkers.plotRun(vtmk_t,0.1);
 
 function test_adams_rollpitchyaw
 close all;
