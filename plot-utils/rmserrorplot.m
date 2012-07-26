@@ -26,13 +26,14 @@ for j = 1:length(A)
     if plotDifference==true
         figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
-       subplot(3,1,1);
+       subplot(2,1,1);
        plot(Aj);
-       title([theTitle ' A PLOT']);
-       subplot(3,1,2);
-       plot(Bj);
-       title([theTitle ' B PLOT']);
-       subplot(3,1,3);
+       hold on;
+       title([theTitle ' A and B PLOT(red)']);
+       subplot(2,1,1);
+       plot(Bj,'r--');
+       hold off;
+       subplot(2,1,2);
        plot(Verschil);
        title([theTitle ' Error PLOT']);
        
