@@ -18,6 +18,6 @@ H_1_0_est(4,1:3) = 0;
 H_1_0_est(4,4) = 1;
 %display('Estimated H')
 %H_1_0_est
-tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est)');
+tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est));
 
 end

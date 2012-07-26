@@ -4,7 +4,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     
     methods (Static)
         function [vtm_t] = readDataVicon(filename,runName,...
-                rightBackName,leftBackName,frontName)
+                rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
             reader = c3dReader(filename,runName)
@@ -21,13 +21,13 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i,4));
+                    leftBack(i,1:3),front(i,1:3),rightBack(i,4),varargin);
                 vtm_t{i} = vtm;
             end
         end
         
         function [vtm_t,Fs] = readDataAdams(filename,runName,...
-                rightBackName,leftBackName,frontName)
+                rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the ADAMS export file three markers in
             % and creates the ViconThreeMarker object.
             % A 'Time' column must be present.
@@ -35,21 +35,23 @@ classdef ViconThreeMarkers < ThreeMarkers
             data = reader.readData(false);
             t=data.Time;
             %HACK, must generalise the readData function for adamsReader.
-            if strcmp(rightBackName,'RBO')
+            if strcmp(rightBackName,'RBO')||strcmp(rightBackName,'RB0')
+                display('Reading RBO')
                 RBO = [data.RBOX data.RBOY data.RBOZ];
                 LBO = [data.LBOX data.LBOY data.LBOZ];
                 FON = [data.FONX data.FONY data.FONZ];
             else
+                display('Reading RBT')
                 RBO = [data.RBTX data.RBTY data.RBTZ];
                 LBO = [data.LBTX data.LBTY data.LBTZ];
                 FON = [data.FTNX data.FTNY data.FTNZ];
             end
-            N=size(t,1)
+            N=size(t,1);
             Fs = 1/(t(2)-t(1));
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = ViconThreeMarkers(RBO(i,1:3),...
-                    LBO(i,1:3),FON(i,1:3),t(i));
+                    LBO(i,1:3),FON(i,1:3),t(i),varargin);
                 vtm_t{i} = vtm;
             end
         end
@@ -59,7 +61,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     
     methods
         function vtm = ViconThreeMarkers(rightback,leftback,...
-                front,timestamp)
+                front,timestamp,varargin)
             %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
             %Calculates and creates the quaternion of the plane represented
             %by the three markers. rightback,leftback and front are Nx3
@@ -73,37 +75,57 @@ classdef ViconThreeMarkers < ThreeMarkers
             crosspointTmp = cross(front-midpoint,...
                 leftback-midpoint)+midpoint;
             crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
+            %not a perfect 60 degree Triangle... so rotate on the
+            %XY plane to get the
+            %actual front marker in the zero frame.
+            %TODO test this transform.
+            %              rotAngle = ThreeMarkers.getAngle(front,...
+            %                  leftback,...
+            %                  0);
+            %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
+            %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
+            %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
             points_T = [ rightback;
                 leftback;
                 front;
                 crosspoint]';
-            
-            %not a perfect 60 degree Triangle... so rotate on the
-            %XY plane to get the
-            %actual front marker in the zero frame.
-            %TODO test this transform.
-            %rotAngle = vtm.getAngle(vtm.front,vtm.leftback,vtm.midpoint);
-            %yValue = vtm.points_psi_0(1,1:2)*[cos(rotAngle) -...
-            %     sin(rotAngle); sin(rotAngle) cos(rotAngle)];
-            %vtm.points_psi_0(3,1:2) = yValue;
-            
-            %Create the screw theory compliant points for Vikon
-            points_T(4,:) = 1;
-            %Get the homogenous matrix for these points
-            H_T_0 = ThreeMarkers.points_0/points_T;
-            %Remove translation
-            H_T_0(1:3,4)  = [0 0 0]';
-            %and error
-            H_T_0(4,1:3)  = [0 0 0];
-            %H_0_T = H_T_0';
-            H_0_T = invht(H_T_0);
-            quaternion = matrix2quaternion(H_0_T)';
-            vtm@ThreeMarkers(quaternion)
+            setQuaternion = false;
+            if ((~isempty(varargin))&&(~isempty(varargin{1})))
+                if (strcmp(varargin{1},'screw')==1)
+                    %Create the screw theory compliant points for Vikon
+                    points_T(4,:) = 1;
+                    %Get the homogenous matrix for these points
+                    H_T_0 = ThreeMarkers.points_0/points_T;
+                    %Remove translation
+                    H_T_0(1:3,4)  = [0 0 0]';
+                    %and error
+                    H_T_0(4,1:3)  = [0 0 0];
+                    %H_0_T = H_T_0';
+                    H_0_T = invht(H_T_0);
+                elseif (strcmp(varargin{1},'kabsch')==1)
+                    %display(['HORN:' varargin{1}])
+                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                        points_T);
+                    H_0_T(4,1:3)=[0 0 0];
+                    H_0_T(:,4)=[0 0 0 1]';
+                end
+            else
+                %display(['KABSCH:' varargin{1}])
+                [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
+                    points_T);
+                H_0_T = rotInfo.M;
+                H_0_T(4,1:3)=[0 0 0];
+                H_0_T(:,4)=[0 0 0 1]';
+                setQuaternion = true;
+            end
+            vtm@ThreeMarkers(H_0_T);
             vtm.timestamp = timestamp;
+%             if setQuaternion
+%                 %display('SETTING Q');
+%                 vtm.quaternion = rotInfo.q';
+%             end
         end
     end
-    
-
 end
 

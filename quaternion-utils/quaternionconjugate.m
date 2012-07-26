@@ -14,8 +14,6 @@
 % http://www.csse.uwa.edu.au/
 
 function Qconj = quaternionconjugate(Q)
-    if norm(Q) ~= 1.0
-        Q = quaternionnormalise(Q);
-    end
-    Qconj = Q(:);
+    Q = quaternionnormalise(Q);
+    Qconj = Q;
     Qconj(2:4) = -Qconj(2:4);

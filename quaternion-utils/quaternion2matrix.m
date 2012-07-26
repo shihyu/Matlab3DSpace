@@ -23,6 +23,11 @@
 % The Software is provided "as is", without warranty of any kind.
 
 function T = quaternion2matrix(Q)
+    Q = Q/norm(Q);
+    T = quaternion(Q);
+    T(4,1:3)=0;
+    T(:,4)=[0 0 0 1]';
+    return
     
     Q = Q/norm(Q); % Ensure Q has unit norm
     
