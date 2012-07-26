@@ -6,7 +6,9 @@ classdef ViconThreeMarkers < ThreeMarkers
         function [vtm_t] = readDataVicon(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
-            % and creates the ViconThreeMarker object.
+            % and creates the ViconThreeMarker object. The option value of
+            % 'kabsch' or 'screw' can be added to use a different method to
+            % estimate the rotation matrices.
             reader = c3dReader(filename,runName)
             rightBack = reader.readMarker(rightBackName);
             leftBack = reader.readMarker(leftBackName);
@@ -111,6 +113,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
+%                 points_T
                 %display(['KABSCH:' varargin{1}])
                 [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
                     points_T);
