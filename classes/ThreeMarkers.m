@@ -241,6 +241,50 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             title(['YAW(z): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
         end
+        function plotRS(roll,steer,inDegrees,Fs,varargin)
+            %PLOTRPY(roll,steer,inDegrees,Fs,t,type)
+            %Type
+            %PLOT the Roll and Steering angle for the run.
+            YMAX = max(max(abs(roll)),max(abs(steer)));
+            YMIN=-YMAX;
+            typeOfPlot=1;
+            if length(varargin)>0
+                t = varargin{1};
+                if length(varargin)==2
+                    typeOfPlot=varargin{2};
+                end
+            else
+                minSize = length(roll);
+                t = 0:1/Fs:(minSize-1)/Fs;
+                typeOfPlot=0;
+            end
+            if inDegrees
+                YLABEL='(degrees)';
+            else
+                YLABEL='(radians)';
+            end
+            XLABEL=['1/Fs Fs=' num2str(Fs)];
+            XMIN = min(t);
+            XMAX = max(t);
+            
+            hold on;
+           
+            subplot(2,1,1);
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            hold on;
+            grid on;
+            xlim([XMIN XMAX])
+            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
+            ylabel(YLABEL);
+            subplot(2,1,2);
+            ThreeMarkers.plotAngle(t,steer,typeOfPlot,YLABEL)
+            grid on;
+            hold on;
+            xlim([XMIN XMAX])
+            title(['STEER(x): maximum angle: ' num2str(max(abs(steer)))]);
+            ylabel(YLABEL);
+        end    
+     
         
         function [roll,pitch,yaw,t] = getAndPlotRPY(theRun_t,theTitle)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
