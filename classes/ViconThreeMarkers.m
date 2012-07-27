@@ -22,6 +22,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             N=size(rightBack,1)
             vtm_t = cell(1,N);
             parfor i = 1:N
+%                 i
                 vtm = ViconThreeMarkers(rightBack(i,1:3),...
                     leftBack(i,1:3),front(i,1:3),rightBack(i,4),varargin);
                 vtm_t{i} = vtm;
@@ -115,6 +116,8 @@ classdef ViconThreeMarkers < ThreeMarkers
             else
 %                 points_T
                 %display(['KABSCH:' varargin{1}])
+%                 ThreeMarkers.points_0(1:3,:)
+%                 points_T
                 [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
                     points_T);
                 H_0_T = rotInfo.M;

@@ -48,8 +48,25 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
         function [normedPoint] = normWithOffset(point,reference)
-            normedPoint = (point-reference)/norm(point-reference)+...
-                reference;
+            %NORMWITHOFFSET Calculates and normalises the point with the
+            %reference vector.
+            
+            
+            %Make sure you do not divide by zero.
+            if abs(point-reference) > repmat(eps, size(point))
+                %display('Standard');
+                normedPoint = (point-reference)/norm(point-reference)+...
+                    reference;
+            %Reference point is zero
+            elseif (all(reference < repmat(eps, size(reference)))) && ...
+                    (all(point > repmat(eps, size(point))))
+                %display('Reference zero');
+                normedPoint = point/norm(point);
+            %Point is zero.
+            else
+                %display('Point Zero');
+                normedPoint = point;                
+            end
         end
         
         function [t,tm_t] = sortAccordingToTimestamp(t,tm_t)

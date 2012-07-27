@@ -69,6 +69,14 @@ assertElementsAlmostEqual([1 -1 0 0; 0 0 0 -1; 0 0 1 0; 1 1 1 1],cvt.getT);
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],cvt.getQ);
 %assertElementsAlmostEqual(errorEuler,[theta 0 0 ])
 
+function test_zeroinput
+rightback = [0 0 0];
+leftback = [0 0 0];
+front = [0 0 0];
+theTimestamp = 2.3;
+cvt = ViconThreeMarkers(rightback,...
+    leftback,front,theTimestamp);
+
 function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';

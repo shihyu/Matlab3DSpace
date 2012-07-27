@@ -2,6 +2,25 @@ function test_suite = test_threemarkers
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
+function test_normWithOffset
+if ([0 0 0]-[0 0 0] <= repmat(eps, size([0 0 0])))
+    display('Good Test')
+end
+assertEqual(zeros(1,3),ThreeMarkers.normWithOffset([0 0 0],[0 0 0]));
+assertEqual(ones(1,3),ThreeMarkers.normWithOffset([1 1 1],[1 1 1]));
+assertEqual(ones(1,3)/sqrt(3)+ones(1,3),...
+    ThreeMarkers.normWithOffset([2 2 2],[1 1 1]));
+
+thePoint = [1 1 1];
+assertEqual(thePoint/norm(thePoint),ThreeMarkers.normWithOffset(thePoint,[0 0 0]));
+theReference = thePoint;
+thePoint = [0 0 0];
+REF=~all(theReference < repmat(eps, size(theReference)))
+assertEqual((thePoint-theReference)/norm(thePoint-theReference)+...
+                    theReference,...
+                    ThreeMarkers.normWithOffset(thePoint,theReference));
+
+
 function test_calculateEst
 rightback = [0 1  0];
 leftback = [0 -1  0];
