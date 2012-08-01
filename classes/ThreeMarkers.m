@@ -129,7 +129,6 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
         end
         
-        
         function diff = cellminus(obj1,obj2)
             % CELL MINUS Implement obj1 - obj2 for ThreeMarkers when using
             % cells.
@@ -259,7 +258,8 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
         end
         
-        function [roll,pitch,yaw,t] = getAndPlotRPY(theRun_t,theTitle)
+        function [roll,pitch,yaw,t] = getAndPlotRPYt(theRun_t,theTitle,...
+                varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
             [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(theRun_t,true);   
             figure('visible','on','WindowStyle','docked',...
