@@ -33,12 +33,13 @@ N = N-(theStart-1);
 N1 = N1-(theStart-1);
 N2 = N2-(theStart-1);
 t = [0:1/Fs:N/Fs-1/Fs];
-
+figRPYAR_IMU_sync=figure('visible','on','WindowStyle','docked',...
+     'Name','SYNCHRONISE');
 subplot(2,1,1);
 hold on;
 plot(t(1:N1),metric_1(1:N1),'--k');
 plot(t(1:N2),metric_2(1:N2),'--m');
-title('Magnitude of Rotation Matrix change over time.');
+title('ORIGINAL METRICS:');
 grid on;
 
 subplot(2,1,2);

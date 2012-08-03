@@ -19,6 +19,32 @@ REF=~all(theReference < repmat(eps, size(theReference)))
 assertEqual((thePoint-theReference)/norm(thePoint-theReference)+...
                     theReference,...
                     ThreeMarkers.normWithOffset(thePoint,theReference));
+                
+function test_resample
+  rightback = [0 1  0];
+leftback = [0 -1  0];
+front = [1 0  0];
+theTimestamp = 2.4;
+cvt = ViconThreeMarkers(rightback,...
+        leftback,front,theTimestamp);
+    rightback = [0 1  0];
+leftback = [0 -1  0];
+front = [1 0  0];
+theTimestamp = 2.4;
+theQuat = cvt.getQ;
+cvt2 = ViconThreeMarkers(rightback,...
+        leftback,front,theTimestamp);
+tm_t = {cvt,cvt2,cvt2};
+[tm_t,t] = ThreeMarkers.resample(tm_t,2,1);
+t
+assertEqual(size(tm_t),[1 6]);
+for i = 0:1/2:4/2
+    i
+    tm_t{i*2+1}.getQ
+    assertEqual(tm_t{i*2+1}.getTimestamp,i);
+    normewd = quaternionnormalise(tm_t{i*2+1}.getQ)
+    assertElementsAlmostEqual(tm_t{i*2+1}.getQ,theQuat);
+end
 
 
 function test_calculateEst

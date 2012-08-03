@@ -214,7 +214,7 @@ for i = 1:length(adamsColumns)
    
     MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeMarkers.getAndPlotRPY(vtms_t,adamsColumns{i});
+    [roll,pitch,yaw,t] = ThreeMarkers.getAndPlotRPYt(vtms_t,adamsColumns{i});
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
     
     %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
@@ -280,12 +280,12 @@ steeringAngle = data.SteeringAngle';
     'RBT','LBT','FTN');
 %ThreeMarkers.plotRun(one_t,0.5);
 %ThreeMarkers.plotRun(two_t,0.5);
-[one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPY(one_t,...
+[one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPYt(one_t,...
     ['SENSOR ONE ' runName]);
-[two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPY(two_t,...
+[two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPYt(two_t,...
     ['SENSOR TWO ' runName]);
 diff_t = ThreeMarkers.cellminus(two_t,one_t);
-[diff_roll,diff_pitch,diff_yaw,t] = ThreeMarkers.getAndPlotRPY(diff_t,...
+[diff_roll,diff_pitch,diff_yaw,t] = ThreeMarkers.getAndPlotRPYt(diff_t,...
     ['SENSOR DIFFERENCE: ' runName ]);
 rmserrorplot({diff_yaw},{-steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);

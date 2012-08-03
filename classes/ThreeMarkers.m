@@ -22,7 +22,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     end
     methods (Access = protected,Static)
                
-        function plot(point,style)
+        function plot3DPoint(point,style)
             plotSensor(point,style);
         end
         
@@ -264,7 +264,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(theRun_t,true);   
             figure('visible','on','WindowStyle','docked',...
                 'Name',theTitle);
-            ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+            ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,varargin{:});
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -349,6 +349,28 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     tm_t0{i}.getH);
             end
         end
+        
+        function [tm_t,t] = resample(tm_t,Fs_wanted,Fs_current)
+            %RESAMPLE Resamples a cell of ThreeMarkers from the Fs_current
+            %to the Fs_wanted.
+            quats = zeros(length(tm_t),4);
+            parfor i = 1:length(tm_t)
+                quats(i,:) = tm_t{i}.getQ;
+            end
+%             quats
+            quats = resample(quats,Fs_wanted,Fs_current);
+%             quats
+            N = size(quats,1);
+            tm_t = cell(1,N);
+            t = 0:1/Fs_wanted:(N-1)/Fs_wanted;
+            parfor i = 1:N
+%                 i
+%                 quats(i,:)
+                theQuat = ThreeMarkers(quats(i,:));
+                theQuat = theQuat.setTimestamp(t(i));
+                tm_t{i} = theQuat;
+            end
+        end
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -362,7 +384,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             % which takes a 4x1 or 1x4 quaternion vector as input.
             if size(quaternionOrH) == [1,4]
                 qtm.H_0_T = quaternion2matrix(quaternionOrH);
-                qtm.quaternion = quaternionOrH;
+                qtm.quaternion = quaternionnormalise(quaternionOrH);
             elseif size(quaternionOrH) == [4,4]
                 %Inconsistent use of order of multiplication found
                 %somewhere in the code, between H and quaternions.
@@ -377,7 +399,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                     ' should be 1x4 or 4x4' ]);
             end
             qtm.points_T = qtm.H_0_T*qtm.points_0;
-            qtm.timestamp = 0.0;
+            qtm.timestamp = 0.0;            
         end
         
         
@@ -486,11 +508,11 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function plotT(tm)
             %PLOTT(tm) Plot the zero frame rotated by the rotation matrix,
             %ie the object at T.
-            tm.plot(tm.points_T,'--k');
+            tm.plot3DPoint(tm.points_T,'--k');
         end
         function plot0(tm)
             %PLOT0(tm) Plot the zero frame.
-            tm.plot(tm.points_0,'--m');
+            tm.plot3DPoint(tm.points_0,'--m');
         end
         
         function [quat] = toNumeric(tm)

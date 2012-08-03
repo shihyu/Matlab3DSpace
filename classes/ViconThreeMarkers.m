@@ -13,13 +13,13 @@ classdef ViconThreeMarkers < ThreeMarkers
             rightBack = reader.readMarker(rightBackName);
             leftBack = reader.readMarker(leftBackName);
             front = reader.readMarker(frontName);
-            display('Right Back')
-            display(size(rightBack));
-            display('Left Back')
-            display(size(leftBack));
-            display('Front')
-            display(size(front));
-            N=size(rightBack,1)
+%             display('Right Back')
+%             display(size(rightBack));
+%             display('Left Back')
+%             display(size(leftBack));
+%             display('Front')
+%             display(size(front));
+            N=size(rightBack,1);
             vtm_t = cell(1,N);
             parfor i = 1:N
 %                 i
