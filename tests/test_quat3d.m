@@ -1,4 +1,4 @@
-function test_suite = test_quaternionthreemarkers
+function test_suite = test_quaternion3d
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
@@ -15,7 +15,7 @@ runName = '/promove2';
 [vtm_t] = Quat3D.readDataPromove(filename,...
     runName,1,10,200);
 
-function test_promovethreemarkers_readData
+function test_promove3d_readData
 filename='test-data/test-data.h5';
 assertExceptionThrown(@quatReadNonExistantNode,...
     'Quat3D:readData')
@@ -68,7 +68,7 @@ assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
 close all
 
-function test_promovethreemarkers_readData_withSync
+function test_promove3d_readData_withSync
 filename='test-data/test-data.h5';
 runName = '/newpromovewithsync';
 

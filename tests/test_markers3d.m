@@ -1,4 +1,4 @@
-function test_suite = test_viconthreemarkers
+function test_suite = test_vicon3d
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
@@ -77,7 +77,7 @@ theTimestamp = 2.3;
 cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 
-function test_viconthreemarkers_readDataVicon
+function test_vicon3d_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
 [vtm_t] = Markers3D.readDataVicon(filename,...
@@ -95,7 +95,7 @@ for i = 2:length(vtm_t)
     current = vtm_t{i}.getTimestamp();
 end
 
-function test_viconthreemarkers_readDataAdams
+function test_vicon3d_readDataAdams
 filename='test-data/test-data.h5';
 runName = 'testrun';
 [vtm_t] = Markers3D.readDataAdams(filename,runName,'RBO','LBO','FON');
@@ -121,7 +121,7 @@ assertEqual(vtm_t1{1}.getQ-vtm_t1{1}.getQ,[0 0 0 0]);
 %ThreeD.plotRun(vtm_t);
 
 
-function test_viconthreemarkers_objectcreation
+function test_vicon3d_objectcreation
 filename='test-data/test-data.h5';
 runName = 'testrun';
 reader = adamsReader(filename,runName);

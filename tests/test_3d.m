@@ -1,4 +1,4 @@
-function test_suite = test_threemarkers
+function test_suite = test_3d
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
@@ -181,7 +181,7 @@ for i = 1:3
     assertEqual(arrayQs{i}.getTimestamp,diffQs{i}.getTimestamp);
 end
 
-function test_promovethreemarkers_readData
+function test_promove3d_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = Quat3D.readDataPromove(filename,runName,1,10,200);
@@ -245,7 +245,7 @@ assertEqual(size(diff_t),[1,2]);
 diff_t = ThreeD.cellminus(vtm_t(1:3),vtm_t(1:2));
 assertEqual(size(diff_t),[1,2]);
 
-function test_threemarkersgetRPHt
+function test_3dgetRPHt
 filename='test-data/test-data.h5';
 runName = '/promove';
 [vtm_t] = Quat3D.readDataPromove(filename,runName,1,...
