@@ -1,5 +1,5 @@
-classdef QuaternionsThreeMarkers < ThreeMarkers
-    %QuaternionsThreeMarkers Contains static data to help with the reading
+classdef Quat3D < ThreeD
+    %Quat3D Contains static data to help with the reading
     %of data from InertiaTechnology sensors using the SOFIE-HDF-FORMAT
     %library.
     methods (Static)
@@ -13,7 +13,7 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             reader = promoveReader(filename,runName);
             [q,sync] = reader.readNodeData(nodeId);
             if isempty(q)
-                error('QuaternionsThreeMarkers:readData',...
+                error('Quat3D:readData',...
                     'The Node does not have any values to read.');
             end
             if Fs_wanted ~= Fs_recorded
@@ -27,7 +27,7 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             N=size(q,1);
             qtm_t = cell(1,N);
             parfor i = 1:N
-                qtm = QuaternionsThreeMarkers(q(i,:))
+                qtm = Quat3D(q(i,:))
                 qtm_t{i} = qtm;
             end
         end
@@ -37,7 +37,7 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
             %READDATA Read the quaternion data. This reads from a raw
             %recording file. Ie with quat1 quat2 quat3 quat4 and
             %timestamp.
-            [qtm_t,sync] = QuaternionsThreeMarkers.readDataPromove(...
+            [qtm_t,sync] = Quat3D.readDataPromove(...
                 filename,...
                 runName,-1,Fs_wanted,Fs_recorded);
         end
@@ -45,13 +45,13 @@ classdef QuaternionsThreeMarkers < ThreeMarkers
     end
     
     methods
-        function qtm = QuaternionsThreeMarkers(quaternionTimestamp)
-            %QuaternionsThreeMarkers(quaternionTimestamp) - The same as for
-            %ThreeMarkers,except that the time stamp is also recored as the
+        function qtm = Quat3D(quaternionTimestamp)
+            %Quat3D(quaternionTimestamp) - The same as for
+            %ThreeD,except that the time stamp is also recored as the
             %5 element in the quaternion vector.
             quaternion = quaternionTimestamp(1:4);
             timestamp = quaternionTimestamp(5);
-            qtm@ThreeMarkers(quaternion)
+            qtm@ThreeD(quaternion)
             qtm.timestamp = timestamp;
         end
     end

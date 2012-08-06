@@ -37,4 +37,4 @@ else
     one_t = roll_t_y;
     two_t = steering_t_y;
 end
-display('FINISHED');
+display('FINISHED SYNCING WITH RESPECT TO RPY');
