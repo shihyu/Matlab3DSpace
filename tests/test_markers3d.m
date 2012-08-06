@@ -2,12 +2,12 @@ function test_suite = test_viconthreemarkers
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
-function test_ViconThreeMarkers
+function test_Markers3D
 rightback = [0 -1 0];
 leftback = [0 1 0];
 front = [1 0 0];
 theTimestamp = 2.3;
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
@@ -20,7 +20,7 @@ rightback = [0 1 0];
 leftback = [0 -1 0];
 front = [1 0 0];
 theTimestamp = 2.3;
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
 assertElementsAlmostEqual([0 0 1 0; 1 -1 0 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
@@ -30,7 +30,7 @@ rightback = [1 1 2];
 leftback = [1 -1 2];
 front = [2 0 2];
 theTimestamp = 2.3;
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
@@ -44,7 +44,7 @@ H = [ 1     0           0        0
     0  cos(theta) sin(theta)  0
     0  -sin(theta)  cos(theta)  0
     0     0           0        1];
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
 
@@ -59,7 +59,7 @@ H = [ 1     0           0        0
     0  cos(theta) sin(theta)  0
     0  -sin(theta)  cos(theta)  0
     0     0           0        1];
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
 %assertElementsAlmostEqual(cvt.getH,H);
@@ -74,13 +74,13 @@ rightback = [0 0 0];
 leftback = [0 0 0];
 front = [0 0 0];
 theTimestamp = 2.3;
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 
 function test_viconthreemarkers_readDataVicon
 filename='test-data/test-data.h5';
 runName = '/vicon';
-[vtm_t] = ViconThreeMarkers.readDataVicon(filename,...
+[vtm_t] = Markers3D.readDataVicon(filename,...
     runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 5136]);
@@ -98,7 +98,7 @@ end
 function test_viconthreemarkers_readDataAdams
 filename='test-data/test-data.h5';
 runName = 'testrun';
-[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,'RBO','LBO','FON');
+[vtm_t] = Markers3D.readDataAdams(filename,runName,'RBO','LBO','FON');
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 501]);
 current = vtm_t{1}.getTimestamp();
@@ -109,16 +109,16 @@ for i = 2:length(vtm_t)
     current = vtm_t{i}.getTimestamp();
 end
 
-[vtm_t1] = ViconThreeMarkers.readDataAdams(filename,runName,'RBT','LBT','FTN');
+[vtm_t1] = Markers3D.readDataAdams(filename,runName,'RBT','LBT','FTN');
 vtm_t1{1}.plotT()
-%ThreeMarkers.plotRun(vtm_t1);
+%ThreeD.plotRun(vtm_t1);
 assertEqual(size(vtm_t1),[1 501]);
 assertEqual(vtm_t1{1}.getQ-vtm_t1{1}.getQ,[0 0 0 0]);
 %vtm_t1{1}.getRPY(true)
 %vtm_t{1}.getRPY(true)
 %assertElementsAlmostEqual(vtm_t{1}.getQ-vtm_t1{1}.getQ,...
 %    zeros(1,4));
-%ThreeMarkers.plotRun(vtm_t);
+%ThreeD.plotRun(vtm_t);
 
 
 function test_viconthreemarkers_objectcreation
@@ -146,13 +146,13 @@ for samplePoint = 1:N
     testLBT = LBT(samplePoint,:);
     testFTN = FTN(samplePoint,:);
     %     assertElementsAlmostEqual(...
-    %         pi/2-ThreeMarkers.getAngle(testRBO,testFON,mid),0);
+    %         pi/2-ThreeD.getAngle(testRBO,testFON,mid),0);
     %     assertElementsAlmostEqual(...
-    %         pi/2,ThreeMarkers.getAngle(testLBO,testFON,mid))
+    %         pi/2,ThreeD.getAngle(testLBO,testFON,mid))
     
     pointsR = [(testRBO-mid)',(testLBO-mid)',(testFON-mid)',(testLBO-mid)'];
-    v_rbt = ViconThreeMarkers(testRBO,testLBO,testFON,0);
-    v_lbt = ViconThreeMarkers(testRBT,testLBT,testFTN,0);
+    v_rbt = Markers3D(testRBO,testLBO,testFON,0);
+    v_lbt = Markers3D(testRBT,testLBT,testFTN,0);
     H = v_rbt.getH();
     H2 = v_lbt.getH();
     %Make sure the H matrix is invertable.
@@ -197,13 +197,13 @@ display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
 %Horn
-[vtm_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtm_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
 %Screw
-[vtms_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtms_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','screw');
 %kabsch
-[vtmk_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[vtmk_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN','kabsch');
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
@@ -214,25 +214,25 @@ for i = 1:length(adamsColumns)
    
     MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeMarkers.getAndPlotRPYt(vtms_t,adamsColumns{i});
+    [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtms_t,adamsColumns{i});
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
     
     %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
    
     %screw
-%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmk_t,true);
+%     [roll,pitch,yaw,t] = ThreeD.getRPYt(vtmk_t,true);
 %     MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
-%     [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(vtmh_t,true);
+%     [roll,pitch,yaw,t] = ThreeD.getRPYt(vtmh_t,true);
 
 %     figure
-%     ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,0);
+%     ThreeD.plotRPY(roll,pitch,yaw,true,200,t,0);
 %     title(['ROLL PITCH YAW:' runName])
 %     MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
     rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
         adamsColumn],true);
 end
 %figure
-%ThreeMarkers.plotRun(vtmk_t,0.1);
+%ThreeD.plotRun(vtmk_t,0.1);
 
 function test_adams_rollpitchyaw
 close all;
@@ -274,18 +274,18 @@ steeringAngle = data.SteeringAngle';
 % plot(steeringAngle);
 % figure
 %kobasch
-[one_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[one_t] = Markers3D.readDataAdams(filename,runName,...
     'RB0','LB0','F0N');
-[two_t] = ViconThreeMarkers.readDataAdams(filename,runName,...
+[two_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-%ThreeMarkers.plotRun(one_t,0.5);
-%ThreeMarkers.plotRun(two_t,0.5);
-[one_roll,one_pitch,one_yaw,t] = ThreeMarkers.getAndPlotRPYt(one_t,...
+%ThreeD.plotRun(one_t,0.5);
+%ThreeD.plotRun(two_t,0.5);
+[one_roll,one_pitch,one_yaw,t] = ThreeD.getAndPlotRPYt(one_t,...
     ['SENSOR ONE ' runName]);
-[two_roll,two_pitch,two_yaw,t] = ThreeMarkers.getAndPlotRPYt(two_t,...
+[two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(two_t,...
     ['SENSOR TWO ' runName]);
-diff_t = ThreeMarkers.cellminus(two_t,one_t);
-[diff_roll,diff_pitch,diff_yaw,t] = ThreeMarkers.getAndPlotRPYt(diff_t,...
+diff_t = ThreeD.cellminus(two_t,one_t);
+[diff_roll,diff_pitch,diff_yaw,t] = ThreeD.getAndPlotRPYt(diff_t,...
     ['SENSOR DIFFERENCE: ' runName ]);
 rmserrorplot({diff_yaw},{-steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);

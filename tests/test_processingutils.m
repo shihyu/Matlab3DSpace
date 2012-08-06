@@ -90,21 +90,21 @@ figures = [];
 function test_synchroniseWithRespectToRPY
 filename='./test-data/test-data.h5'
 runName = 'promove'
-[steering_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,1,10,200);
-[roll_t] = QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+[steering_t] = Quat3D.readDataPromove(filename,runName,1,10,200);
+[roll_t] = Quat3D.readDataPromove(filename,runName,...
     2,200,200);
-[roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
-[roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+[roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
+[roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
 
 [roll_t,steer_t] = synchroniseWithRespectToRPY(...
     roll_r,pitch_r,yaw_r,roll_t,...
     roll_s,pitch_s,yaw_s,steering_t,200);
-[roll_r,pitch_r,yaw_r,t]=ThreeMarkers.getRPYt(roll_t,true);
-[roll_s,pitch_s,yaw_s,t_s]=ThreeMarkers.getRPYt(steer_t,true);
+[roll_r,pitch_r,yaw_r,t]=ThreeD.getRPYt(roll_t,true);
+[roll_s,pitch_s,yaw_s,t_s]=ThreeD.getRPYt(steer_t,true);
 figure
 minSize = min(length(steering_t),length(roll_t));
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_r(1:minSize),pitch_r(1:minSize),yaw_r(1:minSize),true,200);
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_s(1:minSize),pitch_s(1:minSize),yaw_s(1:minSize),true,200);
 
