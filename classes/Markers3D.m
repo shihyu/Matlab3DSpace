@@ -1,4 +1,4 @@
-classdef ViconThreeMarkers < ThreeMarkers
+classdef Markers3D < ThreeD
     %VICONTHREEMARKERS Handles an equilateral triangle configuration
     % of Vicon markers or any other marker systems.
     
@@ -23,7 +23,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             vtm_t = cell(1,N);
             parfor i = 1:N
 %                 i
-                vtm = ViconThreeMarkers(rightBack(i,1:3),...
+                vtm = Markers3D(rightBack(i,1:3),...
                     leftBack(i,1:3),front(i,1:3),rightBack(i,4),varargin);
                 vtm_t{i} = vtm;
             end
@@ -53,7 +53,7 @@ classdef ViconThreeMarkers < ThreeMarkers
             Fs = 1/(t(2)-t(1));
             vtm_t = cell(1,N);
             parfor i = 1:N
-                vtm = ViconThreeMarkers(RBO(i,1:3),...
+                vtm = Markers3D(RBO(i,1:3),...
                     LBO(i,1:3),FON(i,1:3),t(i),varargin);
                 vtm_t{i} = vtm;
             end
@@ -63,7 +63,7 @@ classdef ViconThreeMarkers < ThreeMarkers
     
     
     methods
-        function vtm = ViconThreeMarkers(rightback,leftback,...
+        function vtm = Markers3D(rightback,leftback,...
                 front,timestamp,varargin)
             %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
             %Calculates and creates the quaternion of the plane represented
@@ -72,17 +72,17 @@ classdef ViconThreeMarkers < ThreeMarkers
             %point/marker in 3D space. Front is on the positive Y axis,
             %rightback and leftback are on the X axis.
             midpoint = (rightback+leftback)/2;
-            front = ThreeMarkers.normWithOffset(front,midpoint);
-            rightback = ThreeMarkers.normWithOffset(rightback,midpoint);
-            leftback = ThreeMarkers.normWithOffset(leftback,midpoint);
+            front = ThreeD.normWithOffset(front,midpoint);
+            rightback = ThreeD.normWithOffset(rightback,midpoint);
+            leftback = ThreeD.normWithOffset(leftback,midpoint);
             crosspointTmp = cross(front-midpoint,...
                 leftback-midpoint)+midpoint;
-            crosspoint = ThreeMarkers.normWithOffset(crosspointTmp,midpoint);
+            crosspoint = ThreeD.normWithOffset(crosspointTmp,midpoint);
             %not a perfect 60 degree Triangle... so rotate on the
             %XY plane to get the
             %actual front marker in the zero frame.
             %TODO test this transform.
-            %              rotAngle = ThreeMarkers.getAngle(front,...
+            %              rotAngle = ThreeD.getAngle(front,...
             %                  leftback,...
             %                  0);
             %              yValue = our_point_0(3,1:2)*[cos(rotAngle-pi/2) -...
@@ -99,7 +99,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                     %Create the screw theory compliant points for Vikon
                     points_T(4,:) = 1;
                     %Get the homogenous matrix for these points
-                    H_T_0 = ThreeMarkers.points_0/points_T;
+                    H_T_0 = ThreeD.points_0/points_T;
                     %Remove translation
                     H_T_0(1:3,4)  = [0 0 0]';
                     %and error
@@ -108,7 +108,7 @@ classdef ViconThreeMarkers < ThreeMarkers
                     H_0_T = invht(H_T_0);
                 elseif (strcmp(varargin{1},'kabsch')==1)
                     %display(['HORN:' varargin{1}])
-                    [H_0_T] = Kabsch(ThreeMarkers.points_0(1:3,:),...
+                    [H_0_T] = Kabsch(ThreeD.points_0(1:3,:),...
                         points_T);
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
@@ -116,16 +116,16 @@ classdef ViconThreeMarkers < ThreeMarkers
             else
 %                 points_T
                 %display(['KABSCH:' varargin{1}])
-%                 ThreeMarkers.points_0(1:3,:)
+%                 ThreeD.points_0(1:3,:)
 %                 points_T
-                [rotInfo] = absor(ThreeMarkers.points_0(1:3,:),...
+                [rotInfo] = absor(ThreeD.points_0(1:3,:),...
                     points_T);
                 H_0_T = rotInfo.M;
                 H_0_T(4,1:3)=[0 0 0];
                 H_0_T(:,4)=[0 0 0 1]';
                 setQuaternion = true;
             end
-            vtm@ThreeMarkers(H_0_T);
+            vtm@ThreeD(H_0_T);
             vtm.timestamp = timestamp;
 %             if setQuaternion
 %                 %display('SETTING Q');

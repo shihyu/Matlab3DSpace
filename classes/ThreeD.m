@@ -1,4 +1,4 @@
-classdef ThreeMarkers <  matlab.mixin.Heterogeneous
+classdef ThreeD <  matlab.mixin.Heterogeneous
     %THREEMARKERS Base class that builds homogenous matrixs,
     % quaternions, global reference frame and plot functions
     % for 3D data.
@@ -43,7 +43,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %STATIC FUNCTIONS: Operate using ThreeMarkers.theFunctionName...
+    %STATIC FUNCTIONS: Operate using ThreeD.theFunctionName...
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
@@ -96,7 +96,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [points_0] = get0()
             %GET0 Gets the zero Frame (global reference frame)
             %used for this sample.
-            points_0 = ThreeMarkers.points_0;
+            points_0 = ThreeD.points_0;
         end
         
         function plotRun(tm_t,varargin)
@@ -130,7 +130,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         end
         
         function diff = cellminus(obj1,obj2)
-            % CELL MINUS Implement obj1 - obj2 for ThreeMarkers when using
+            % CELL MINUS Implement obj1 - obj2 for ThreeD when using
             % cells.
             %display(class(obj1(1)))
             
@@ -187,7 +187,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
             %would like to see the results in degrees. False for radians.
-            [roll_t,pitch_t,yaw_t,t] = ThreeMarkers.getRPYtInit(tm_t);
+            [roll_t,pitch_t,yaw_t,t] = ThreeD.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
             parfor i=1:minSize
                 euler = tm_t{i}.getRPY(inDegrees);
@@ -198,10 +198,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             end
             %Sort data in ascending orders.
             t_orig = t;
-            [t,roll_t] = ThreeMarkers.sortAccordingToTimestamp(t,roll_t);
-            [t,pitch_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+            [t,roll_t] = ThreeD.sortAccordingToTimestamp(t,roll_t);
+            [t,pitch_t] = ThreeD.sortAccordingToTimestamp(t_orig,...
                 pitch_t);
-            [t,yaw_t] = ThreeMarkers.sortAccordingToTimestamp(t_orig,...
+            [t,yaw_t] = ThreeD.sortAccordingToTimestamp(t_orig,...
                 yaw_t);
         end
         
@@ -235,14 +235,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             hold on;
            
             subplot(3,1,1);
-            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,roll,typeOfPlot,YLABEL)
             hold on;
             grid on;
             xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             subplot(3,1,2);
-            ThreeMarkers.plotAngle(t,pitch,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL)
             grid on;
             hold on;
             xlim([XMIN XMAX])
@@ -250,7 +250,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
             xlabel(XLABEL);
             subplot(3,1,3);
-            ThreeMarkers.plotAngle(t,yaw,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
             xlim([XMIN XMAX])
@@ -261,10 +261,10 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function [roll,pitch,yaw,t] = getAndPlotRPYt(theRun_t,theTitle,...
                 varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
-            [roll,pitch,yaw,t] = ThreeMarkers.getRPYt(theRun_t,true);   
+            [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);   
             figure('visible','on','WindowStyle','docked',...
                 'Name',theTitle);
-            ThreeMarkers.plotRPY(roll,pitch,yaw,true,200,t,varargin{:});
+            ThreeD.plotRPY(roll,pitch,yaw,true,200,t,varargin{:});
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -273,14 +273,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %numberOfSamples) Get the estimated change of
             % reference frame ThreeMarker object.
             %tm_t_0 - The base measurements which you would like to use
-            %to get the estimated ThreeMarkers object with respect to.
+            %to get the estimated ThreeD object with respect to.
             %tm_t_1 - the measurements that you would like to get
             %the change of reference frame for.
             %startIndex - where in the data you would like to use to
             %estimate the change.
             %numberOfSamples - the number of samples from the startIndex
             %that you would like to use for the estimation.
-            %RETURN tm_est - The ThreeMarkers object that represents
+            %RETURN tm_est - The ThreeD object that represents
             % the change from tm_t_1 to tm_t0. Thus use it as tm_est*tm_t_1
             tm_t_0 = tm_t_0(:,startIndex:startIndex+numberOfSamples-1);
             tm_t_1 = tm_t_1(:,startIndex:startIndex+numberOfSamples-1);
@@ -298,7 +298,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             H_1_0_est(4,4) = 1;
             %display('Estimated H')
             %H_1_0_est
-            tm_est = ThreeMarkers(matrix2quaternion(H_1_0_est));
+            tm_est = ThreeD(matrix2quaternion(H_1_0_est));
             
         end
         
@@ -308,7 +308,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
-                zeroRun{i} = ThreeMarkers([1 0 0 0]);
+                zeroRun{i} = ThreeD([1 0 0 0]);
             end
             tm_est = getChangeOfGlobalReferenceFrames(zeroRun,...
                 tm_t,startIndex,numberOfSamples);
@@ -329,7 +329,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             %this estimated quaternion.
             %
             % Returns the tm_t(startIndex:length(tm_t)).
-            tm_est = ThreeMarkers.callibrateInit(...
+            tm_est = ThreeD.callibrateInit(...
                 tm_t,startIndex,numberOfSamples);
             tm_t_c = tm_t;
             parfor i =  startIndex:size(tm_t,2)
@@ -344,14 +344,14 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             tm_t0 = [tm_t(1) tm_t ];
             metrics = zeros(size(tm_t));
             parfor i = 1:size(tm_t,2)
-                metrics(i) = ThreeMarkers.calculateRotDiff(...
+                metrics(i) = ThreeD.calculateRotDiff(...
                     tm_t{i}.getH,...
                     tm_t0{i}.getH);
             end
         end
         
         function [tm_t,t] = resample(tm_t,Fs_wanted,Fs_current)
-            %RESAMPLE Resamples a cell of ThreeMarkers from the Fs_current
+            %RESAMPLE Resamples a cell of ThreeD from the Fs_current
             %to the Fs_wanted.
             quats = zeros(length(tm_t),4);
             parfor i = 1:length(tm_t)
@@ -366,7 +366,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
             parfor i = 1:N
 %                 i
 %                 quats(i,:)
-                theQuat = ThreeMarkers(quats(i,:));
+                theQuat = ThreeD(quats(i,:));
                 theQuat = theQuat.setTimestamp(t(i));
                 tm_t{i} = theQuat;
             end
@@ -379,7 +379,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        function qtm = ThreeMarkers(quaternionOrH)
+        function qtm = ThreeD(quaternionOrH)
             %THREEMARKER(quaternion) Creates the ThreeMarker object
             % which takes a 4x1 or 1x4 quaternion vector as input.
             if size(quaternionOrH) == [1,4]
@@ -389,7 +389,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
                 %Inconsistent use of order of multiplication found
                 %somewhere in the code, between H and quaternions.
                 qtm.H_0_T = quaternionOrH;
-                %Not sure why but for the H sent from ViconThreeMarkers
+                %Not sure why but for the H sent from ViconThreeD
                 %we need to get the quaternion from the inverse matrix.
                 qtm.quaternion = matrix2quaternion(quaternionOrH');
             else
@@ -404,12 +404,12 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         
         function diff = minus(obj1,obj2)
-            % MINUS Implement obj1 - obj2 for ThreeMarkers: The
+            % MINUS Implement obj1 - obj2 for ThreeD: The
             % difference/error between them, they can also be row vectors.
             % Keeps the first ones time stamp.
             
             %display(class(obj1(1)))
-            diff = ThreeMarkers(quaternionerror(...
+            diff = ThreeD(quaternionerror(...
                 obj1.getQ,obj2.getQ));
             %             display(['The timestamp: ' theTimestamp]);
             diff = diff.setTimestamp(obj1.getTimestamp);
@@ -417,7 +417,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         
         function r = ctranspose(obj1)
             % CTRANSPOSE Operator Gets the quaternion conjugate.
-            r = ThreeMarkers(...
+            r = ThreeD(...
                 quaternionconjugate(obj1.getQ));
             r = r.setTimestamp(obj1.getTimestamp);
         end
@@ -431,7 +431,7 @@ classdef ThreeMarkers <  matlab.mixin.Heterogeneous
         function product = times(obj1,obj2)
             %SCALAR multiplication operator
             %Time stamp of second argument is maintained.
-            product = ThreeMarkers(...
+            product = ThreeD(...
                 quaternionproduct(obj1.getQ,...
                 obj2.getQ)');
             product = product.setTimestamp(obj2.getTimestamp());
