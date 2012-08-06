@@ -187,6 +187,11 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
             %would like to see the results in degrees. False for radians.
+            if isempty(tm_t)
+                error('ThreeD:getRPYt',...
+                    ['Make sure that you are using a valid run',...
+                        num2str(tm_t)]);
+            end
             [roll_t,pitch_t,yaw_t,t] = ThreeD.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
             parfor i=1:minSize

@@ -21,6 +21,10 @@ classdef Markers3D < ThreeD
 %             display(size(front));
             N=size(rightBack,1);
             vtm_t = cell(1,N);
+            if isempty(rightBack) || ~rightBack
+                error('Markers3D:readDataVicon',...
+                'The runName or filename is not valid');
+            end
             parfor i = 1:N
 %                 i
                 vtm = Markers3D(rightBack(i,1:3),...
