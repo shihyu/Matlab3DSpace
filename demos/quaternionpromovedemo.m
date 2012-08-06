@@ -13,7 +13,7 @@ inDegrees=true;
 %Read the quaternion data. This is static function is custom
 %for CSV files that Intertia Technology outputs from their
 %ProMoveGUI.
-tm_t=QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+tm_t=Quat3D.readDataPromove(filename,runName,...
         node1,Fs1,Fs1);
     
 %You can then callibrate the data. It takes the 'average'
