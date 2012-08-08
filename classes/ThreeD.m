@@ -5,9 +5,9 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
     
     properties (Constant)
         %The Format:[ rightback;
-                %leftback;
-                %front;
-                %crosspoint]
+        %leftback;
+        %front;
+        %crosspoint]
         points_0 = [
             0 0 1 0;
             -1 1 0 0;
@@ -21,22 +21,28 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         quaternion = [1 0 0 0];
     end
     methods (Access = protected,Static)
-               
+        
         function plot3DPoint(point,style)
             plotSensor(point,style);
         end
         
-        function plotAngle(t,data,type,theLabel)
-        %PLOTANGLE Used in th plotRPY function.
-          if type==0
+        function plotAngle(t,data,typeOfPlot,theLabel)
+            %PLOTANGLE Used in th plotRPY function.
+            %t is the time to plot against, data is the data and typeOfPlot
+            %is either 'normal' for plot, 'stem' for stem plot or 
+            %'timeseries' for timeseries plot.
+            if strcmp(typeOfPlot,'normal')==1
                 plot(t,data);
-            elseif type==1
+            elseif strcmp(typeOfPlot,'stem')==1
                 stem(t,data);
-            else
+            elseif strcmp(typeOfPlot,'timeseries')==1
                 ts = timeseries(data,t);
                 ts.TimeInfo.Units = theLabel;
                 ts.plot('--mo','MarkerSize',5);
-          end
+            else
+                error('ThreeD:plotAngleTypeNotCorrect',['The typeOfPlot'...
+                    ' should be either stem, normal or timeseries']);
+            end
         end
     end
     
@@ -57,15 +63,15 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 %display('Standard');
                 normedPoint = (point-reference)/norm(point-reference)+...
                     reference;
-            %Reference point is zero
+                %Reference point is zero
             elseif (all(reference < repmat(eps, size(reference)))) && ...
                     (all(point > repmat(eps, size(point))))
                 %display('Reference zero');
                 normedPoint = point/norm(point);
-            %Point is zero.
+                %Point is zero.
             else
                 %display('Point Zero');
-                normedPoint = point;                
+                normedPoint = point;
             end
         end
         
@@ -73,7 +79,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %SORTS the run according to the timestamps.
             %TESTS NEED TO BE WRITTEN.
             [t,indexes] = sort(t);
-            tm_t = tm_t(indexes);
+            sizeTm = size(tm_t);
+            tm_t_s = tm_t(indexes);
+            if any(size(tm_t_s) ~= sizeTm)
+                %                 display('Matrix')
+                tm_t_s = tm_t(indexes,:);
+            end
+            tm_t = tm_t_s;
         end
         
         function angle = getAngle(marker1,marker2,zeropoint)
@@ -107,7 +119,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %Optional argument of a number can be used to make the plot
             %pauze between plots if you want to get a better understanding
             %of what is happening.
-           
+            
             parallelPlots = size(tm_t,1);
             m=ceil(parallelPlots/2);
             if parallelPlots == 1
@@ -190,7 +202,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             if isempty(tm_t)
                 error('ThreeD:getRPYt',...
                     ['Make sure that you are using a valid run',...
-                        num2str(tm_t)]);
+                    num2str(tm_t)]);
             end
             [roll_t,pitch_t,yaw_t,t] = ThreeD.getRPYtInit(tm_t);
             minSize = size(tm_t,2);
@@ -210,66 +222,63 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 yaw_t);
         end
         
-        function plotRPY(roll,pitch,yaw,inDegrees,Fs,varargin)
+        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs,t,type)
             %Type
             %PLOT the Roll Pitch and Yaw for the run.
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
-            typeOfPlot=1;
-            if length(varargin)>0
-                t = varargin{1};
-                if length(varargin)==2
-                    typeOfPlot=varargin{2};
-                end
-            else
-                minSize = length(roll);
-                t = 0:1/Fs:(minSize-1)/Fs;
-                typeOfPlot=0;
-            end
             if inDegrees
                 YLABEL='(degrees)';
             else
                 YLABEL='(radians)';
             end
-            XLABEL=['1/Fs Fs=' num2str(Fs)];
+            XLABEL=[' t '];
             XMIN = min(t);
             XMAX = max(t);
-            
-            hold on;
-           
             subplot(3,1,1);
             ThreeD.plotAngle(t,roll,typeOfPlot,YLABEL)
             hold on;
             grid on;
-            xlim([XMIN XMAX])
+            %             xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             subplot(3,1,2);
             ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL)
             grid on;
             hold on;
-            xlim([XMIN XMAX])
+            %             xlim([XMIN XMAX])
             title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
-            xlabel(XLABEL);
             subplot(3,1,3);
             ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL)
             grid on;
             hold on;
-            xlim([XMIN XMAX])
+            %             xlim([XMIN XMAX])
             title(['YAW(z): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
+            xlabel(XLABEL);
         end
         
-        function [roll,pitch,yaw,t] = getAndPlotRPYt(theRun_t,theTitle,...
-                varargin)
+        function [roll,pitch,yaw,t,theFigure,Fs] = ...
+                getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
-            [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);   
-            figure('visible','on','WindowStyle','docked',...
-                'Name',theTitle);
-            ThreeD.plotRPY(roll,pitch,yaw,true,200,t,varargin{:});
+            % Set theFigure to the figure handler if you would like to plot
+            % on the same figure or to false if you want a new figure.
+            [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);
+            if theFigure==false
+                theFigure = figure('visible','on','WindowStyle','docked',...
+                    'Name',theTitle);
+            else
+                set(0,'CurrentFigure',theFigure)
+                %                 display('Using same figure');
+            end
+            t_shift = [0 t];
+            t_diff = t-t_shift(1:length(t_shift)-1);
+            Fs = mean(1./t_diff(2:length(t_diff)));
+            t = t - t(1);
+            ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot);
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -297,7 +306,10 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 p_1{i} = tm_t_1{i}.getT;
                 %p_1(:,(i-1)*4+1:i*4) = tm_t_1(i).getT;
             end
-            H_1_0_est = cell2mat(p_0)*pinv(cell2mat(p_1));
+            p_0mat = cell2mat(p_0);
+            p_1mat = cell2mat(p_1);
+            absorRet = absor(p_0mat(1:3,:),p_1mat(1:3,:));
+            H_1_0_est = absorRet.M;
             H_1_0_est(1:3,4) = 0;
             H_1_0_est(4,1:3) = 0;
             H_1_0_est(4,4) = 1;
@@ -305,18 +317,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %H_1_0_est
             tm_est = ThreeD(matrix2quaternion(H_1_0_est));
             
-        end
-        
-        function [tm_est] = ...
-                callibrateInit(tm_t,startIndex,numberOfSamples)
-            %CALLIBRATEINIT Init loop for callibrate loop
-            N=numberOfSamples+startIndex;
-            zeroRun = cell(1,N);
-            parfor i = 1:N
-                zeroRun{i} = ThreeD([1 0 0 0]);
-            end
-            tm_est = getChangeOfGlobalReferenceFrames(zeroRun,...
-                tm_t,startIndex,numberOfSamples);
         end
         
         function [tm_t_c] = ...
@@ -334,47 +334,42 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %this estimated quaternion.
             %
             % Returns the tm_t(startIndex:length(tm_t)).
-            tm_est = ThreeD.callibrateInit(...
+            N=numberOfSamples+startIndex;
+            zeroRun = cell(1,N);
+            parfor i = 1:N
+                zeroRun{i} = ThreeD([1 0 0 0]);
+            end
+            tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
                 tm_t,startIndex,numberOfSamples);
-            tm_t_c = tm_t;
-            parfor i =  startIndex:size(tm_t,2)
-                tm_t_c{i} = tm_est.*tm_t{i};
-            end
-            tm_t_c = tm_t_c(startIndex:length(tm_t_c));
-        end
-        
-        function [metrics] = calculateSyncMetrics(tm_t)
-            % CALCULATESYNCMETRICS Calculates the simple
-            % metric used for synchronisation algorithmns.
-            tm_t0 = [tm_t(1) tm_t ];
-            metrics = zeros(size(tm_t));
-            parfor i = 1:size(tm_t,2)
-                metrics(i) = ThreeD.calculateRotDiff(...
-                    tm_t{i}.getH,...
-                    tm_t0{i}.getH);
+            tm_t_c = tm_t(startIndex:length(tm_t));
+            parfor i =  1:length(tm_t_c)
+                tm_t_c{i} = tm_est.*tm_t_c{i};
             end
         end
         
-        function [tm_t,t] = resample(tm_t,Fs_wanted,Fs_current)
+        function [tm_t,t] = resample(tm_t,t_wanted)
             %RESAMPLE Resamples a cell of ThreeD from the Fs_current
             %to the Fs_wanted.
             quats = zeros(length(tm_t),4);
+            t = zeros(length(tm_t),1);
             parfor i = 1:length(tm_t)
                 quats(i,:) = tm_t{i}.getQ;
+                t(i) = tm_t{i}.getTimestamp;
             end
-%             quats
-            quats = resample(quats,Fs_wanted,Fs_current);
-%             quats
-            N = size(quats,1);
+            %             quats
+            quat_ts = timeseries(quats,t);
+            quats = resample(quat_ts,t_wanted);
+            %             quats
+            N = length(quats.Time);
             tm_t = cell(1,N);
-            t = 0:1/Fs_wanted:(N-1)/Fs_wanted;
-            parfor i = 1:N
-%                 i
-%                 quats(i,:)
-                theQuat = ThreeD(quats(i,:));
-                theQuat = theQuat.setTimestamp(t(i));
+            for i = 1:N
+                %                 i
+                %                 quats(i,:)
+                theQuat = ThreeD(quats.Data(i,:));
+                theQuat = theQuat.setTimestamp(quats.Time(i));
                 tm_t{i} = theQuat;
             end
+            t = quats.Time;
         end
     end
     
@@ -404,7 +399,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     ' should be 1x4 or 4x4' ]);
             end
             qtm.points_T = qtm.H_0_T*qtm.points_0;
-            qtm.timestamp = 0.0;            
+            qtm.timestamp = 0.0;
         end
         
         
@@ -494,10 +489,10 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
             euler = quaternion2euler(tm.getQ,inDegrees,'xyz');
-%             euler = invrpy(tm.getH);
-%             if inDegrees
-%                 euler = euler/pi*180;
-%             end
+            %             euler = invrpy(tm.getH);
+            %             if inDegrees
+            %                 euler = euler/pi*180;
+            %             end
         end
         
         function [quaternion]=getQ(tm)

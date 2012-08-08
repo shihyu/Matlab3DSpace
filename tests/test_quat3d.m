@@ -26,10 +26,6 @@ assertFalse(any(sync))
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
 
-[metrics] = ThreeD.calculateSyncMetrics(vtm_t);
-%More tests need to make sure it makes sense.
-assertEqual(size(metrics),size(vtm_t));
-
 %ThreeD.plotRun(vtm_t(1:3));
 %figure
 size(vtm_t)
@@ -57,9 +53,9 @@ assertTrue(max(roll)>0);
 assertTrue(max(pitch)>0);
 assertTrue(max(yaw)>0);
 diff_t = ThreeD.cellminus(vtm_t(1:3),vtm_t(1:3));
-[roll,pitch,yaw]=ThreeD.getRPYt(...
+[roll,pitch,yaw,t]=ThreeD.getRPYt(...
     diff_t,true);
-ThreeD.plotRPY(roll,pitch,yaw,true,200);
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'stem');
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
 assertEqual([0 0 0],euler)
