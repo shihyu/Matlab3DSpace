@@ -35,14 +35,14 @@ theQuat = cvt.getQ;
 cvt2 = Markers3D(rightback,...
         leftback,front,theTimestamp);
 tm_t = {cvt,cvt2,cvt2};
-[tm_t,t] = ThreeD.resample(tm_t,[2.4,2.45]);
+[tm_t,t] = ThreeD.resample(tm_t,[2.43,2.45]);
 t
 assertEqual(size(tm_t),[1 2]);
 for i = 1:2
     i
     tm_t{i}.getQ
     if i == 1
-        assertEqual(tm_t{i}.getTimestamp,2.4);
+        assertEqual(tm_t{i}.getTimestamp,2.43);
     else
         assertEqual(tm_t{i}.getTimestamp,2.45);
     end

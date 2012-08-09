@@ -93,20 +93,23 @@ runName = 'promove'
 [steering_t] = Quat3D.readDataPromove(filename,runName,1,10,200);
 [roll_t] = Quat3D.readDataPromove(filename,runName,...
     2,200,200);
+steering_t = ThreeD.changeStartTime(steering_t,0);
+roll_t = ThreeD.changeStartTime(roll_t,0);
+
 [roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
 [roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
 
-[roll_t,steer_t] = synchroniseWithRespectToRPY(...
+[roll_t,steering_t] = synchroniseWithRespectToRPY(...
     roll_r,pitch_r,yaw_r,roll_t,...
     roll_s,pitch_s,yaw_s,steering_t,200);
 [roll_r,pitch_r,yaw_r,t]=ThreeD.getRPYt(roll_t,true);
-[roll_s,pitch_s,yaw_s,t_s]=ThreeD.getRPYt(steer_t,true);
+[roll_s,pitch_s,yaw_s,t_s]=ThreeD.getRPYt(steering_t,true);
 figure
 minSize = min(length(steering_t),length(roll_t));
 ThreeD.plotRPY(...
     roll_r(1:minSize),pitch_r(1:minSize),yaw_r(1:minSize),t(1:minSize),...
-    true,'stem');
+    true,'timeseries');
 ThreeD.plotRPY(...
     roll_s(1:minSize),pitch_s(1:minSize),yaw_s(1:minSize),...
-    t_s(1:minSize),true,'stem');
+    t_s(1:minSize),true,'timeseries');
 

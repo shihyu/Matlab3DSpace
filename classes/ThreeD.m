@@ -277,7 +277,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             t_shift = [0 t];
             t_diff = t-t_shift(1:length(t_shift)-1);
             Fs = mean(1./t_diff(2:length(t_diff)));
-            t = t - t(1);
+            %t = t - t(1);
             ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot);
         end
         
@@ -333,6 +333,9 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %All the samples in the set are then inversely rotated by
             %this estimated quaternion.
             %
+            %The timestamps are readjusted to be zero from the startIndex
+            %position.
+            %
             % Returns the tm_t(startIndex:length(tm_t)).
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
@@ -342,8 +345,12 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
                 tm_t,startIndex,numberOfSamples);
             tm_t_c = tm_t(startIndex:length(tm_t));
+            timestamp1=tm_t{startIndex}.getTimestamp;
             parfor i =  1:length(tm_t_c)
-                tm_t_c{i} = tm_est.*tm_t_c{i};
+                newTm = tm_est.*tm_t_c{i};
+                newTm = newTm.setTimestamp(newTm.getTimestamp...
+                    -timestamp1)
+                tm_t_c{i} = newTm;
             end
         end
         
@@ -365,12 +372,28 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             for i = 1:N
                 %                 i
                 %                 quats(i,:)
+                if any(isnan(quats.Data(i,:)))
+                    display('NAN')
+                    %error('ThreeD:resample','Incorrect resampling');
+                end
                 theQuat = ThreeD(quats.Data(i,:));
                 theQuat = theQuat.setTimestamp(quats.Time(i));
                 tm_t{i} = theQuat;
             end
             t = quats.Time;
         end
+        
+        function [tm_t] = changeStartTime(tm_t,newStartTime)
+            %CHANGESTARTTIME(tm_t,newStartTime) Change the run to have the
+            %new start time.
+            timestamp1=tm_t{1}.getTimestamp;
+            parfor i = 1:length(tm_t)
+                tm = tm_t{i}.setTimestamp(tm_t{i}.getTimestamp...
+                    -timestamp1+newStartTime);
+                tm_t{i} = tm;
+            end
+        end
+        
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
