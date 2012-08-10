@@ -26,7 +26,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             plotSensor(point,style);
         end
         
-        function plotAngle(t,data,typeOfPlot,theLabel)
+        function plotAngle(t,data,typeOfPlot,theLabel,plotStyle)
             %PLOTANGLE Used in th plotRPY function.
             %t is the time to plot against, data is the data and typeOfPlot
             %is either 'normal' for plot, 'stem' for stem plot or 
@@ -38,7 +38,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             elseif strcmp(typeOfPlot,'timeseries')==1
                 ts = timeseries(data,t);
                 ts.TimeInfo.Units = theLabel;
-                ts.plot('--mo','MarkerSize',5);
+                ts.plot(plotStyle,'MarkerSize',5);
             else
                 error('ThreeD:plotAngleTypeNotCorrect',['The typeOfPlot'...
                     ' should be either stem, normal or timeseries']);
@@ -222,7 +222,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 yaw_t);
         end
         
-        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot)
+        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot,plotStyle)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs,t,type)
             %Type
             %PLOT the Roll Pitch and Yaw for the run.
@@ -238,21 +238,21 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             XMIN = min(t);
             XMAX = max(t);
             subplot(3,1,1);
-            ThreeD.plotAngle(t,roll,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,roll,typeOfPlot,YLABEL,plotStyle)
             hold on;
             grid on;
             %             xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             subplot(3,1,2);
-            ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL,plotStyle)
             grid on;
             hold on;
             %             xlim([XMIN XMAX])
             title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             subplot(3,1,3);
-            ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL)
+            ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL,plotStyle)
             grid on;
             hold on;
             %             xlim([XMIN XMAX])
@@ -262,7 +262,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [roll,pitch,yaw,t,theFigure,Fs] = ...
-                getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot)
+                getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
+                plotStyle)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
             % Set theFigure to the figure handler if you would like to plot
             % on the same figure or to false if you want a new figure.
@@ -278,7 +279,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             t_diff = t-t_shift(1:length(t_shift)-1);
             Fs = mean(1./t_diff(2:length(t_diff)));
             %t = t - t(1);
-            ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot);
+            ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
@@ -315,7 +316,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             H_1_0_est(4,4) = 1;
             %display('Estimated H')
             %H_1_0_est
-            tm_est = ThreeD(matrix2quaternion(H_1_0_est));
+            tm_est = ThreeD(H_1_0_est);
             
         end
         

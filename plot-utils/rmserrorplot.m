@@ -9,7 +9,7 @@ RMSVector =[];
 RMSVerschilLengte = [];
 IdentificationVector = [];
 RMSVerschilVector = [];
-theXLabel = ['Nr. van de meting: '];
+theXLabel = ['Measurement number: '];
 for j = 1:length(A)
     Aj = A{j};
     Bj = B{j};
@@ -22,7 +22,7 @@ for j = 1:length(A)
     RMSVerschilVector = [RMSVerschilVector; RMSVerschil];
     Identification = [repmat(j,RMSVerschilLengte(j),1)];
     IdentificationVector = [IdentificationVector; Identification];
-    theXLabel = [theXLabel ' RMS ' num2str(j) ':' num2str(RMS) ]; 
+    theXLabel = [theXLabel ' No:' num2str(j) ': RMS mean:' num2str(RMS) ]; 
     if plotDifference==true
         figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
@@ -43,5 +43,5 @@ figure('visible','on','WindowStyle','docked',...
                 'Name',theTitle);
 boxplot(RMSVerschilVector, IdentificationVector, 'notch', 'on')
 xlabel (theXLabel),
-ylabel('absoluut RMS verschil: '),
+ylabel('absolute RMS difference: '),
 title (theTitle);
