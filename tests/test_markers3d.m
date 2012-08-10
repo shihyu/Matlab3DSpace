@@ -228,7 +228,8 @@ for i = 1:length(adamsColumns)
    
     MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtms_t,adamsColumns{i},false);
+    [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtms_t,...
+        adamsColumns{i},false,'timeseries');
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
     
     %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
@@ -295,12 +296,12 @@ steeringAngle = data.SteeringAngle';
 %ThreeD.plotRun(one_t,0.5);
 %ThreeD.plotRun(two_t,0.5);
 [one_roll,one_pitch,one_yaw,t] = ThreeD.getAndPlotRPYt(one_t,...
-    ['SENSOR ONE ' runName],false);
+    ['SENSOR ONE ' runName],false,'timeseries');
 [two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(two_t,...
-    ['SENSOR TWO ' runName],false);
+    ['SENSOR TWO ' runName],false,'timeseries');
 diff_t = ThreeD.cellminus(two_t,one_t);
 [diff_roll,diff_pitch,diff_yaw,t] = ThreeD.getAndPlotRPYt(diff_t,...
-    ['SENSOR DIFFERENCE: ' runName ],false);
+    ['SENSOR DIFFERENCE: ' runName ],false,'timeseries');
 rmserrorplot({diff_yaw},{-steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);
 

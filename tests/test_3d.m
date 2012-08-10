@@ -274,19 +274,18 @@ tm_t_c = ThreeD.callibrate(tm_t,1,1);
 assertElementsAlmostEqual(tm_t_c{1}.getQ,[1 0 0 0])
 assertElementsAlmostEqual(tm_t_c{2}.getQ,[0.8 0.2 0 0]/norm([0.8 0.2 0 0]))
 assertElementsAlmostEqual(tm_t_c{3}.getQ,[0.8 0.6 0 0]/norm([0.8 0.6 0 0]))
-assertEqual(tm_t_c{1}.getTimestamp,qvt.getTimestamp)
-assertEqual(tm_t_c{1}.getTimestamp,7.8)
-assertEqual(tm_t_c{3}.getTimestamp,qvt2.getTimestamp)
-assertEqual(tm_t_c{3}.getTimestamp,9.5)
+assertEqual(tm_t_c{1}.getTimestamp,0.0)
+assertEqual(tm_t_c{2}.getTimestamp,8.2-7.8)
+assertEqual(tm_t_c{3}.getTimestamp,9.5-7.8)
 tm_t_c = ThreeD.callibrate(tm_t,2,1);
 assertEqual(length(tm_t_c),2);
-assertEqual(tm_t_c{1}.getTimestamp,8.2)
-assertEqual(tm_t_c{2}.getTimestamp,9.5)
+assertEqual(tm_t_c{1}.getTimestamp,8.2-8.2)
+assertEqual(tm_t_c{2}.getTimestamp,9.5-8.2)
 
 tm_t_c = ThreeD.callibrate(tm_t,2,2);
 assertEqual(length(tm_t_c),2);
-assertEqual(tm_t_c{1}.getTimestamp,8.2)
-assertEqual(tm_t_c{2}.getTimestamp,9.5)
+assertEqual(tm_t_c{1}.getTimestamp,8.2-8.2)
+assertEqual(tm_t_c{2}.getTimestamp,9.5-8.2)
 
 function test_getandplotrpyt
 quat = [0.8,0.2,0,0];
