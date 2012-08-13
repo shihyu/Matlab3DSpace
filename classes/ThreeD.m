@@ -261,7 +261,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             xlabel(XLABEL);
         end
         
-        function [roll,pitch,yaw,t,theFigure,Fs] = ...
+        function [roll,pitch,yaw,t,theFigure] = ...
                 getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
                 plotStyle)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
@@ -280,6 +280,16 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             Fs = mean(1./t_diff(2:length(t_diff)));
             %t = t - t(1);
             ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
+        end
+        
+        function [Fs,Variance] = estimateFsAndVariance(t)
+            %ESTIMATEFSANDVARIANCE(t) Estimate the Frequency of the samples
+            %and the variance.
+            t_shift = [0 t];
+            t_diff = t-t_shift(1:length(t_shift)-1);
+            Fs_t = 1./t_diff(2:length(t_diff));
+            Fs = mean(Fs_t);
+            Variance =var(Fs_t);
         end
         
         function [tm_est] = getChangeOfGlobalReferenceFrames(tm_t_0,...
