@@ -380,14 +380,17 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %             quats
             N = length(quats.Time);
             tm_t = cell(1,N);
-            for i = 1:N
+            parfor i = 1:N
                 %                 i
                 %                 quats(i,:)
                 if any(isnan(quats.Data(i,:)))
-                    display('NAN')
-                    %error('ThreeD:resample','Incorrect resampling');
+                    %SHOULD DO THIS MORE CLEVERLY
+                    %display('NAN')
+                    warning('ThreeD:resample','Incorrect resampling');
+                    theQuat = ThreeD([1 0 0 0]);
+                else
+                    theQuat = ThreeD(quats.Data(i,:));
                 end
-                theQuat = ThreeD(quats.Data(i,:));
                 theQuat = theQuat.setTimestamp(quats.Time(i));
                 tm_t{i} = theQuat;
             end

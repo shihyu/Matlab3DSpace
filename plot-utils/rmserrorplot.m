@@ -28,7 +28,7 @@ for j = 1:length(A)
     PCoeffVector = [PCoeffVector, PCoeff];
     IdentificationVector = [IdentificationVector; Identification];
     theXLabel = [theXLabel ' No:' num2str(j) ': RMS:' num2str(RMS) ...
-        ' Pearsons Coefficient: ' num2str(PCoeff)]; 
+        ' PC: ' num2str(PCoeff)]; 
     if plotDifference==true
         figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
