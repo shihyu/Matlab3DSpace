@@ -37,18 +37,17 @@ classdef Markers3D < ThreeD
             reader = adamsReader(filename,runName);
             data = reader.readData(false);
             t=data.Time;
-            %HACK, must generalise the readData function for adamsReader.
-            if strcmp(rightBackName,'RBO')||strcmp(rightBackName,'RB0')
-                display('Reading RBO')
-                RBO = [data.RBOX data.RBOY data.RBOZ];
-                LBO = [data.LBOX data.LBOY data.LBOZ];
-                FON = [data.FONX data.FONY data.FONZ];
-            else
-                display('Reading RBT')
-                RBO = [data.RBTX data.RBTY data.RBTZ];
-                LBO = [data.LBTX data.LBTY data.LBTZ];
-                FON = [data.FTNX data.FTNY data.FTNZ];
-            end
+            
+            RBO = [data.([rightBackName 'X']),...
+                data.([rightBackName 'Y']),...
+                data.([rightBackName 'Z'])];
+            LBO = [data.([leftBackName 'X']),...
+                data.([leftBackName 'Y']),...
+                data.([leftBackName 'Z'])];
+            FON = [data.([frontName 'X']),...
+                data.([frontName 'Y']),...
+                data.([frontName 'Z'])];
+             
             N=size(t,1);
             Fs = 1/(t(2)-t(1));
             vtm_t = cell(1,N);
@@ -122,12 +121,16 @@ classdef Markers3D < ThreeD
                 %display(['KABSCH:' varargin{1}])
 %                 ThreeD.points_0(1:3,:)
 %                 points_T
+%             points_0 = [
+%             -1 1 0 0;
+%             0 0 1 0;
+%             0 0 0 1;
+%             1 1 1 1];
                 [rotInfo] = absor(ThreeD.points_0(1:3,:),...
                     points_T);
                 H_0_T = rotInfo.M;
                 H_0_T(4,1:3)=[0 0 0];
                 H_0_T(:,4)=[0 0 0 1]';
-                setQuaternion = true;
             end
             vtm@ThreeD(H_0_T);
             vtm.timestamp = timestamp;

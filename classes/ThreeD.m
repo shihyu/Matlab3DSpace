@@ -330,7 +330,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             
         end
         
-        function [tm_t_c] = ...
+        function [tm_t_c,tm_est] = ...
                 callibrate(tm_t,startIndex,numberOfSamples)
             %CALLIBRATE Changes the samples to the zero frame using
             %an estimate of the initial orientation from the start of
@@ -376,7 +376,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             %             quats
             quat_ts = timeseries(quats,t);
-            quats = resample(quat_ts,t_wanted);
+            quats = resample(quat_ts,t_wanted,'zoh');
+            
             %             quats
             N = length(quats.Time);
             tm_t = cell(1,N);
