@@ -320,13 +320,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             p_0mat = cell2mat(p_0);
             p_1mat = cell2mat(p_1);
             absorRet = absor(p_0mat(1:3,:),p_1mat(1:3,:));
-            H_1_0_est = absorRet.M;
-            H_1_0_est(1:3,4) = 0;
-            H_1_0_est(4,1:3) = 0;
-            H_1_0_est(4,4) = 1;
+%             H_1_0_est = absorRet.M;
+%             H_1_0_est(1:3,4) = 0;
+%             H_1_0_est(4,1:3) = 0;
+%             H_1_0_est(4,4) = 1;
             %display('Estimated H')
             %H_1_0_est
-            tm_est = ThreeD(H_1_0_est);
+            tm_est = ThreeD(absorRet.q');
+            tm_est = tm_est';
             
         end
         
@@ -379,7 +380,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             quats = resample(quat_ts,t_wanted,'zoh');
             
             %             quats
-            N = length(quats.Time);
+            N = length(t_wanted);
             tm_t = cell(1,N);
             parfor i = 1:N
                 %                 i

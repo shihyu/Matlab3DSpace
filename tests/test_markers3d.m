@@ -213,36 +213,19 @@ data = reader.readData(false);
 %Horn
 [vtm_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-%Screw
-[vtms_t] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','screw');
-%kabsch
-[vtmk_t] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN','kabsch');
+% ThreeD.plotRun(vtm_t,0.4);
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
-    adamsData = -data.(adamsColumn);
+    adamsData = data.(adamsColumn);
     CompareValue = cell(1,1);
-    CompareValue{1} = adamsData';
-    %CompareValue{2} = adamsData';
+    CompareValue{1} = -adamsData';
    
     MeasuredValue = cell(1,1);
     %Normal
-    [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtms_t,...
+    [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtm_t,...
         adamsColumns{i},false,'timeseries','--o');
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
     
-    %MeasuredValue{2} = chooseData(yaw,pitch,roll,adamsColumn);
-   
-    %screw
-%     [roll,pitch,yaw,t] = ThreeD.getRPYt(vtmk_t,true);
-%     MeasuredValue{2} = chooseData(roll,pitch,yaw,adamsColumn);
-%     [roll,pitch,yaw,t] = ThreeD.getRPYt(vtmh_t,true);
-
-%     figure
-%     ThreeD.plotRPY(roll,pitch,yaw,true,200,t,0);
-%     title(['ROLL PITCH YAW:' runName])
-%     MeasuredValue{3} = chooseData(roll,pitch,yaw,adamsColumn);
     rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
         adamsColumn],true);
 end
@@ -268,7 +251,7 @@ filename='test-data/test-data.h5';
 % processRun(filename,runName,adamsColumn);
 %
 runName = 'adams/rollpitchyaw';
-adamsColumn = {'Roll','Pitch','Yaw'};
+adamsColumn = {'Roll'};%,'Pitch','Yaw'};
 processRun(filename,runName,adamsColumn);
 
 %Incorrectly created file.
@@ -290,7 +273,7 @@ steeringAngle = data.SteeringAngle';
 % figure
 %kobasch
 [one_t] = Markers3D.readDataAdams(filename,runName,...
-    'RB0','LB0','F0N');
+    'RBO','LBO','FON');
 [two_t] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
 %ThreeD.plotRun(one_t,0.5);

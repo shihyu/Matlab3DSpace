@@ -80,7 +80,44 @@ assertEqual(cvt_t{2}.getTimestamp(),2.5);
 assertEqual(cvt_t{3}.getTimestamp(),2.6);
 assertEqual(cvt_t{4}.getTimestamp(),2.7);
 
+quat = [1,0,0,0];
+qvt =  ThreeD(quat);
+quat = [0.4,0.4,0.4,0.4];
+qvt1 =  ThreeD(quat);
+tm = {qvt qvt1};
 
+zero_t = {qvt qvt};
+tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zero_t,tm,1,1);
+assertEqual(tm_est.getQ, [1 0 0 0]);
+tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zero_t,tm,2,1);
+tm_expected = qvt1';
+assertElementsAlmostEqual(tm_est.getQ, tm_expected.getQ);
+tm = tm_expected*tm;
+assertElementsAlmostEqual(tm{2}.getQ, [1 0 0 0]);
+assertElementsAlmostEqual(tm{1}.getQ, ...
+    quaternionproduct([0.4,-0.4,-0.4,-0.4],[1 0 0 0])');
+
+testQ =  [0.684259741117616  -0.003722627105096   0.011703270486976  -0.729134954718945];
+qvt =  ThreeD(testQ);
+tm = {qvt,qvt};
+tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zero_t,tm,2,1);
+tm_expected = qvt;
+assertElementsAlmostEqual(tm_est.getQ, tm_expected.getQ);
+
+function test_quats
+
+q1 = [1 -0.5 -0.5 -0.5];
+qvt1 = ThreeD(q1);
+q2 = [-1 0.5 0.5 0.5];
+qvt2 = ThreeD(q2);
+figure
+hold on;
+qvt1.plotT;
+qvt2.plotT;
+qvt1.getQ
+qvt2.getQ
+qvt3 = qvt2'
+qvt3.getQ
 
 function test_angleDiff
 x = 0;
@@ -227,8 +264,8 @@ assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 diff_t = ThreeD.cellminus(vtm_t(1:3),vtm_t(1:3));
 [roll,pitch,yaw,t]=ThreeD.getRPYt(...
     diff_t,true);
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal');
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'stem');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal','--b');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'stem','--b');
 assertEqual(t(1),diff_t{1}.getTimestamp);
 assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
@@ -256,7 +293,7 @@ assertTrue(pitch(1)~=0);
 assertTrue(roll(1)~=0);
 assertEqual(size(roll),size(pitch),size(yaw));
 figure
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal','--b');
 
 
 function test_callibrate
@@ -279,6 +316,9 @@ assertEqual(tm_t_c{2}.getTimestamp,8.2-7.8)
 assertEqual(tm_t_c{3}.getTimestamp,9.5-7.8)
 tm_t_c = ThreeD.callibrate(tm_t,2,1);
 assertEqual(length(tm_t_c),2);
+qvt1_2=[0.8 0.2 0 0]/norm([0.8 0.2 0 0])
+assertElementsAlmostEqual(tm_t_c{1}.getQ,[1 0 0 0]);
+
 assertEqual(tm_t_c{1}.getTimestamp,8.2-8.2)
 assertEqual(tm_t_c{2}.getTimestamp,9.5-8.2)
 
@@ -300,9 +340,9 @@ qvt4 = qvt2.setTimestamp(11.4);
 q1_t= {qvt1,qvt2};
 q2_t= {qvt3,qvt4};
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q1_t,...
-            'TEST',false,'timeseries')
+            'TEST',false,'timeseries','--b')
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q2_t,...
-            'TEST AGAIN',theFigure,'timeseries')
+            'TEST AGAIN',theFigure,'timeseries','--b')
         
 function test_sortAccordingToTimestamp(t,tm_t)
 q = [3 2 4 1];

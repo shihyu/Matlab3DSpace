@@ -110,7 +110,7 @@ classdef Markers3D < ThreeD
                     %H_0_T = H_T_0';
                     H_0_T = invht(H_T_0);
                 elseif (strcmp(varargin{1},'kabsch')==1)
-                    %display(['HORN:' varargin{1}])
+                    display(['KABSCH:' varargin{1}])
                     [H_0_T] = Kabsch(ThreeD.points_0(1:3,:),...
                         points_T);
                     H_0_T(4,1:3)=[0 0 0];
@@ -128,9 +128,10 @@ classdef Markers3D < ThreeD
 %             1 1 1 1];
                 [rotInfo] = absor(ThreeD.points_0(1:3,:),...
                     points_T);
-                H_0_T = rotInfo.M;
-                H_0_T(4,1:3)=[0 0 0];
-                H_0_T(:,4)=[0 0 0 1]';
+%                   H_0_T = rotInfo.M;
+%                 H_0_T(4,1:3)=[0 0 0];
+%                 H_0_T(:,4)=[0 0 0 1]';
+                H_0_T = quaternionconjugate(rotInfo.q');
             end
             vtm@ThreeD(H_0_T);
             vtm.timestamp = timestamp;
