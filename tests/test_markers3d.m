@@ -150,6 +150,64 @@ assertElementsAlmostEqual(cvt.getH,H);
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],cvt.getQ);
 %assertElementsAlmostEqual(errorEuler,[theta 0 0 ])
 
+function test_markerdiffs
+%Pitch Yaw Difference;
+H1=roty(pi/6);
+H2=rotz(pi/3.4)*roty(pi/6);
+H12 = rotz(pi/3.4);
+point0 = ThreeD.points_0;
+point1 = H1*point0;
+point2 = H2*point0;
+
+marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
+marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
+
+assertElementsAlmostEqual(marker1.getRPY(false),[0 pi/6 0 ]);
+assertElementsAlmostEqual(marker1.getH,H1);
+assertElementsAlmostEqual(marker2.getH,H2);
+
+%From screw theory: H12=H2*(H1)^-1
+marker12 = marker2-marker1;
+assertElementsAlmostEqual(marker12.getRPY(false),[0 0 pi/3.4]);
+
+%Roll Yaw Difference;
+H1=rotx(pi/2);
+H2=rotz(pi/5.2)*rotx(pi/2);
+H12 = rotz(pi/5.2);
+point0 = ThreeD.points_0;
+point1 = H1*point0;
+point2 = H2*point0;
+
+marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
+marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
+
+assertElementsAlmostEqual(marker1.getRPY(false),[pi/2 0 0]);
+assertElementsAlmostEqual(marker1.getH,H1);
+assertElementsAlmostEqual(marker2.getH,H2);
+
+%From screw theory: H12=H2*(H1)^-1
+marker12 = marker2-marker1;
+assertElementsAlmostEqual(marker12.getRPY(false),[0 0 pi/5.2]);
+
+
+%Roll Pitch Yaw Difference;
+H1=rotx(pi/2)*roty(pi/9);
+H2=rotz(pi/5.2)*rotx(pi/2)*roty(pi/9);
+H12 = rotz(pi/5.2);
+point0 = ThreeD.points_0;
+point1 = H1*point0;
+point2 = H2*point0;
+
+marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
+marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
+
+assertElementsAlmostEqual(marker1.getH,H1);
+assertElementsAlmostEqual(marker2.getH,H2);
+
+%From screw theory: H12=H2*(H1)^-1
+marker12 = marker2-marker1;
+assertElementsAlmostEqual(marker12.getRPY(false),[0 0 pi/5.2]);
+
 function test_zeroinput
 rightback = [0 0 0];
 leftback = [0 0 0];
