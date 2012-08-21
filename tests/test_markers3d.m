@@ -9,8 +9,11 @@ front = [1 0 0];
 theTimestamp = 2.3;
 cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
-assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
-
+assertEqual(cvt.get0,[...
+    0 0 1 0;
+    -1 1 0 0; 
+    0 0 0 1; 
+    1 1 1 1]);
 assertElementsAlmostEqual(cvt.getH,eye(4));
 assertElementsAlmostEqual(cvt.get0,cvt.getT);
 assertElementsAlmostEqual(cvt.getQ,[1 0 0 0]);
@@ -22,8 +25,16 @@ front = [1 0 0];
 theTimestamp = 2.3;
 cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
-assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
-assertElementsAlmostEqual([0 0 1 0; 1 -1 0 0; 0 0 0 -1; 1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,...
+    [1 0 0 0;
+    0 -1 0 0; 
+    0 0 -1 0; 
+    0 0 0 1]);
+assertElementsAlmostEqual(...
+    [0 0 1 0; 
+        1 -1 0 0; 
+        0 0 0 -1; 
+        1 1 1 1],cvt.getT);
 quat = cvt.getQ
 
 rightback = [1 1 2];
@@ -33,37 +44,107 @@ theTimestamp = 2.3;
 cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
-assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
+assertEqual(cvt.get0,[0 0 1 0; 
+    -1 1 0 0; 
+    0 0 0 1; 
+    1 1 1 1]);
 assertElementsAlmostEqual(cvt.getH,[1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 1]);
-
-rightback = [0 0 -1];
-leftback = [0 0 1];
-front = [1 0 0];
-theta = -pi/2;
-H = [ 1     0           0        0
-    0  cos(theta) sin(theta)  0
-    0  -sin(theta)  cos(theta)  0
-    0     0           0        1];
-cvt = Markers3D(rightback,...
-    leftback,front,theTimestamp);
-cvt.getQ
-
-assertElementsAlmostEqual(cvt.getH,H);
-%assertElementsAlmostEqual([1 -1 0 0; 0 0 0 -1; 0 0 1 0; 1 1 1 1],cvt.getT);
-
+%Translate.
 rightback = [4.4 5.5 -6.25];
 leftback = [2.4 5.5 -6.25];
 front = [3.4 5.5 -5.25];
 theta = -pi/2;
-H = [ 1     0           0        0
-    0  cos(theta) sin(theta)  0
-    0  -sin(theta)  cos(theta)  0
-    0     0           0        1];
+H = roty(theta);
 cvt = Markers3D(rightback,...
     leftback,front,theTimestamp);
 cvt.getQ
 %assertElementsAlmostEqual(cvt.getH,H);
 assertElementsAlmostEqual([1 -1 0 0; 0 0 0 -1; 0 0 1 0; 1 1 1 1],cvt.getT);
+
+%Rotate on X
+rightback = [0 0 1];
+leftback = [0 0 -1];
+front = [1 0 0];
+theta = -pi/2;
+H = rotx(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+cvt.getQ
+cvt.getT
+ThreeD.points_0
+expected = H*ThreeD.points_0
+assertElementsAlmostEqual(expected,cvt.getT);
+assertElementsAlmostEqual(cvt.getH,H);
+
+rightback = [0 0 -1];
+leftback = [0 0 1];
+front = [1 0 0];
+theta = pi/2;
+H = rotx(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+cvt.getQ
+cvt.getT
+assertElementsAlmostEqual(cvt.getH,H);
+
+%Rotate on Y
+rightback = [0 -1 0];
+leftback = [0 1 0];
+front = [0 0 1];
+theta = -pi/2;
+H = roty(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+assertElementsAlmostEqual(...
+    [0 0 0 -1; 
+        -1 1 0 0; 
+        0 0 1 0; 
+        1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,H);
+
+rightback = [0 -1 0];
+leftback = [0 1 0];
+front = [0 0 -1];
+theta = pi/2;
+H = roty(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+assertElementsAlmostEqual(...
+    [0 0 0 1; 
+        -1 1 0 0; 
+        0 0 -1 0; 
+        1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,H);
+
+%Rotate on Z
+rightback = [-1 0 0];
+leftback = [1 0 0];
+front = [0 -1 0];
+theta = -pi/2;
+H = rotz(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+assertElementsAlmostEqual(...
+    [-1 1 0 0; 
+        0 0 -1 0; 
+        0 0 0 1; 
+        1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,H);
+
+rightback = [1 0 0];
+leftback = [-1 0 0];
+front = [0 1 0];
+theta = pi/2;
+H = rotz(theta);
+cvt = Markers3D(rightback,...
+    leftback,front,theTimestamp);
+assertElementsAlmostEqual(...
+     [1 -1 0 0; 
+        0 0 1 0; 
+        0 0 0 1; 
+        1 1 1 1],cvt.getT);
+assertElementsAlmostEqual(cvt.getH,H);
+
 [errorQuat,errorEuler] = quaternionerror(cvt.getQ,[1 0 0 0]);
 %assertElementsAlmostEqual(errorEuler,[-theta 0 0 ])
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],cvt.getQ);
@@ -218,7 +299,7 @@ for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
     adamsData = data.(adamsColumn);
     CompareValue = cell(1,1);
-    CompareValue{1} = -adamsData';
+    CompareValue{1} = adamsData';
    
     MeasuredValue = cell(1,1);
     %Normal
@@ -278,14 +359,15 @@ steeringAngle = data.SteeringAngle';
     'RBT','LBT','FTN');
 %ThreeD.plotRun(one_t,0.5);
 %ThreeD.plotRun(two_t,0.5);
-[one_roll,one_pitch,one_yaw,t] = ThreeD.getAndPlotRPYt(one_t,...
-    ['SENSOR ONE ' runName],false,'timeseries','--o');
+[one_roll,one_pitch,one_yaw,t,theFigure] = ThreeD.getAndPlotRPYt(one_t,...
+    ['SENSOR ONE (B) SENSOR 3 (R) DIFF (G) ' runName],false,'timeseries','--o');
 [two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(two_t,...
-    ['SENSOR TWO ' runName],false,'timeseries','--o');
+    ['SENSOR TWO ' runName],theFigure,'timeseries','--r*');
 diff_t = ThreeD.cellminus(two_t,one_t);
 [diff_roll,diff_pitch,diff_yaw,t] = ThreeD.getAndPlotRPYt(diff_t,...
-    ['SENSOR DIFFERENCE: ' runName ],false,'timeseries','--o');
-rmserrorplot({diff_yaw},{-steeringAngle},['RMS ERROR: ' runName ...
+    ['SENSOR DIFFERENCE: ' runName ],theFigure,'timeseries','--go');
+assertFalse(any(diff_roll))
+rmserrorplot({diff_yaw},{steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);
 
 
@@ -294,5 +376,5 @@ close all;
 filename='test-data/test-data.h5';
 runName = '/adams/pitchyawcombined';
 processRunCombined(filename,runName);
-runName = '/adams/rollyawcombined';
-processRunCombined(filename,runName);
+% runName = '/adams/rollyawcombined';
+% processRunCombined(filename,runName);

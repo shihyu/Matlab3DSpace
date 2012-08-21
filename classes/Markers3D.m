@@ -78,8 +78,9 @@ classdef Markers3D < ThreeD
             front = ThreeD.normWithOffset(front,midpoint);
             rightback = ThreeD.normWithOffset(rightback,midpoint);
             leftback = ThreeD.normWithOffset(leftback,midpoint);
-            crosspointTmp = cross(front-midpoint,...
-                leftback-midpoint)+midpoint;
+            %n=AXB=>A left back, B = Front. N=Positive Z axis...
+            crosspointTmp = cross(leftback-midpoint,...
+                front-midpoint)+midpoint;
             crosspoint = ThreeD.normWithOffset(crosspointTmp,midpoint);
             %not a perfect 60 degree Triangle... so rotate on the
             %XY plane to get the
@@ -126,12 +127,12 @@ classdef Markers3D < ThreeD
 %             0 0 1 0;
 %             0 0 0 1;
 %             1 1 1 1];
-                [rotInfo] = absor(ThreeD.points_0(1:3,:),...
-                    points_T);
+                [rotInfo] = absor(ThreeD.points_0(1:3,1:3),...
+                    points_T(1:3,1:3));
 %                   H_0_T = rotInfo.M;
 %                 H_0_T(4,1:3)=[0 0 0];
 %                 H_0_T(:,4)=[0 0 0 1]';
-                H_0_T = quaternionconjugate(rotInfo.q');
+                H_0_T = rotInfo.q';
             end
             vtm@ThreeD(H_0_T);
             vtm.timestamp = timestamp;

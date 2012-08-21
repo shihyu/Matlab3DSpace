@@ -10,7 +10,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         %crosspoint]
         points_0 = [
             0 0 1 0;
-            -1 1 0 0;
+           -1 1 0 0;
             0 0 0 1;
             1 1 1 1];
     end
@@ -425,12 +425,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 qtm.H_0_T = quaternion2matrix(quaternionOrH);
                 qtm.quaternion = quaternionnormalise(quaternionOrH);
             elseif size(quaternionOrH) == [4,4]
-                %Inconsistent use of order of multiplication found
-                %somewhere in the code, between H and quaternions.
                 qtm.H_0_T = quaternionOrH;
-                %Not sure why but for the H sent from ViconThreeD
-                %we need to get the quaternion from the inverse matrix.
-                qtm.quaternion = matrix2quaternion(quaternionOrH');
+                qtm.quaternion = matrix2quaternion(quaternionOrH);
             else
                 error('matlab3dspace:threemarkers',...
                     ['Wrong size for input quaternion or H matrix' ...
