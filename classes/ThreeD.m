@@ -154,6 +154,19 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
+         function diff = inverseMultiply(obj1,obj2)
+            % INVERSEMULTIPLY Implement obj1'*obj2 for ThreeD when using
+            % cells.
+            %display(class(obj1(1)))
+            
+            %display('Calculating error (vector):')
+            minSize = min(size(obj1,2),size(obj2,2));
+            diff = cell(1,minSize);
+            parfor i = 1:minSize
+                diff{i} = obj1{i}'.*obj2{i};
+            end
+        end
+        
         function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,inDegrees)
             %GETDIFF Same as cellminus() but calculates the roll pitch
             %yaw values during the calculation as well.

@@ -31,6 +31,8 @@ jointAnglePlotStyle = '--om';
 % jointAngle_t = sensor2_t*sensor1_t' = 
 % ThreeD.cellminus(sensor2_t,sensor1_t)
 jointAngle_t = ThreeD.cellminus(sensor2_t,sensor1_t);
+jointAngle_t = ThreeD.inverseMultiply(sensor1_t,sensor2_t);
+
 ThreeD.getAndPlotRPYt(jointAngle_t,...
     [angleName ' ANGLE-UNCALLIBRATED'],false,'timeseries',jointAnglePlotStyle);
 %Callibrate to see what happens! We want to make this frame the origin...

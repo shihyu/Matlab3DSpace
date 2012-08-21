@@ -208,6 +208,30 @@ assertElementsAlmostEqual(marker2.getH,H2);
 marker12 = marker2-marker1;
 assertElementsAlmostEqual(marker12.getRPY(false),[0 0 pi/5.2]);
 
+%Pitch Yaw Difference; (45 degrees).
+H1=roty(pi/4);
+H2=rotz(pi/4)*roty(pi/4);
+H12 = rotz(pi/4);
+point0 = ThreeD.points_0;
+point1 = H1*point0;
+point2 = H2*point0;
+
+marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
+marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
+
+assertElementsAlmostEqual(marker1.getRPY(false),[0 pi/4 0 ]);
+assertElementsAlmostEqual(marker1.getH,H1);
+assertElementsAlmostEqual(marker2.getH,H2);
+
+figure
+hold on;
+marker1.plotT
+marker2.plotT
+%From screw theory: H12=H2*(H1)^-1
+marker12 = marker2-marker1;
+assertElementsAlmostEqual(marker12.getRPY(false),[0 0 pi/4]);
+
+
 function test_zeroinput
 rightback = [0 0 0];
 leftback = [0 0 0];
@@ -411,21 +435,53 @@ steeringAngle = data.SteeringAngle';
 % plot(steeringAngle);
 % figure
 %kobasch
-[one_t] = Markers3D.readDataAdams(filename,runName,...
+[theChanger] = Markers3D.readDataAdams(filename,runName,...
     'RBO','LBO','FON');
-[two_t] = Markers3D.readDataAdams(filename,runName,...
+[theStatic] = Markers3D.readDataAdams(filename,runName,...
     'RBT','LBT','FTN');
-%ThreeD.plotRun(one_t,0.5);
-%ThreeD.plotRun(two_t,0.5);
-[one_roll,one_pitch,one_yaw,t,theFigure] = ThreeD.getAndPlotRPYt(one_t,...
-    ['SENSOR ONE (B) SENSOR 3 (R) DIFF (G) ' runName],false,'timeseries','--o');
-[two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(two_t,...
+% ThreeD.plotRun(theChanger,0.1);
+%ThreeD.plotRun([one_t;two_t],0.1);
+%  ThreeD.plotRun(theStatic,0.1);
+[one_roll,one_pitch,one_yaw,t,theFigure] = ThreeD.getAndPlotRPYt(theChanger,...
+    ['CHANGER (B) STATIC (R) DIFF (G) ' runName],false,'timeseries','-o');
+[two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(theStatic,...
     ['SENSOR TWO ' runName],theFigure,'timeseries','--r*');
-diff_t = ThreeD.cellminus(two_t,one_t);
+diff_t = ThreeD.cellminus(theChanger,theStatic);
+
+ achanger = theChanger{20};
+ astatic = theStatic{20};
+ thediff = diff_t{20}
+ achanger.getRPY(false)
+ astatic.getRPY(false)
+ Hy =  roty(pi/4)
+ astatic.getH
+ Hzy = roty(pi/4)*rotz(pi/4)
+ achanger.getH
+ ourdiff = astatic'.*achanger;
+ thediff.getRPY(false)
+ ourdiff.getRPY(false)
+ figure
+ hold on
+%  astatic.plotT
+ achanger.plotT
+ newChanger = thediff.*astatic;
+ newChanger.plotT
+ newChanger2= astatic.*ourdiff;
+ newChanger2.plotT
+ 
+ 
+notSureWhyDiff = ThreeD.inverseMultiply(theStatic,theChanger); 
 [diff_roll,diff_pitch,diff_yaw,t] = ThreeD.getAndPlotRPYt(diff_t,...
     ['SENSOR DIFFERENCE: ' runName ],theFigure,'timeseries','--go');
-assertFalse(any(diff_roll))
-rmserrorplot({diff_yaw},{steeringAngle},['RMS ERROR: ' runName ...
+[diff_roll_notsureWhy,diff_pitch,diff_yaw_notsureWhy,t] = ThreeD.getAndPlotRPYt(notSureWhyDiff,...
+    ['SENSOR DIFFERENCE: ' runName ],theFigure,'timeseries','--mo');
+assertElementsAlmostEqual(diff_roll_notsureWhy,zeros(1,...
+    length(diff_roll_notsureWhy)));
+assertElementsAlmostEqual(diff_pitch,zeros(1,...
+    length(diff_pitch)));
+assertElementsAlmostEqual(max(abs(diff_yaw_notsureWhy)),45,'relative',0.0001);
+rmserrorplot({diff_yaw,diff_yaw_notsureWhy},...
+    {steeringAngle,steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);
 
 
@@ -434,5 +490,5 @@ close all;
 filename='test-data/test-data.h5';
 runName = '/adams/pitchyawcombined';
 processRunCombined(filename,runName);
-% runName = '/adams/rollyawcombined';
-% processRunCombined(filename,runName);
+runName = '/adams/rollyawcombined';
+processRunCombined(filename,runName);
