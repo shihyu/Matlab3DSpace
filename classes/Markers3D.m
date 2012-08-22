@@ -24,7 +24,7 @@ classdef Markers3D < ThreeD
             parfor i = 1:N
 %                 i
                 vtm = Markers3D(rightBack(i,1:3),...
-                    leftBack(i,1:3),front(i,1:3),rightBack(i,4),varargin);
+                    leftBack(i,1:3),front(i,1:3),rightBack(i,4:4),varargin);
                 vtm_t{i} = vtm;
             end
         end
@@ -38,13 +38,16 @@ classdef Markers3D < ThreeD
             data = reader.readData(false);
             t=data.Time;
             
-            RBO = [data.([rightBackName 'X']),...
+            RBO = [
+                data.([rightBackName 'X']),...
                 data.([rightBackName 'Y']),...
                 data.([rightBackName 'Z'])];
-            LBO = [data.([leftBackName 'X']),...
+            LBO = [
+                data.([leftBackName 'X']),...
                 data.([leftBackName 'Y']),...
                 data.([leftBackName 'Z'])];
-            FON = [data.([frontName 'X']),...
+            FON = [
+                data.([frontName 'X']),...
                 data.([frontName 'Y']),...
                 data.([frontName 'Z'])];
              
@@ -78,9 +81,9 @@ classdef Markers3D < ThreeD
             front = ThreeD.normWithOffset(front,midpoint);
             rightback = ThreeD.normWithOffset(rightback,midpoint);
             leftback = ThreeD.normWithOffset(leftback,midpoint);
-            %n=AXB=>A left back, B = Front. N=Positive Z axis...
-            crosspointTmp = cross(leftback-midpoint,...
-                front-midpoint)+midpoint;
+            %n=AXB=>A front , B = left. N=Positive Z axis...
+            crosspointTmp = cross(front-midpoint,...
+                leftback-midpoint)+midpoint;
             crosspoint = ThreeD.normWithOffset(crosspointTmp,midpoint);
             %not a perfect 60 degree Triangle... so rotate on the
             %XY plane to get the
@@ -93,10 +96,7 @@ classdef Markers3D < ThreeD
             %                  sin(rotAngle-pi/2); sin(rotAngle-pi/2) cos(rotAngle-pi/2)];
             %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
-            points_T = [ rightback;
-                leftback;
-                front;
-                crosspoint]';
+            points_T = [ rightback' leftback' front' crosspoint'];
             setQuaternion = false;
             if ((~isempty(varargin))&&(~isempty(varargin{1})))
                 if (strcmp(varargin{1},'screw')==1)
@@ -118,20 +118,10 @@ classdef Markers3D < ThreeD
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
-%                 points_T
-                %display(['KABSCH:' varargin{1}])
-%                 ThreeD.points_0(1:3,:)
-%                 points_T
-%             points_0 = [
-%             -1 1 0 0;
-%             0 0 1 0;
-%             0 0 0 1;
-%             1 1 1 1];
-                [rotInfo] = absor(ThreeD.points_0(1:3,1:3),...
-                    points_T(1:3,1:3));
-%                   H_0_T = rotInfo.M;
-%                 H_0_T(4,1:3)=[0 0 0];
-%                 H_0_T(:,4)=[0 0 0 1]';
+%                 ThreeD.points_0(1:3,1:4)
+%                 points_T(1:3,1:4)
+                [rotInfo] = absor(ThreeD.points_0(1:3,1:4),...
+                    points_T(1:3,1:4));
                 H_0_T = rotInfo.q';
             end
             vtm@ThreeD(H_0_T);
