@@ -8,13 +8,30 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         %leftback;
         %front;
         %crosspoint]
-        points_0 = [
+        %This is the default layout for the three marker system.
+        default_points_0 = ...
+            [
             0 0 1 0;
             -1 1 0 0;
             0 0 0 1;
-            1 1 1 1];
+            1 1 1 1
+            ];
+        %This is the layout when the leftback and rightback are found on
+        %the x-axis.
+        x_base_frame = ...
+            [
+            1 -1 0 0;
+            0 0 1 0;
+            0 0 0 1;
+            1 1 1 1
+            ];
     end
     properties (Access = protected)
+        %The Format:[ rightback;
+        %leftback;
+        %front;
+        %crosspoint]
+        points_0 = ThreeD.default_points_0;
         timestamp = 0;
         points_T = zeros(4);
         H_0_T = zeros(4);
@@ -108,7 +125,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         function [points_0] = get0()
             %GET0 Gets the zero Frame (global reference frame)
             %used for this sample.
-            points_0 = ThreeD.points_0;
+            points_0 = ThreeD.default_points_0;
         end
         
         function plotRun(tm_t,varargin)
@@ -134,7 +151,11 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     grid on
                     axis([-2 2 -2 2 -2 2]);
                     if (~isempty(varargin))&&(~isempty(varargin{1}))
-                        pause(varargin{1});
+                        if varargin{1} <0
+                            pause
+                        else
+                            pause(varargin{1});
+                        end
                     end
                 end
                 drawnow;
@@ -151,6 +172,31 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             diff = cell(1,minSize);
             parfor i = 1:minSize
                 diff{i} = obj1{i}-obj2{i};
+            end
+        end
+        
+         function diff = cellInverseMultiply(obj1,obj2)
+            % cellInverseMultiply Implement obj1'*obj2 for ThreeD when using
+            % cells.
+            %display(class(obj1(1)))
+            
+            %display('Calculating error (vector):')
+            minSize = min(size(obj1,2),size(obj2,2));
+            diff = cell(1,minSize);
+            parfor i = 1:minSize
+                diff{i} = obj1{i}'.*obj2{i};
+            end
+         end
+         function diff = cellMultiply(obj1,obj2)
+            % cellMultiply Implement obj1*obj2 for ThreeD when using
+            % cells.
+            %display(class(obj1(1)))
+            
+            %display('Calculating error (vector):')
+            minSize = min(size(obj1,2),size(obj2,2));
+            diff = cell(1,minSize);
+            parfor i = 1:minSize
+                diff{i} = obj1{i}.*obj2{i};
             end
         end
         
@@ -425,12 +471,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 qtm.H_0_T = quaternion2matrix(quaternionOrH);
                 qtm.quaternion = quaternionnormalise(quaternionOrH);
             elseif size(quaternionOrH) == [4,4]
-                %Inconsistent use of order of multiplication found
-                %somewhere in the code, between H and quaternions.
                 qtm.H_0_T = quaternionOrH;
-                %Not sure why but for the H sent from ViconThreeD
-                %we need to get the quaternion from the inverse matrix.
-                qtm.quaternion = matrix2quaternion(quaternionOrH');
+                qtm.quaternion = matrix2quaternion(quaternionOrH);
             else
                 error('matlab3dspace:threemarkers',...
                     ['Wrong size for input quaternion or H matrix' ...
@@ -554,6 +596,18 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             tm.plot3DPoint(tm.points_0,'--m');
         end
         
+        function [points_0] = getPoint0(tm)
+            %GET0 Gets the zero Frame (global reference frame)
+            %used for this sample.
+            points_0 = tm.points_0;
+        end
+        
+        function [points_0] =setPoint0(tm,points_0)
+            %GET0 Gets the zero Frame (global reference frame)
+            %used for this sample.
+            tm.points_0 = points_0;
+        end
+                
         function [quat] = toNumeric(tm)
             %TONUMERIC(tm) How to display the object numerically.
             quat = [ tm.getQ() tm.getTimestamp ];

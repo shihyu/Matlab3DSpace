@@ -97,12 +97,25 @@ assertElementsAlmostEqual(tm{2}.getQ, [1 0 0 0]);
 assertElementsAlmostEqual(tm{1}.getQ, ...
     quaternionproduct([0.4,-0.4,-0.4,-0.4],[1 0 0 0])');
 
+
+function test_calculateEst_Advanced
+quat = [1,0,0,0];
+qvt =  ThreeD(quat);
+zero_t = {qvt qvt};
 testQ =  [0.684259741117616  -0.003722627105096   0.011703270486976  -0.729134954718945];
 qvt =  ThreeD(testQ);
 tm = {qvt,qvt};
-tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zero_t,tm,2,1);
-tm_expected = qvt;
-assertElementsAlmostEqual(tm_est.getQ, tm_expected.getQ);
+tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zero_t,tm,1,2);
+tm_expected_inverse = qvt';
+close all;
+hold on;
+grid on;
+tm_est.plotT
+tm_expected_inverse.plotT
+assertElementsAlmostEqual(tm_est.getQ, -tm_expected_inverse.getQ);
+tm_expected = tm_est.*qvt;
+assertElementsAlmostEqual(tm_expected.getQ,[-1 0 0 0]);
+
 
 function test_quats
 

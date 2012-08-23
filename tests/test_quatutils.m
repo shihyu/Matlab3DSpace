@@ -236,7 +236,7 @@ assertElementsAlmostEqual([0,0, pi/9],euler)
 
 qtm4 = qtm.*qtm1;
 H=rotx(pi/7)*roty(pi/13)
-newTM = ThreeD(H');
+newTM = ThreeD(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
 euler = qtm4.getRPY(false);
@@ -247,7 +247,7 @@ assertElementsAlmostEqual([pi/7,pi/13, 0],euler)
 
 qtm4 = qtm.*qtm1.*qtm2;
 H=rotx(pi/7)*roty(pi/13)*rotz(pi/9)
-newTM = ThreeD(H');
+newTM = ThreeD(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
 euler = qtm4.getRPY(false);
