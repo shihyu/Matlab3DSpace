@@ -6,7 +6,10 @@ classdef Markers3D < ThreeD
         function [vtm_t] = readDataVicon(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
-            % and creates the ViconThreeMarker object. The option value of
+            % and creates the ViconThreeMarker object. 
+            %A different point_0 (base frame) can be sent in as the first
+            %variable argument for this function.
+            %The option value of
             % 'kabsch' or 'screw' can be added to use a different method to
             % estimate the rotation matrices.
             reader = c3dReader(filename,runName)
@@ -21,6 +24,7 @@ classdef Markers3D < ThreeD
 %             display(size(front));
             N=size(rightBack,1);
             vtm_t = cell(1,N);
+            varargin = varargin{:};
             parfor i = 1:N
 %                 i
                 vtm = Markers3D(rightBack(i,1:3),...
@@ -54,6 +58,9 @@ classdef Markers3D < ThreeD
             N=size(t,1);
             Fs = 1/(t(2)-t(1));
             vtm_t = cell(1,N);
+            if (~isempty(varargin))
+                varargin = varargin{:};
+            end
             parfor i = 1:N
                 vtm = Markers3D(RBO(i,1:3),...
                     LBO(i,1:3),FON(i,1:3),t(i),varargin);
@@ -97,39 +104,39 @@ classdef Markers3D < ThreeD
             %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
             points_T = [ rightback' leftback' front' crosspoint'];
-            setQuaternion = false;
-            if ((~isempty(varargin))&&(~isempty(varargin{1})))
-                if (strcmp(varargin{1},'screw')==1)
+            if ((~isempty(varargin))&&(~isempty(varargin{1})))&&...
+                    all(size(varargin{1})==[4 4])
+                points_0 = varargin{1}
+            else
+                points_0 = ThreeD.get0;
+            end
+            if ((~isempty(varargin))&&(length(varargin)==2)...
+                    &&(~isempty(varargin{2})))
+                if (strcmp(varargin{2},'screw')==1)
                     %Create the screw theory compliant points for Vikon
                     points_T(4,:) = 1;
                     %Get the homogenous matrix for these points
-                    H_T_0 = ThreeD.points_0/points_T;
+                    H_T_0 = points_0/points_T;
                     %Remove translation
                     H_T_0(1:3,4)  = [0 0 0]';
                     %and error
                     H_T_0(4,1:3)  = [0 0 0];
                     %H_0_T = H_T_0';
                     H_0_T = invht(H_T_0);
-                elseif (strcmp(varargin{1},'kabsch')==1)
-                    display(['KABSCH:' varargin{1}])
-                    [H_0_T] = Kabsch(ThreeD.points_0(1:3,:),...
-                        points_T);
+                elseif (strcmp(varargin{2},'kabsch')==1)
+                    display(['KABSCH:' varargin{2}])
+                    [H_0_T] = Kabsch(points_0(1:3,:),...
+                        points_T(1:3,:));
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
                 end
             else
-%                 ThreeD.points_0(1:3,1:4)
-%                 points_T(1:3,1:4)
-                [rotInfo] = absor(ThreeD.points_0(1:3,1:4),...
+                [rotInfo] = absor(points_0(1:3,1:4),...
                     points_T(1:3,1:4));
                 H_0_T = rotInfo.q';
             end
             vtm@ThreeD(H_0_T);
             vtm.timestamp = timestamp;
-%             if setQuaternion
-%                 %display('SETTING Q');
-%                 vtm.quaternion = rotInfo.q';
-%             end
         end
     end
 end

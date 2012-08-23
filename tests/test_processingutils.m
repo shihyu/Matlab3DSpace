@@ -117,7 +117,7 @@ function test_absor
 H1=roty(pi/6);
 H2=rotz(pi/3.4)*roty(pi/6);
 H12 = rotz(pi/3.4);
-point0 = ThreeD.points_0;
+point0 = ThreeD.get0;
 point1 = H1*point0;
 point2 = H2*point0;
 H1_absor = absor(point0(1:3,:),point1(1:3,:));

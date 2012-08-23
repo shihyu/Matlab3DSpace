@@ -8,13 +8,30 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         %leftback;
         %front;
         %crosspoint]
-        points_0 = [
+        %This is the default layout for the three marker system.
+        default_points_0 = ...
+            [
             0 0 1 0;
-           -1 1 0 0;
+            -1 1 0 0;
             0 0 0 1;
-            1 1 1 1];
+            1 1 1 1
+            ];
+        %This is the layout when the leftback and rightback are found on
+        %the x-axis.
+        x_base_frame = ...
+            [
+            1 -1 0 0;
+            0 0 1 0;
+            0 0 0 1;
+            1 1 1 1
+            ];
     end
     properties (Access = protected)
+        %The Format:[ rightback;
+        %leftback;
+        %front;
+        %crosspoint]
+        points_0 = ThreeD.default_points_0;
         timestamp = 0;
         points_T = zeros(4);
         H_0_T = zeros(4);
@@ -108,7 +125,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         function [points_0] = get0()
             %GET0 Gets the zero Frame (global reference frame)
             %used for this sample.
-            points_0 = ThreeD.points_0;
+            points_0 = ThreeD.default_points_0;
         end
         
         function plotRun(tm_t,varargin)
@@ -134,7 +151,11 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     grid on
                     axis([-2 2 -2 2 -2 2]);
                     if (~isempty(varargin))&&(~isempty(varargin{1}))
-                        pause(varargin{1});
+                        if varargin{1} <0
+                            pause
+                        else
+                            pause(varargin{1});
+                        end
                     end
                 end
                 drawnow;
@@ -575,6 +596,18 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             tm.plot3DPoint(tm.points_0,'--m');
         end
         
+        function [points_0] = getPoint0(tm)
+            %GET0 Gets the zero Frame (global reference frame)
+            %used for this sample.
+            points_0 = tm.points_0;
+        end
+        
+        function [points_0] =setPoint0(tm,points_0)
+            %GET0 Gets the zero Frame (global reference frame)
+            %used for this sample.
+            tm.points_0 = points_0;
+        end
+                
         function [quat] = toNumeric(tm)
             %TONUMERIC(tm) How to display the object numerically.
             quat = [ tm.getQ() tm.getTimestamp ];
