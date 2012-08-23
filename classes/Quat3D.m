@@ -16,6 +16,8 @@ classdef Quat3D < ThreeD
                 error('Quat3D:readData',...
                     'The Node does not have any values to read.');
             end
+            t = q(:,5);
+            [t,q] = ThreeD.sortAccordingToTimestamp(t,q);
             if Fs_wanted ~= Fs_recorded
                 if length(sync)==length(q)
                 sync = resample(sync,Fs_wanted,Fs_recorded);
