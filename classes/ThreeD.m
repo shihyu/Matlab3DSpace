@@ -276,7 +276,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
             if inDegrees
-                YLABEL='(degrees)';
+                YLABEL='(deg)';
             else
                 YLABEL='(radians)';
             end
