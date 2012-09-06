@@ -14,27 +14,27 @@ function [one_t,two_t] =synchroniseWithRespectToRPY(...
 %correlation.
 
 
-[roll_t_r,steering_t_r,rollMax] = synchronise(roll_one,...
+[one_t_r,two_t_r,rollMax] = synchronise(roll_one,...
     roll_two,one_t,two_t,...
     Fs_plot,1,0);
-[roll_t_p,steering_t_p,pitchMax] = synchronise(pitch_one,...
+[one_t_p,two_t_p,pitchMax] = synchronise(pitch_one,...
     pitch_two,one_t,two_t,...
     Fs_plot,1,0);
-[roll_t_y,steering_t_y,yawMax] = synchronise(yaw_one,...
+[one_t_y,two_t_y,yawMax] = synchronise(yaw_one,...
     yaw_two,one_t,two_t,...
     Fs_plot,1,0);
 totalMax = max([rollMax pitchMax yawMax]);
 if rollMax == totalMax
     display('SYNCING ON ROLL ANGLE');
-    one_t = roll_t_r;
-    two_t = steering_t_r;
+    one_t = one_t_r;
+    two_t = two_t_r;
 elseif pitchMax == totalMax
     display('SYNCING ON PITCH ANGLE');
-    one_t = roll_t_p;
-    two_t = steering_t_p;
+    one_t = one_t_p;
+    two_t = two_t_p;
 else
     display('SYNCING ON YAW ANGLE');
-    one_t = roll_t_y;
-    two_t = steering_t_y;
+    one_t = one_t_y;
+    two_t = two_t_y;
 end
-display('FINISHED');
+display('FINISHED SYNCING WITH RESPECT TO RPY');

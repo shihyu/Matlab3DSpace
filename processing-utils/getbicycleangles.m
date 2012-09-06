@@ -66,10 +66,10 @@ if exist(processedFilename,'file')
 else
     if imuOrAdams>0
         [steering_t,steering_sync_t] = ...
-            QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+            Quat3D.readDataPromove(filename,runName,...
             steeringImuNodeId,Fs_plot,Fs_ImuMeasured);
         [roll_t,roll_sync_t] = ...
-            QuaternionsThreeMarkers.readDataPromove(filename,runName,...
+            Quat3D.readDataPromove(filename,runName,...
             rollingImuNodeId,Fs_plot,Fs_ImuMeasured);
         theAntReader = antReader(filename,runName);
         [speed,cadence,ant_t,ant_sync,ant_sync_t] = ...
@@ -81,10 +81,10 @@ else
         save(processedFilename,'ant_sync_t','-append');
     else
         [steering_t,steering_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,...
+            Markers3D.readDataAdams(filename,runName,...
             'RBO','LBO','FON');;
         [roll_t,roll_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,...
+            Markers3D.readDataAdams(filename,runName,...
             'RBT','LBT','FTN');;
     end
     
@@ -117,43 +117,43 @@ if imuOrAdams>0
 end
 display('CALCULATING ROLL PITCH YAW: roll sensor.');
 %PLOT ROLL SENSOR
-[roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
+[roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
 set(0,'CurrentFigure',figRollSteer)
 hold on;
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_r,pitch_r,yaw_r,true,Fs_plot);
 display('ROLL PITCH YAW CALCULATED');
 
 display('CALLIBRATING');
-roll_t = ThreeMarkers.callibrate(roll_t,callibrateStart,10);
+roll_t = ThreeD.callibrate(roll_t,callibrateStart,10);
 display('CALLIBRATED');
 
 display('CALCULATING ROLL PITCH YAW: roll sensor callibrated.');
-[roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
+[roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
 display('ROLL PITCH YAW CALCULATED');
 
 display('CALCULATING ROLL PITCH YAW: steering sensor.');
-[roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+[roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
 set(0,'CurrentFigure',figRollSteer)
 hold on;
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
 display('ROLL PITCH YAW CALCULATED');
 
 display('CALLIBRATING');
-steering_t = ThreeMarkers.callibrate(steering_t,callibrateStart,10);
+steering_t = ThreeD.callibrate(steering_t,callibrateStart,10);
 display('CALLIBRATED');
 
 display('CALCULATING ROLL PITCH YAW: steering sensor callibrated.');
-[roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+[roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
 display('ROLL PITCH YAW CALCULATED');
 
 display('PLOTTING ROLL PITCH YAW: SENSORS');
 set(0,'CurrentFigure',figRollSteerCall)
 hold on;
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_r,pitch_r,yaw_r,true,Fs_plot);
-ThreeMarkers.plotRPY(...
+ThreeD.plotRPY(...
     roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
 display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS');
 
@@ -204,13 +204,13 @@ if imuOrAdams>0
         %     display('FINISHED');
         
         display('PLOTTING ROLL PITCH YAW: SENSORS SYNCHRONISED');
-        [roll_r,pitch_r,yaw_r]=ThreeMarkers.getRPYt(roll_t,true);
-        [roll_s,pitch_s,yaw_s]=ThreeMarkers.getRPYt(steering_t,true);
+        [roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
+        [roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
         set(0,'CurrentFigure',figRollSteerSync)
         hold on;
-        ThreeMarkers.plotRPY(...
+        ThreeD.plotRPY(...
             roll_r,pitch_r,yaw_r,true,Fs_plot);
-        ThreeMarkers.plotRPY(...
+        ThreeD.plotRPY(...
             roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
         display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS SYNC');
     end
@@ -219,9 +219,9 @@ end
 display(['CALCULATING STEERING ANGLE ON CALLIBRATED' ...
     ' AND SYNCRHONISED DATA']);
 set(0,'CurrentFigure',figSteer)
-diff_t = ThreeMarkers.cellminus(roll_t,steering_t);
-[roll_d,pitch_d,yaw_d]=ThreeMarkers.getRPYt(diff_t,true);
-ThreeMarkers.plotRPY(...
+diff_t = ThreeD.cellminus(roll_t,steering_t);
+[roll_d,pitch_d,yaw_d]=ThreeD.getRPYt(diff_t,true);
+ThreeD.plotRPY(...
     roll_d,pitch_d,yaw_d,true,Fs_plot);
 display('STEERING ANGLE CALCULATED');
 
@@ -232,7 +232,7 @@ if plotRuns==1
     display('PLOT STEERING QUAT');
     minSize = min(size(steering_t,2),size(roll_t,2));
     figure
-    ThreeMarkers.plotRun([roll_t(1:minSize);steering_t(1:minSize);
+    ThreeD.plotRun([roll_t(1:minSize);steering_t(1:minSize);
         diff_t(1:minSize)
         ]);
     display('STEERING QUAT PLOTTED');

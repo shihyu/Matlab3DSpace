@@ -7,7 +7,7 @@ rightback = [0 -1 0];
 leftback = [0 1  0];
 front = [1 0  0];
 theTimestamp = 2.3;
-cvt = ViconThreeMarkers(rightback,...
+cvt = Markers3D(rightback,...
         leftback,front,theTimestamp);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 
@@ -122,8 +122,8 @@ quaternion = matrix2quaternion(H)
 quaternionNorm = quaternionnormalise(quaternion);
 assertElementsAlmostEqual(quaternion,quaternionNorm)
 
-startQ=ThreeMarkers([1 0 0 0]);
-endQ=ThreeMarkers(quaternion);
+startQ=ThreeD([1 0 0 0]);
+endQ=ThreeD(quaternion);
 
 
 [errorQuat,errorEuler] = quaternionerror(quaternion,[1 0 0 0])
@@ -132,8 +132,8 @@ assertElementsAlmostEqual(errorEuler,[theta 0 0])
 
 midQ = [slerp(startQ.getQ, endQ.getQ, 0.5, eps)']
 
-midQ = ThreeMarkers(midQ);
-ThreeMarkers.plotRun({startQ;...
+midQ = ThreeD(midQ);
+ThreeD.plotRun({startQ;...
     midQ;...
     endQ});
 
@@ -143,19 +143,19 @@ spline_t = slerp(startQ.getQ,...
             endQ.getQ, t, eps);
 figure
 parfor i = 1:size(spline_t,2)
-    tm_t{i} = QuaternionsThreeMarkers([spline_t(:,i)' t(i)]);
+    tm_t{i} = Quat3D([spline_t(:,i)' t(i)]);
 end
-ThreeMarkers.plotRun(tm_t);
+ThreeD.plotRun(tm_t);
 
-startQ=ThreeMarkers([1 0 0 0]);
-endQ=ThreeMarkers([-1 0 0 0]);
+startQ=ThreeD([1 0 0 0]);
+endQ=ThreeD([-1 0 0 0]);
 spline_t = slerp(startQ.getQ,...
             endQ.getQ, t, eps);
 figure
 parfor i = 1:size(spline_t,2)
-    tm_t{i} = ThreeMarkers([spline_t(:,i)']);
+    tm_t{i} = ThreeD([spline_t(:,i)']);
 end
-ThreeMarkers.plotRun(tm_t);
+ThreeD.plotRun(tm_t);
 
 
 
@@ -177,7 +177,7 @@ H=rotx(pi/7)
 quat = matrix2quaternion(H(1:3,1:3))
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm = ThreeMarkers(quat)
+qtm = ThreeD(quat)
 assertElementsAlmostEqual(qtm.getH-H,zeros(4))
 assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
@@ -187,7 +187,7 @@ H = H*roty(pi/13);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm = ThreeMarkers(quat)
+qtm = ThreeD(quat)
 assertElementsAlmostEqual(qtm.getH-H,zeros(4))
 assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
@@ -197,7 +197,7 @@ H = H*rotz(pi/9);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm = ThreeMarkers(quat)
+qtm = ThreeD(quat)
 assertElementsAlmostEqual(qtm.getH-H,zeros(4))
 assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
@@ -208,7 +208,7 @@ H=rotx(pi/7)
 quat = matrix2quaternion(H(1:3,1:3))
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm = ThreeMarkers(quat)
+qtm = ThreeD(quat)
 assertElementsAlmostEqual(qtm.getH-H,zeros(4))
 assertEqual(qtm.getQ,quat);
 euler = qtm.getRPY(false)
@@ -218,7 +218,7 @@ H = roty(pi/13);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm1 = ThreeMarkers(quat)
+qtm1 = ThreeD(quat)
 assertElementsAlmostEqual(qtm1.getH-H,zeros(4))
 assertEqual(qtm1.getQ,quat);
 euler = qtm1.getRPY(false)
@@ -228,7 +228,7 @@ H = rotz(pi/9);
 quat = matrix2quaternion(H)
 Hcalc = quaternion2matrix(quat);
 assertElementsAlmostEqual(Hcalc-H,zeros(4))
-qtm2 = ThreeMarkers(quat)
+qtm2 = ThreeD(quat)
 assertElementsAlmostEqual(qtm2.getH-H,zeros(4))
 assertEqual(qtm2.getQ,quat);
 euler = qtm2.getRPY(false)
@@ -236,7 +236,7 @@ assertElementsAlmostEqual([0,0, pi/9],euler)
 
 qtm4 = qtm.*qtm1;
 H=rotx(pi/7)*roty(pi/13)
-newTM = ThreeMarkers(H');
+newTM = ThreeD(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
 euler = qtm4.getRPY(false);
@@ -247,7 +247,7 @@ assertElementsAlmostEqual([pi/7,pi/13, 0],euler)
 
 qtm4 = qtm.*qtm1.*qtm2;
 H=rotx(pi/7)*roty(pi/13)*rotz(pi/9)
-newTM = ThreeMarkers(H');
+newTM = ThreeD(H);
 assertElementsAlmostEqual(qtm4.getH-H,zeros(4))
 assertElementsAlmostEqual(qtm4.getQ,newTM.getQ);
 euler = qtm4.getRPY(false);
