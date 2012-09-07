@@ -365,6 +365,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             p_0mat = cell2mat(p_0);
             p_1mat = cell2mat(p_1);
+            p_0mat(isnan(p_0mat))=0;
+            p_1mat(isnan(p_1mat))=0;
             absorRet = absor(p_0mat(1:3,:),p_1mat(1:3,:));
 %             H_1_0_est = absorRet.M;
 %             H_1_0_est(1:3,4) = 0;

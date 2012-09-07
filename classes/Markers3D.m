@@ -106,7 +106,7 @@ classdef Markers3D < ThreeD
             points_T = [ rightback' leftback' front' crosspoint'];
             if ((~isempty(varargin))&&(~isempty(varargin{1})))&&...
                     all(size(varargin{1})==[4 4])
-                points_0 = varargin{1}
+                points_0 = varargin{1};
             else
                 points_0 = ThreeD.get0;
             end
