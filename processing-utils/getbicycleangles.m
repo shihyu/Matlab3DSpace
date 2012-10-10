@@ -20,6 +20,12 @@ function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = ...
 % ant_t - The time vector for the speed and cadence measurements.
 % figures - A list of the figures handles, in case you want to export
 % by using laprint or something.
+
+arPlotStyle = '--m.'
+rollPlotStyle = '--b.'
+steerPlotStyle = '--r.'
+steeringAnglePlotStyle = '--r.'
+
 display(['%%%%%%%%%%%%%%Processing RUN:' runName ' %%%%%%%%%%%%%%'])
 tic
 display('CREATING FIGURES')
@@ -28,25 +34,14 @@ if isempty(figures)
         'Name','Steering Data');
     figSync = figure('visible','on','WindowStyle','docked',...
         'Name','Synchronisation');
-    figRollSteer = figure('visible','on','WindowStyle','docked',...
-        'Name','Uncallibrated Roll Pitch Yaw');
-    figRollSteerCall = figure('visible','on','WindowStyle','docked',...
-        'Name','Callibrated Roll Pitch Yaw.');
-    figRollSteerSync = figure('visible','on','WindowStyle','docked',...
-        'Name','Synchronised Roll Pitch Yaw.');
     figSpeed = figure('visible','on','WindowStyle','docked',...
         'Name','Forward velocity.');
-    figures = [figSteer,figSync,figRollSteer,...
-        figRollSteerCall,figRollSteerSync];
+    figures = [figSteer,figSync,figSpeed];
 else
     delete(figures(1));
     figSteer=figures(1);
     delete(figures(2));
     figSync = figures(2);
-    delete(figures(3));
-    figRollSteer = figures(3);
-    delete(figures(4));
-    figRollSteerCall = figures(4);
     delete(figures(5));
     figRollSteerSync = figures(5);
     delete(figures(6));
@@ -57,13 +52,14 @@ toc
 
 runNamePrint = strrep(runName,'/','-');
 runNamePrint = strrep(runNamePrint,'_','-');
-processedFilename=['./' runName '-processed.mat'];
+processedFilename=['.' runName '-processed.mat'];
 %Get the data
 tic
 display('GETTING DATA');
 if exist(processedFilename,'file')
     load(processedFilename);
 else
+    save(processedFilename,'runName');
     if imuOrAdams>0
         [steering_t,steering_sync_t] = ...
             Quat3D.readDataPromove(filename,runName,...
@@ -88,7 +84,7 @@ else
             'RBT','LBT','FTN');;
     end
     
-    save(processedFilename,'steering_t');
+    save(processedFilename,'steering_t','-append');
     save(processedFilename,'steering_sync_t','-append');
     save(processedFilename,'roll_t','-append');
     save(processedFilename,'roll_sync_t','-append');
@@ -115,48 +111,6 @@ if imuOrAdams>0
     title('Pedaling Cadence: ');
     display('FORWARD VELOCITY PLOTTED');
 end
-display('CALCULATING ROLL PITCH YAW: roll sensor.');
-%PLOT ROLL SENSOR
-[roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
-set(0,'CurrentFigure',figRollSteer)
-hold on;
-ThreeD.plotRPY(...
-    roll_r,pitch_r,yaw_r,true,Fs_plot);
-display('ROLL PITCH YAW CALCULATED');
-
-display('CALLIBRATING');
-roll_t = ThreeD.callibrate(roll_t,callibrateStart,10);
-display('CALLIBRATED');
-
-display('CALCULATING ROLL PITCH YAW: roll sensor callibrated.');
-[roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
-display('ROLL PITCH YAW CALCULATED');
-
-display('CALCULATING ROLL PITCH YAW: steering sensor.');
-[roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
-set(0,'CurrentFigure',figRollSteer)
-hold on;
-ThreeD.plotRPY(...
-    roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
-display('ROLL PITCH YAW CALCULATED');
-
-display('CALLIBRATING');
-steering_t = ThreeD.callibrate(steering_t,callibrateStart,10);
-display('CALLIBRATED');
-
-display('CALCULATING ROLL PITCH YAW: steering sensor callibrated.');
-[roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
-display('ROLL PITCH YAW CALCULATED');
-
-display('PLOTTING ROLL PITCH YAW: SENSORS');
-set(0,'CurrentFigure',figRollSteerCall)
-hold on;
-ThreeD.plotRPY(...
-    roll_r,pitch_r,yaw_r,true,Fs_plot);
-ThreeD.plotRPY(...
-    roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
-display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS');
-
 if imuOrAdams>0
     
     display('SYNCING SENSORS ON MANUAL VALUES');
@@ -219,13 +173,15 @@ end
 display(['CALCULATING STEERING ANGLE ON CALLIBRATED' ...
     ' AND SYNCRHONISED DATA']);
 set(0,'CurrentFigure',figSteer)
-diff_t = ThreeD.cellminus(roll_t,steering_t);
-[roll_d,pitch_d,yaw_d]=ThreeD.getRPYt(diff_t,true);
-ThreeD.plotRPY(...
-    roll_d,pitch_d,yaw_d,true,Fs_plot);
+[t,steeringAngle_t,...
+    steeringAngleRoll,steeringAnglePitch,steeringAngleYaw,...
+    roll_r,roll_p, roll_y] = ...
+    getjointangles(roll_t,steering_t,'Steering Angle',callibrateStart);
+ThreeD.plotRPY(steeringAngleRoll,steeringAnglePitch,steeringAngleYaw,...
+    t,true,'timeseries',steeringAnglePlotStyle);
 display('STEERING ANGLE CALCULATED');
 
-steering_angle = yaw_d;
+steering_angle = steeringAngleYaw;
 roll_angle = roll_r;
 
 if plotRuns==1
