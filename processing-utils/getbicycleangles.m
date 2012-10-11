@@ -1,4 +1,11 @@
-function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = ...
+function [...
+    bicycleSteeringAngle,...
+    bicycleRollAngle,...
+    bicycleSpeed,...
+    bicycleCadence,...
+    ant_t,...
+    figures] = ...
+    ...
     getbicycleangles(figures,...
     filename,...
     runName,...
@@ -20,26 +27,20 @@ function [steering_angle,roll_angle,speed,cadence,ant_t,figures] = ...
 % ant_t - The time vector for the speed and cadence measurements.
 % figures - A list of the figures handles, in case you want to export
 % by using laprint or something.
-
-arPlotStyle = '--m.'
-rollPlotStyle = '--b.'
-steerPlotStyle = '--r.'
-steeringAnglePlotStyle = '--r.'
-
+finalPlotStyle = '--r.'
 display(['%%%%%%%%%%%%%%Processing RUN:' runName ' %%%%%%%%%%%%%%'])
-tic
 display('CREATING FIGURES')
 if isempty(figures)
-    figSteer=figure('visible','on','WindowStyle','docked',...
-        'Name','Steering Data');
+    figFinalAngles=figure('visible','on','WindowStyle','docked',...
+        'Name','Roll, Pitch and Steering Angle of the Bicycle.');
     figSync = figure('visible','on','WindowStyle','docked',...
         'Name','Synchronisation');
     figSpeed = figure('visible','on','WindowStyle','docked',...
         'Name','Forward velocity.');
-    figures = [figSteer,figSync,figSpeed];
+    figures = [figFinalAngles,figSync,figSpeed];
 else
     delete(figures(1));
-    figSteer=figures(1);
+    figFinalAngles=figures(1);
     delete(figures(2));
     figSync = figures(2);
     delete(figures(5));
@@ -48,13 +49,11 @@ else
     figSpeed = figures(6);
 end
 display('FIGURES CREATED')
-toc
 
 runNamePrint = strrep(runName,'/','-');
 runNamePrint = strrep(runNamePrint,'_','-');
-processedFilename=['.' runName '-processed.mat'];
+processedFilename=['.' runName '-getbicycleangles-processed.mat'];
 %Get the data
-tic
 display('GETTING DATA');
 if exist(processedFilename,'file')
     load(processedFilename);
@@ -68,10 +67,10 @@ else
             Quat3D.readDataPromove(filename,runName,...
             rollingImuNodeId,Fs_plot,Fs_ImuMeasured);
         theAntReader = antReader(filename,runName);
-        [speed,cadence,ant_t,ant_sync,ant_sync_t] = ...
+        [bicycleSpeed,bicycleCadence,ant_t,ant_sync,ant_sync_t] = ...
             theAntReader.readVelocityCadence();
-        save(processedFilename,'speed','-append');
-        save(processedFilename,'cadence','-append');
+        save(processedFilename,'bicycleSpeed','-append');
+        save(processedFilename,'bicycleCadence','-append');
         save(processedFilename,'ant_t','-append');
         save(processedFilename,'ant_sync','-append');
         save(processedFilename,'ant_sync_t','-append');
@@ -91,40 +90,34 @@ else
     
 end
 display('DATA RECEIVED');
-toc
-
 display('PLOTTING FORWARD INFORMATION');
 if imuOrAdams>0
     %Synchronise:
     if any(ant_sync_t)
-        speed =  speed(ant_t>=ant_sync_t(1));
-        cadence =  cadence(ant_t>=ant_sync_t(1));
+        bicycleSpeed =  bicycleSpeed(ant_t>=ant_sync_t(1));
+        bicycleCadence =  bicycleCadence(ant_t>=ant_sync_t(1));
         ant_t =  ant_t(ant_t>=ant_sync_t(1));
     end
     ant_t =ant_t-repmat(ant_t(1),size(ant_t));
     set(0,'CurrentFigure',figSpeed)
     subplot(2,1,1)
-    plot(ant_t,speed);
+    plot(ant_t,bicycleSpeed);
     title('Forward Velocity: ');
     subplot(2,1,2)
-    plot(ant_t,cadence);
+    plot(ant_t,bicycleCadence);
     title('Pedaling Cadence: ');
     display('FORWARD VELOCITY PLOTTED');
 end
 if imuOrAdams>0
-    
-    display('SYNCING SENSORS ON MANUAL VALUES');
-    set(0,'CurrentFigure',figSync);
-    hold on;
     if any(roll_sync_t)
+        display('SYNCING SENSORS ON MANUAL VALUES');
         if any(steering_sync_t)
             [roll_t,steering_t] = synchronise(roll_sync_t,...
                 steering_sync_t,roll_t,steering_t,...
                 Fs_plot,1,1);
         end
+        display('FINISHED MANUAL SYNC');
     end
-    display('FINISHED MANUAL SYNC');
-    
     if synchroniseTheImus
         display('SYNCING SENSORS');
         set(0,'CurrentFigure',figSync);
@@ -158,31 +151,31 @@ if imuOrAdams>0
         %     display('FINISHED');
         
         display('PLOTTING ROLL PITCH YAW: SENSORS SYNCHRONISED');
-        [roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
+        [frameSensorRollAngle,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
         [roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
         set(0,'CurrentFigure',figRollSteerSync)
         hold on;
         ThreeD.plotRPY(...
-            roll_r,pitch_r,yaw_r,true,Fs_plot);
+            frameSensorRollAngle,pitch_r,yaw_r,true,Fs_plot);
         ThreeD.plotRPY(...
             roll_s,pitch_s,yaw_s,true,Fs_ImuMeasured);
         display('FINISHED PLOTTING ROLL PITCH YAW: SENSORS SYNC');
     end
 end
 
-display(['CALCULATING STEERING ANGLE ON CALLIBRATED' ...
-    ' AND SYNCRHONISED DATA']);
-set(0,'CurrentFigure',figSteer)
-[t,steeringAngle_t,...
-    steeringAngleRoll,steeringAnglePitch,steeringAngleYaw,...
-    roll_r,roll_p, roll_y] = ...
+[timestamps,steeringJoint_t,...
+    steeringJointRollAngle,...
+    steeringJointPitchAngle,...
+    steeringJointYawAngle,...
+    frameSensorRollAngle,frameSensorPitchAngle, frameSensorYawAngle] = ...
     getjointangles(roll_t,steering_t,'Steering Angle',callibrateStart);
-ThreeD.plotRPY(steeringAngleRoll,steeringAnglePitch,steeringAngleYaw,...
-    t,true,'timeseries',steeringAnglePlotStyle);
-display('STEERING ANGLE CALCULATED');
 
-steering_angle = steeringAngleYaw;
-roll_angle = roll_r;
+
+bicycleSteeringAngle = steeringJointYawAngle;
+bicycleRollAngle = frameSensorRollAngle;
+set(0,'CurrentFigure',figFinalAngles)
+ThreeD.plotRPY(bicycleRollAngle,frameSensorPitchAngle,bicycleSteeringAngle,...
+    timestamps,true,'timeseries',finalPlotStyle);
 
 if plotRuns==1
     display('PLOT STEERING QUAT');
@@ -193,4 +186,3 @@ if plotRuns==1
         ]);
     display('STEERING QUAT PLOTTED');
 end
-
