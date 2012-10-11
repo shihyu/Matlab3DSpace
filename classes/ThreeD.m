@@ -175,6 +175,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
+        function theRun = cellTranspose(theRun)
+            % CELLTRANSPOSE Gets the quaternion conjugate on the run.
+            % cells.
+            parfor i = 1:length(theRun)
+                theRun{i} = theRun{i}';
+            end
+        end
+        
          function diff = cellInverseMultiply(obj1,obj2)
             % cellInverseMultiply Implement obj1'*obj2 for ThreeD when using
             % cells.
