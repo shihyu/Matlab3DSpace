@@ -1,4 +1,4 @@
-function [RMSVector,PCoeffVector]=rmserrorplot(A,B,theTitle,plotDifference)
+function [RMSVector,PCoeffVector,theFigure]=rmserrorplot(A,B,theTitle,plotDifference)
 %RMSERRORPLOT Plots a standard RMS error box plot used to see how big the
 %error between the orginal and the normal is.
 %Arguments: A,B the cell of vectors that must have each value compared to
@@ -10,7 +10,7 @@ PCoeffVector = [];
 RMSVerschilLengte = [];
 IdentificationVector = [];
 RMSVerschilVector = [];
-theXLabel = ['Measurement number: '];
+theXLabel = [];
 for j = 1:length(A)
     Aj = A{j};
     Bj = B{j};
@@ -27,10 +27,10 @@ for j = 1:length(A)
     PCoeff = C(1,2) / sqrt(C(1,1) * C(2,2));
     PCoeffVector = [PCoeffVector, PCoeff];
     IdentificationVector = [IdentificationVector; Identification];
-    theXLabel = [theXLabel ' No:' num2str(j) ': RMS:' num2str(RMS) ...
-        ' PC: ' num2str(PCoeff)]; 
+    theXLabel = [theXLabel ' ' num2str(j) '.RMS:' num2str(RMS,4) ...
+        ' PC: ' num2str(PCoeff,4)]; 
     if plotDifference==true
-        figure('visible','on','WindowStyle','docked',...
+       figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
        subplot(2,1,1);
        plot(Aj);
@@ -45,9 +45,10 @@ for j = 1:length(A)
        
     end
 end
-figure('visible','on','WindowStyle','docked',...
+theFigure = figure('visible','on','WindowStyle','docked',...
                 'Name',theTitle);
-boxplot(RMSVerschilVector, IdentificationVector, 'notch', 'on')
-xlabel (theXLabel),
+boxplot(RMSVerschilVector, IdentificationVector, 'notch', 'on');
+grid on;
+xlabel ('Roll,Pitch and Yaw RMS error (deg)'),
 ylabel('Absolute RMS difference: '),
 title (theTitle);
