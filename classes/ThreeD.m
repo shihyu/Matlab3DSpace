@@ -467,8 +467,9 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [tm_t,t] = resample(tm_t,t_wanted)
-            %RESAMPLE Resamples a cell of ThreeD from the Fs_current
-            %to the Fs_wanted.
+            %RESAMPLE Resamples a cell of ThreeD
+            %The cell of ThreeD is resampled to the timestamps
+            %specified in the vector t_wanted.
             quats = zeros(length(tm_t),4);
             t = zeros(length(tm_t),1);
             parfor i = 1:length(tm_t)
