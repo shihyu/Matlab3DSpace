@@ -24,7 +24,9 @@ classdef Markers3D < ThreeD
 %             display(size(front));
             N=size(rightBack,1);
             vtm_t = cell(1,N);
-            varargin = varargin{:};
+            if ~isempty(varargin)
+                varargin = varargin{:};
+            end
             parfor i = 1:N
 %                 i
                 vtm = Markers3D(rightBack(i,1:3),...

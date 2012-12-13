@@ -5,22 +5,22 @@ clc;
 close all;
 format long;
 format compact;
-filename='./Bicycle_45.h5';
+filename='./testrun.h5';
 %runName='falling';
-runName='bicyclerun_45';
+runName='testrun';
 Fs_ImuMeasured=33.3333;
 [steering_t,steering_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,...
+            Markers3D.readDataAdams(filename,runName,...
             'RBO','LBO','FON','kabsch');
  [roll_t,roll_sync_t] = ...
-            ViconThreeMarkers.readDataAdams(filename,runName,...
+            Markers3D.readDataAdams(filename,runName,...
             'RBT','LBT','FTN','kabsch');
 reader = adamsReader(filename,runName);
 adamsData = reader.readData(false);
 
 %ThreeMarkers.plotRun([roll_t;steering_t]);
-[roll_s,pitch_s,yaw_s,t]=ThreeMarkers.getRPYt(steering_t,true);   
-[roll_r,pitch_r,yaw_r,t]=ThreeMarkers.getRPYt(roll_t,true);
+[roll_s,pitch_s,yaw_s,t]=ThreeD.getRPYt(steering_t,true);   
+[roll_r,pitch_r,yaw_r,t]=ThreeD.getRPYt(roll_t,true);
 
 
 %Steering Angle:
@@ -39,17 +39,17 @@ adamsData = reader.readData(false);
 % Thus steering_angle = H_1_2
 % steer_angle_t = steering_t*roll_t' = 
 % ThreeMarkers.cellminus(steering_t,roll_t)
-steer_angle_t = ThreeMarkers.cellminus(steering_t,roll_t);
+steer_angle_t = ThreeD.cellminus(steering_t,roll_t);
 [steer_roll_s,steer_pitch_s,steer_yaw_s]=...
-    ThreeMarkers.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-UNCALLIBRATED');
+    ThreeD.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-UNCALLIBRATED');
 callibrateStart=floor(0.1*Fs_ImuMeasured);
 %Callibrate to see what happens! We want to make this frame the origin...
-steer_angle_t = ThreeMarkers.callibrate(steer_angle_t,callibrateStart,30);
-[steer_roll_c,steer_pitch_c,steer_yaw_c,t2] = ThreeMarkers.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-CALLIBRATED');
+steer_angle_t = ThreeD.callibrate(steer_angle_t,callibrateStart,30);
+[steer_roll_c,steer_pitch_c,steer_yaw_c,t2] = ThreeD.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-CALLIBRATED');
 %And the steering angle sits in the yaw access.
 %The roll angle is the roll angle of the rearframe
 %Plot the actual roll and steering angle of the bicycle
-ThreeMarkers.plotRS(roll_r,steer_yaw_s,true,Fs_ImuMeasured,t,0);
+ThreeD.plotRS(roll_r,steer_yaw_s,true,Fs_ImuMeasured,t,0);
 
 
 % find maxima, starting from t = 3s. (perturbation time)
