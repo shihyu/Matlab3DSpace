@@ -175,6 +175,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
+        function theRun = cellTranspose(theRun)
+            % CELLTRANSPOSE Gets the quaternion conjugate on the run.
+            % cells.
+            parfor i = 1:length(theRun)
+                theRun{i} = theRun{i}';
+            end
+        end
+        
          function diff = cellInverseMultiply(obj1,obj2)
             % cellInverseMultiply Implement obj1'*obj2 for ThreeD when using
             % cells.
@@ -276,7 +284,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
             if inDegrees
-                YLABEL='(degrees)';
+                YLABEL='(deg)';
             else
                 YLABEL='(radians)';
             end
@@ -409,6 +417,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             p_0mat = cell2mat(p_0);
             p_1mat = cell2mat(p_1);
+            p_0mat(isnan(p_0mat))=0;
+            p_1mat(isnan(p_1mat))=0;
             absorRet = absor(p_0mat(1:3,:),p_1mat(1:3,:));
 %             H_1_0_est = absorRet.M;
 %             H_1_0_est(1:3,4) = 0;

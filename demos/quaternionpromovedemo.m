@@ -21,7 +21,7 @@ tm_t=Quat3D.readDataPromove(filename,runName,...
 %into the experiment and then uses this as the zero frame.
 %All the samples in the set are then inversely rotated by
 %quaternion.
-tm_t  = ThreeMarkers.callibrate(tm_t,100,10);
+tm_t  = ThreeD.callibrate(tm_t,100,10);
 
 %Get the Roll Pitch and Yaw of the experiment.
 [roll_t,pitch_t,yaw_t] = ThreeMarkers.getRPYt(tm_t,inDegrees);
