@@ -314,6 +314,50 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
             xlabel(XLABEL);
         end
+        function plotRS(roll,steer,inDegrees,Fs,varargin)
+            %PLOTRPY(roll,steer,inDegrees,Fs,t,type)
+            %Type
+            %PLOT the Roll and Steering angle for the run.
+            YMAX = max(max(abs(roll)),max(abs(steer)));
+            YMIN=-YMAX;
+            typeOfPlot=1;
+            if length(varargin)>0
+                t = varargin{1};
+                if length(varargin)==2
+                    typeOfPlot=varargin{2};
+                end
+            else
+                minSize = length(roll);
+                t = 0:1/Fs:(minSize-1)/Fs;
+                typeOfPlot=0;
+            end
+            if inDegrees
+                YLABEL='(degrees)';
+            else
+                YLABEL='(radians)';
+            end
+            XLABEL=['1/Fs Fs=' num2str(Fs)];
+            XMIN = min(t);
+            XMAX = max(t);
+            
+            hold on;
+           
+            subplot(2,1,1);
+            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            hold on;
+            grid on;
+            xlim([XMIN XMAX])
+            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
+            ylabel(YLABEL);
+            subplot(2,1,2);
+            ThreeMarkers.plotAngle(t,steer,typeOfPlot,YLABEL)
+            grid on;
+            hold on;
+            xlim([XMIN XMAX])
+            title(['STEER(x): maximum angle: ' num2str(max(abs(steer)))]);
+            ylabel(YLABEL);
+        end    
+     
         
         function [roll,pitch,yaw,t,theFigure] = ...
                 getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
@@ -423,8 +467,9 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [tm_t,t] = resample(tm_t,t_wanted)
-            %RESAMPLE Resamples a cell of ThreeD from the Fs_current
-            %to the Fs_wanted.
+            %RESAMPLE Resamples a cell of ThreeD
+            %The cell of ThreeD is resampled to the timestamps
+            %specified in the vector t_wanted.
             quats = zeros(length(tm_t),4);
             t = zeros(length(tm_t),1);
             parfor i = 1:length(tm_t)

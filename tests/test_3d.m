@@ -284,7 +284,7 @@ assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
-assertEqual([0 0 0],euler)
+assertElementsAlmostEqual([0 0 0],euler)
 assertElementsAlmostEqual(max(roll),0);
 assertElementsAlmostEqual(max(pitch),0);
 assertElementsAlmostEqual(max(yaw),0);
