@@ -27,6 +27,8 @@ classdef Markers3D < ThreeD
             %   OUTPUT:
             %       markerdatefilt matrix with the same elements as the markerdata
             markerdata = markerdata';
+            
+           
             %% data and filter characteristics
             nFrames = size(markerdata, 2); % number of frames
             Fs = ThreeD.estimateFsAndVariance(time');
@@ -41,6 +43,8 @@ classdef Markers3D < ThreeD
             isOpposite = any(sign(jumpLeft) ~= sign(jumpRight)); % jumps are opposite
             
             markerdata(:, isJumpLeft & isJumpright & isOpposite) = NaN;
+            
+            markerdata(markerdata==0)=NaN;
             
             %% find and fill gaps
             % finds the gaps in the data and fill the gaps where possible
@@ -82,7 +86,7 @@ classdef Markers3D < ThreeD
             
         end
         
-        function filterMarkerData(rawMarkerData,maxGap,maxVeljump,...
+        function rawMarkerData = filterMarkerData(rawMarkerData,maxGap,maxVeljump,...
                 freqLowPass,orderLowpass)
             %FILTERMARKERDATA
             % maxGap (10):
@@ -105,6 +109,34 @@ classdef Markers3D < ThreeD
             
             
         end
+        
+        function [yesOrNo] = areTheMarkersWellSpaced(marker1,...
+                marker2,marker3,varargin)
+            %ARETHEMARKERSWELLSPACED Tests to see if the markers
+            %are in a good triangle. To test for dropped markers
+            %or bad measurements.
+            
+             p = inputParser;
+            addOptional(p,'lengthThreshold',14.55000001);
+            parse(p,varargin{:});
+            lengthThreshold = p.Results.lengthThreshold;
+            
+            RBLB = norm(marker1(1,1:3) - marker2(1,1:3));
+            RBFT = norm(marker1(1,1:3) - marker3(1,1:3));
+            FTLB = norm(marker3(1,1:3) - marker2(1,1:3));
+            yesOrNo = false;
+            if (any(marker1(1,1:3) == [0,0,0]) && ...
+                    any(marker2(1,1:3) == [0,0,0]) && ...
+                    any(marker3(1,1:3) == [0,0,0]))
+                display('All Markers dropped')
+                return
+            elseif (abs(RBLB - RBFT) > lengthThreshold) || ...
+                    (abs(RBLB - FTLB) > lengthThreshold) || ...
+                    (abs(FTLB - RBFT) > lengthThreshold)
+               	return
+            end
+            yesOrNo=true;
+        end
                     
         function [vtm_t] = readDataVicon(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
@@ -115,10 +147,33 @@ classdef Markers3D < ThreeD
             %The option value of
             % 'kabsch' or 'screw' can be added to use a different method to
             % estimate the rotation matrices.
+            
+            %Parameter Parsing.
+            p = inputParser;
+            addOptional(p,'doFilter',false);
+            parse(p,varargin{:});
+            doFilter = p.Results.doFilter;
+            
             reader = c3dReader(filename,runName)
             rightBack = reader.readMarker(rightBackName);
             leftBack = reader.readMarker(leftBackName);
             front = reader.readMarker(frontName);
+            
+            if doFilter
+                display('Filtering raw Marker Data');
+                rightBack = Markers3D.filterMarkerData(rightBack,...
+                    50,1,15,4);
+                %Not sure why but first sample is NaN.
+                rightBack = rightBack(2:length(rightBack),:);
+                leftBack = Markers3D.filterMarkerData(leftBack,...
+                    50,1,15,4);
+                leftBack = leftBack(2:length(leftBack),:);
+
+                front = Markers3D.filterMarkerData(front,...
+                    50,1,15,4);
+                front = front(2:length(front),:);
+
+            end
             %             display('Right Back')
             %             display(size(rightBack));
             %             display('Left Back')
@@ -130,19 +185,22 @@ classdef Markers3D < ThreeD
             if ~isempty(varargin)
                 varargin = varargin{:};
             end
-            parfor i = 1:N
-                %                 i
-                if (all(rightBack(i,1:3) == [0,0,0]) && ...
-                        all(leftBack(i,1:3) == [0,0,0]) && ...
-                        all(front(i,1:3) == [0,0,0]))
+            
+            %MARKED MISSING MARKERS
+            for i = 1:N
+                if ~Markers3D.areTheMarkersWellSpaced(rightBack(i,1:3),...
+                        leftBack(i,1:3),...
+                        front(i,1:3));
                     vtm_t{i} = -1;
                 else
                     vtm = Markers3D(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i,4:4),varargin);
+                        leftBack(i,1:3),front(i,1:3),rightBack(i,4:4));
                     vtm_t{i} = vtm;
-                end
+                 end
             end
-            
+            %REMOVE THE MARKED MARKERS
+            % If it is a class put it into the array, otherwise not (if it
+            % is -1)
             vtm_tmp = {};
             for i = 1:N
                 if isa(vtm_t{i},'Markers3D')

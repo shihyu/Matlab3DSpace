@@ -580,3 +580,124 @@ close all;
 assertEqual(1,1);
 Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
 
+expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
+    0.0,0.0,0.0,0.005;
+    0.4,0.5,0.6,0.01],1,0.1,15,4);
+%assertEqual(any(isnan(expected)),0)
+
+filename='test-data/test-data.h5';
+runName = '/vicon';
+points_0 = [
+        1 -1 0 0;
+        0 0 1 0;
+        0 0 0 1];
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON',points_0);
+[vtm_t] = Markers3D.readDataVicon(filename,...
+    runName,'RBO','LBO','FON','doFilter',true);
+display('Should not filter now');
+[vtm_t] = Markers3D.readDataVicon(filename,...
+    runName,'RBO','LBO','FON','doFilter',false);
+
+function test_MissingMarkerdata
+close all;
+assertEqual(1,1);
+Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
+
+expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
+    0.0,0.0,0.0,0.005;
+    0.4,0.5,0.6,0.01],1,0.1,15,4);
+%assertEqual(any(isnan(expected)),0)
+
+filename='test-data/test-data.h5';
+runName = '/vicon';
+points_0 = [
+        1 -1 0 0;
+        0 0 1 0;
+        0 0 0 1];
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON',points_0);
+[vtm_t] = Markers3D.readDataVicon(filename,...
+    runName,'RBO','LBO','FON','doFilter',true);
+display('Should not filter now');
+[vtm_t] = Markers3D.readDataVicon(filename,...
+    runName,'RBO','LBO','FON','doFilter',false);
+
+function test_areTheMarkersWellSpaced
+marker1 = [0,0,0];
+marker2=[0,0,0];
+marker3=[0,0,0];
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
+marker1 = [0,0,0];
+marker2=[1,0,0];
+marker3=[sin(pi/6),cos(pi/6),0];
+markers = [marker1;marker2;marker3];
+plot3(markers(:,1),markers(:,2),markers(:,3))
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
+marker1 = [0,0,0]+[1,1,1];
+marker2=[1,0,0]+[1,1,1];
+marker3=[sin(pi/6),cos(pi/6),0]+[1,1,1];
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertTrue(result);
+
+marker1 = [0,0,0]+[100,100,100];
+marker2=[1,0,0]+[1,1,1];
+marker3=[sin(pi/6),cos(pi/6),0]+[1,1,1];
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
+marker1 = [0,0,0]+[1,1,1];
+marker2=[1,0,0]*100+[1,1,1];
+marker3=[sin(pi/6),cos(pi/6),0]*100+[1,1,1];
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertTrue(result);
+
+marker1 = [0,0,0]+[1,1,1]*100;
+marker2=[1,0,0]*100+[1,1,1]*100;
+marker3=[sin(pi/6),cos(pi/6),0]*100+[1,1,1]*100;
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertTrue(result);
+
+
+marker1 = [0,0,0]+[1,1,1]*100;
+marker2=[1,0,0]*100+[1,1,1]*100;
+marker3=[sin(pi/6),cos(pi/6),0]*100+[1,1,1]*85;
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
+marker1 = [1,1,1]
+marker2=[20,0,0]
+marker3=[20,50,0]
+markers = [marker1;marker2;marker3];
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
