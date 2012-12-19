@@ -624,11 +624,25 @@ display('Should not filter now');
     runName,'RBO','LBO','FON','doFilter',false);
 
 function test_areTheMarkersWellSpaced
+marker1 = [NaN,NaN,NaN];
+marker2=[NaN,NaN,NaN];
+marker3=[NaN,NaN,NaN];
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
 marker1 = [0,0,0];
 marker2=[0,0,0];
 marker3=[0,0,0];
 result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
 assertFalse(result);
+
+marker1 = [NaN,1,NaN];
+marker2=[1,NaN,1];
+marker3=[1,0,NaN];
+result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
+assertFalse(result);
+
+
 
 marker1 = [0,0,0];
 marker2=[1,0,0];
@@ -701,3 +715,57 @@ len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = Markers3D.areTheMarkersWellSpaced(marker1,marker2,marker3)
 assertFalse(result);
+
+function test_findOutliers
+markerdata = [0.01, 0.0, 0.03, 0.04, 0.05];
+[markeroutliers] = Markers3D.findOutliers(markerdata,...
+                100,200);
+expected = [0.01, NaN, 0.03, 0.04, 0.05];
+assertEqual(markeroutliers,expected);
+
+markerdata = [0.02, 0.02, 0.03, 0.04, 0.05, 0.0, 0, 0, 0.1, 0.12, 0.13, 0, 0.16 ];
+[markeroutliers] = Markers3D.findOutliers(markerdata,...
+                1,200);
+expected = [0.02, 0.02, 0.03, 0.04, 0.05, NaN, NaN, NaN, 0.1, 0.12, 0.13, NaN, 0.16];
+assertEqual(markeroutliers,expected);
+
+function test_fillGaps
+markerOutliers = [0.02, 0.02, 0.03, 0.04, 0.05, NaN, NaN, NaN, 0.1, 0.12, 0.13, NaN, 0.16];
+expected = [0.02, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.085, 0.1, 0.12, 0.13, 0.145, 0.16];
+[filtermarkers] = Markers3D.fillGaps(markerOutliers,...
+                10);   
+assertEqual(filtermarkers,expected);
+
+function test_findFillGaps
+markerdata = [3,3.1,3.2,3.3,3.4,3.5;4,0,4.2,0,4.4,0;0,5.1,5.2,0,5.4,0]';
+expected = [3,3.1,3.2,3.3,3.4,3.5;4,4.1,4.2,4.3,4.4,4.5;5,5.1,5.2,5.3,5.4,5.5]';
+[filMarkers,gapArrayMarker] = Markers3D.findFillGaps(markerdata,...
+    100, 100,200);
+assertEqual(filMarkers,expected);
+
+
+
+function  test_eraseNan
+marker1 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
+marker2 = [2,3.1,0, 3; 3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
+marker3 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
+expected1 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
+expected2 = [2,3.1,0, 3; 3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
+expected3 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
+
+
+[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
+
+assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
+
+marker1 = [NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN];
+marker2 = [2,3.1,0,3; 3,3.4,3.5,3; 4,NaN,4.2,3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
+marker3 = [3,3.1,3.2,3; 3.3,3.4,3.5,3; 4,NaN,4.2,3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
+expected1 = [0,0,0,0; 0,0,0,0;0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
+expected2 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
+expected3 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
+
+
+[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
+
+assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
