@@ -44,7 +44,7 @@ steer_angle_t = ThreeD.cellminus(steering_t,roll_t);
     ThreeD.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-UNCALLIBRATED');
 callibrateStart=floor(0.1*Fs_ImuMeasured);
 %Callibrate to see what happens! We want to make this frame the origin...
-steer_angle_t = ThreeD.callibrate(steer_angle_t,callibrateStart,30);
+steer_angle_t = ThreeD.zeroTheRun(steer_angle_t,callibrateStart,30);
 [steer_roll_c,steer_pitch_c,steer_yaw_c,t2] = ThreeD.getAndPlotRPY(steer_angle_t,'STEERING ANGLE-CALLIBRATED');
 %And the steering angle sits in the yaw access.
 %The roll angle is the roll angle of the rearframe

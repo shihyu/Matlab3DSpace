@@ -134,7 +134,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     ['GETJOINTANGLES: Calculated '  angleName '(un-callibrated).' ],...
                     false,'timeseries',jointAnglePlotStyle);
                 %Callibrate to see what happens! We want to make this frame the origin...
-                jointAngle_t = ThreeD.callibrate(jointAngle_t,callibrateStart,30);
+                jointAngle_t = ThreeD.zeroTheRun(jointAngle_t,callibrateStart,30);
                 [jointAngleRoll,jointAnglePitch,jointAngleYaw,jointAngleTimestamps,steeringAnglePlot] = ...
                     ThreeD.getAndPlotRPYt(jointAngle_t,...
                     ['GETJOINTANGLES: Calulated '  angleName '(callibrated).' ],...
@@ -508,8 +508,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             
             function [tm_t_c,tm_est] = ...
-                    callibrate(tm_t,startIndex,numberOfSamples)
-                %CALLIBRATE Changes the samples to the zero frame using
+                    zeroTheRun(tm_t,startIndex,numberOfSamples)
+                %ZEROTHERUN Changes the samples to the zero frame using
                 %an estimate of the initial orientation from the start of
                 %the run where the sensor was held still in a known
                 %direction.
