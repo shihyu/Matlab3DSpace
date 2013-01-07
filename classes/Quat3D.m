@@ -1,7 +1,6 @@
 classdef Quat3D < ThreeD
     %Quat3D Contains static data to help with the reading
-    %of data from InertiaTechnology sensors using the SOFIE-HDF-FORMAT
-    %library.
+    %of data from Quaternion data stored in the SFIE-HDF-FORMAT.
     methods (Static)
         
         function [qtm_t,sync] = readDataPromove(filename,...

@@ -1,5 +1,5 @@
 classdef Markers3D < ThreeD
-    %VICONTHREEMARKERS Handles an equilateral triangle configuration
+    %Markers3D Handles an equilateral triangle configuration
     % of Vicon markers or any other marker systems.
     % maxGap:
     % maximal number of frames that are allowed to be interpolated
@@ -10,7 +10,7 @@ classdef Markers3D < ThreeD
         function markerdataFilt = filterAxis(markerdata, time,...
                 maxGap,maxVeljump,...
                 freqLowPass,orderLowpass)
-            %filterAxis Processes the raw marker data comming from a motion capture
+            %FILTERAXIS Processes the raw marker data comming from a motion capture
             %system.
             %   INPUT:
             % maxGap (10):
