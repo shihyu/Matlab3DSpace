@@ -94,20 +94,19 @@ marker1 = [NaN,NaN,NaN];
 marker2=[NaN,NaN,NaN];
 marker3=[NaN,NaN,NaN];
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+assertEqual(result,[false,false,false]);
 
 marker1 = [0,0,0];
 marker2=[0,0,0];
 marker3=[0,0,0];
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+% assertEqual(result,[true,true,]);
 
 marker1 = [NaN,1,NaN];
 marker2=[1,NaN,1];
 marker3=[1,0,NaN];
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
-
+assertEqual(result,[false,false,false]);
 
 
 marker1 = [0,0,0];
@@ -119,7 +118,7 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+assertEqual(result,[false,false,false]);
 
 marker1 = [0,0,0]+[1,1,1];
 marker2=[1,0,0]+[1,1,1];
@@ -139,7 +138,7 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+assertEqual(result,[false,false,false]);
 
 marker1 = [0,0,0]+[1,1,1];
 marker2=[1,0,0]*100+[1,1,1];
@@ -170,7 +169,7 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+assertEqual(result,[false,false,false]);
 
 marker1 = [1,1,1]
 marker2=[20,0,0]
@@ -180,4 +179,4 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertFalse(result);
+assertEqual(result,[false,false,false]);

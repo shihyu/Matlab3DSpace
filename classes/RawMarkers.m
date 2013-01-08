@@ -1,15 +1,8 @@
-classdef RawMarkers < handle
+classdef RawMarkers
     %RAWMARKERS This class is used to package all the reading
     % of raw C3D Three Marker data from SofieHDFFormat.
     % Various proxessing
-    
-    properties
-        a=0;
-        b=0;
-    end
-    
     methods(Static)
-        
         function [yesOrNo] = isNanOrZero(marker,varargin)
             p = inputParser;
             addOptional(p,'allOrSome',true);
@@ -155,13 +148,5 @@ classdef RawMarkers < handle
             rawData = [rightBack(:,1:3),leftBack(:,1:3),front()];
         end
     end
-    
-    methods
-        function rw = RawMarkers(a,b)
-            rw.a=a;
-            rw.b=b;
-        end
-    end
-    
 end
 
