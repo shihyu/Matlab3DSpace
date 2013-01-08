@@ -239,7 +239,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     tm_t{j,i}.plotT();
                     grid on
                     axis([-2 2 -2 2 -2 2]);
-                    if (timeoutBetweenPlots!=0.0)
+                    if (timeoutBetweenPlots ~= 0.0)
                         if timeoutBetweenPlots <0
                             pause
                         else

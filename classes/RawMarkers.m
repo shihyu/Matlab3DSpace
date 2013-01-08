@@ -9,144 +9,52 @@ classdef RawMarkers < handle
     end
     
     methods(Static)
-        function markerdataFilt = filterAxis(markerdata, time,...
-                maxGap,maxVeljump,...
-                freqLowPass,orderLowpass)
-            %FILTERAXIS Processes the raw marker data comming from a motion capture
-            %system.
-            %   INPUT:
-            % maxGap (10):
-            % maximal number of frames that are allowed to be interpolated
-            % maxVeljump (0.1):
-            % maximal acceleration that is allowed for markers, otherwise markers are
-            % considdered as outliers  % [m/s]
-            % freqLowPass (15):
-            % the low pass filter frequency [Hz]
-            % orderLowpass (4):
-            % order of the filter
-            %       markerdata matrix (n x 1) n frames [meters]
-            %       dt scalar sampling time [seconds]
-            %   OUTPUT:
-            %       markerdatefilt matrix with the same elements as the markerdata
-            markerdata = markerdata';
-            
-            
-            %% data and filter characteristics
-            nFrames = size(markerdata, 2); % number of frames
-            Fs = ThreeD.estimateFsAndVariance(time');
-            dt = 1/Fs;
-            
-            %% find outliers
-            jumpLeft = markerdata - markerdata(:, [2 1:end-1]); % derivative on the left side
-            jumpRight = markerdata(:, [2:end end-1]) - markerdata; % derivetive on the right side
-            
-            isJumpLeft = any(~(abs(jumpLeft) < maxVeljump*dt)); % jump on the leftside ~ is used to also include NaN as positive result
-            isJumpright = any(~(abs(jumpRight) < maxVeljump*dt)); % jump on the right side
-            isOpposite = any(sign(jumpLeft) ~= sign(jumpRight)); % jumps are opposite
-            
-            markerdata(:, isJumpLeft & isJumpright & isOpposite) = NaN;
-            
-            markerdata(markerdata==0)=NaN;
-            
-            %% find and fill gaps
-            % finds the gaps in the data and fill the gaps where possible
-            
-            % make a n x 2 matrix containg on every row the beginning and the ending of
-            % a gap.
-            gapArray = [find(diff(isnan([0; markerdata(1,:)'])) > 0) ...
-                find(diff(isnan([markerdata(1,:)'; 0])) < 0)];
-            
-            % loop the gaps and fill them
-            for iGap = 1:size(gapArray, 1); % loop all the gaps
-                isAtBeginning = gapArray(iGap, 1) == 1; % check if the gap is at the beginning
-                isAtEnd = gapArray(iGap, 2) == nFrames; % check if the gap is at the end
-                isTooLarge = gapArray(iGap, 2) - gapArray(iGap, 1) > maxGap; % gap is too large to interpolate
-                if ~isAtBeginning && ~isAtEnd && ~isTooLarge % only interpolate if none of these conditions are true
-                    markerdata(:, gapArray(iGap, 1) - 1 : gapArray(iGap, 2) + 1) = ...
-                        interp1([gapArray(iGap, 1) - 1 gapArray(iGap, 2) + 1], ...
-                        [markerdata(:, gapArray(iGap, 1) - 1) markerdata(:, gapArray(iGap, 2) + 1)]', ...
-                        gapArray(iGap, 1) - 1 : gapArray(iGap, 2) + 1)';
-                end
-            end
-            
-            %% low-pass filter the data
-            markerdataFilt = nan(size(markerdata)); % NaN matrix for the marker data
-            omegaLow = 2 * freqLowPass * dt;
-            [B, A]=butter(orderLowpass, omegaLow, 'low'); % Butterworth filter
-            
-            % make a n x 2 matrix containg on every row the beginning and the ending of
-            % a continues set of data.
-            dataArray = [find(diff(~isnan([NaN; markerdata(1,:)'])) > 0) ...
-                find(diff(~isnan([markerdata(1,:)'; NaN])) < 0)];
-            
-            for iData = 1:size(dataArray, 1); % loop all the gaps
-                if dataArray(iData,2) - dataArray(iData,1) > orderLowpass * 3 % length data must be 3 times the filter order
-                    markerdataFilt(:, dataArray(iData,1) : dataArray(iData,2)) = ...
-                        filtfilt(B, A, markerdata(:, dataArray(iData,1) : dataArray(iData,2))')';
-                end
-            end
-            
-        end
         
-        function rawMarkerData = filterMarkerData(rawMarkerData,maxGap,maxVeljump,...
-                freqLowPass,orderLowpass)
-            %FILTERMARKERDATA
-            % maxGap (10):
-            % maximal number of frames that are allowed to be interpolated
-            % maxVeljump (0.1):
-            % maximal acceleration that is allowed for markers, otherwise markers are
-            % considdered as outliers  % [m/s]
-            % freqLowPass (15):
-            % the low pass filter frequency [Hz]
-            % orderLowpass (4):
-            % order of the filter
-            
-            
-            time = rawMarkerData(:,4);
-            for i = 1:3
-                rawMarkerData(:,i) = Markers3D.filterAxis(...
-                    rawMarkerData(:,i),time,maxGap,maxVeljump,...
-                    freqLowPass,orderLowpass);
-            end
-            
-            
-        end
-        
-        
-        function [yesOrNo] = areTheMarkersWellSpaced(marker1,...
-                marker2,marker3,varargin)
-            %ARETHEMARKERSWELLSPACED Tests to see if the markers
-            %are in a good triangle. To test for dropped markers
-            %or bad measurements.
-            
+        function [yesOrNo] = isNanOrZero(marker,varargin)
             p = inputParser;
-            addOptional(p,'lengthThreshold',14.55000001);
+            addOptional(p,'allOrSome',true);
+            addOptional(p,'keepColumnLogicResult',false);
+            parse(p,varargin{:});
+            allOrSome = p.Results.allOrSome;
+            keepColumnLogicResult = p.Results.keepColumnLogicResult;
+            if keepColumnLogicResult
+                yesOrNo = isnan(marker)|(marker==0);
+                return;
+            end
+            if allOrSome
+                display('All Markers dropped - NaN or Zero')
+                yesOrNo = all(isnan(marker)|(marker==0),2);
+            else
+                yesOrNo = any(isnan(marker)|(marker==0),2);
+            end
+        end
+        
+        function [yesOrNo,distances]=...
+            areTheMarkersWellSpaced(rawData,varargin)
+            %areTheMarkersWellSpaced Tests to see if the markers
+            %are in a good triangle.
+            p = inputParser;
+            addOptional(p,'lengthThreshold',14.0);
+            addOptional(p,'plotTheDistances',false);
             parse(p,varargin{:});
             lengthThreshold = p.Results.lengthThreshold;
+           
+            RBLB = norm(rawData(:,1:3) - rawData(:,4:6));
+            RBFT = norm(rawData(:,1:3) - rawData(:,7:9));
+            FTLB = norm(rawData(:,7:9) - rawData(:,4:6));
             
-            
-            RBLB = norm(marker1(1,1:3) - marker2(1,1:3));
-            RBFT = norm(marker1(1,1:3) - marker3(1,1:3));
-            FTLB = norm(marker3(1,1:3) - marker2(1,1:3));
-            yesOrNo = false;
-            
-            if (any(isnan(marker1(1,1:3)))) || ...
-                    (any(isnan(marker2(1,1:3)))) || ...
-                    (any(isnan(marker3(1,1:3))))
-                display('All Markers dropped - NaN')
-                return
-            elseif (any(marker1(1,1:3)==0)) || ...
-                    (any(marker2(1,1:3)==0)) || ...
-                    (any(marker3(1,1:3)==0))
-                display('All Markers dropped -zeroes')
-                return
-            elseif (abs(RBLB - RBFT) > lengthThreshold) || ...
-                    (abs(RBLB - FTLB) > lengthThreshold) || ...
-                    (abs(FTLB - RBFT) > lengthThreshold)
-                display('All Markers dropped -not a triangle')
-                return
-            end
-            yesOrNo=true;
+            distances = [abs(RBLB - RBFT),abs(RBLB - FTLB),...
+                abs(FTLB - RBFT)];
+            yesOrNo = distances <= lengthThreshold;
+        end
+        
+        function [yesOrNoAll,yesOrNoSome] = ...
+            areMarkersDropped(rawData,varargin)
+            %areMarkersDropped  To test for dropped markers
+            %or bad measurements.    
+            yesOrNoAll = RawMarkers.isNanOrZero(rawData(:,1:9));
+            yesOrNoSome = RawMarkers.isNanOrZero(rawData(:,1:9),...
+                'allOrSome',false);
         end
         
         
