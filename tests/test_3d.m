@@ -17,23 +17,23 @@ theReference = thePoint;
 thePoint = [0 0 0];
 REF=~all(theReference < repmat(eps, size(theReference)))
 assertEqual((thePoint-theReference)/norm(thePoint-theReference)+...
-                    theReference,...
-                    ThreeD.normWithOffset(thePoint,theReference));
-                
+    theReference,...
+    ThreeD.normWithOffset(thePoint,theReference));
+
 function test_resample
-  rightback = [0 1  0];
+rightback = [0 1  0];
 leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.4;
 cvt = Markers3D(rightback,...
-        leftback,front,theTimestamp);
-    rightback = [0 1  0];
+    leftback,front,theTimestamp);
+rightback = [0 1  0];
 leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.5;
 theQuat = cvt.getQ;
 cvt2 = Markers3D(rightback,...
-        leftback,front,theTimestamp);
+    leftback,front,theTimestamp);
 tm_t = {cvt,cvt2,cvt2};
 [tm_t,t] = ThreeD.resample(tm_t,[2.43,2.45]);
 t
@@ -57,7 +57,7 @@ leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.4;
 cvt = Markers3D(rightback,...
-        leftback,front,theTimestamp);
+    leftback,front,theTimestamp);
 assertEqual(cvt.getTimestamp(),2.4);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0  0; 0 0 0 1; 1 1 1 1]);
 cvt1 = cvt;
@@ -137,11 +137,11 @@ x = 0;
 y = pi/2;
 assertEqual(ThreeD.angleDifference(x,y),-pi/2);
 assertEqual(ThreeD.angleDifference(y,x),pi/2);
-x=pi; 
+x=pi;
 y=pi-1;
 assertEqual(ThreeD.angleDifference(x,y),1);
 assertEqual(ThreeD.angleDifference(y,x),-1);
-x=-pi/2; 
+x=-pi/2;
 y=pi/2-1;
 assertEqual(ThreeD.angleDifference(x,y),-(pi-1));
 assertEqual(ThreeD.angleDifference(y,x),(pi-1));
@@ -248,7 +248,7 @@ assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 size(vtm_t)
 display('Testing change of Global Frame');
 tm_est = ThreeD.getChangeOfGlobalReferenceFrames(vtm_t,...
-   vtm_t,1,3)
+    vtm_t,1,3)
 
 assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 
@@ -260,7 +260,7 @@ vmt_t2 = tm_est*vtm_t(1:3);
 ThreeD.plotRun([vtm_t(1:3);vtm_t(1:3)]);
 vtm_t2 = tm_est*vtm_t;
 try
- vtm_t*[tm_est tm_est];
+    vtm_t*[tm_est tm_est];
 catch exception
     assertEqual(exception.identifier,'matlab3Dspace:mtimes');
 end
@@ -353,10 +353,10 @@ qvt4 = qvt2.setTimestamp(11.4);
 q1_t= {qvt1,qvt2};
 q2_t= {qvt3,qvt4};
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q1_t,...
-            'TEST',false,'timeseries','--b')
+    'TEST',false,'timeseries','--b')
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q2_t,...
-            'TEST AGAIN',theFigure,'timeseries','--b')
-        
+    'TEST AGAIN',theFigure,'timeseries','--b')
+
 function test_sortAccordingToTimestamp(t,tm_t)
 q = [3 2 4 1];
 t = [0.3 0.2 0.4 0.1];
@@ -373,6 +373,18 @@ t = [0.3 0.2 0.4 0.1];
 [t,q] = ThreeD.sortAccordingToTimestamp(t',q);
 assertEqual([1 2 3 4; 4 2 1 3]',q);
 assertEqual([0.1 0.2 0.3 0.4]',t);
+
+function test_setStartTime
+startTime = 1.3;
+endTime = 2.3;
+Fs=10;
+t = 0:0.1:4;
+tm_t = t.*3;
+t_exp = 1.3:0.1:2.3;
+tm_t_exp = t_exp.*3;
+[t_new,tm_t_new]= ThreeD.setStartTime(t,tm_t, startTime, endTime, Fs);
+assertEqual([t_exp,tm_t_exp],[t_new,tm_t_new]);
+
 
 
 

@@ -100,6 +100,30 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                         filtfilt(B, A, markerdata(:, dataArray(iData,1) : dataArray(iData,2))')';
                 end
             end
+            display(['Data filtered with butterworth low pas filter', 'freqLowPass =', num2str(freqLowPass)...
+                , 'orderLowPass =', num2str(orderLowPass)]);
+        end
+        
+        
+        function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
+            % SETSTARTTIME Sets the starttime of an object
+            % Can be used to make objects of different sensors the same
+            % length
+            t_step = 1/Fs;
+            integerTest = startTime/t_step;
+            integerTest2 = endTime/t_step;
+            if ~mod(integerTest,1) ==0 || ~mod(integerTest2,1) ==0 ...
+                    warning('starting or ending sample is not dividable by the time step')
+            end
+            [b, startSample] = min(abs(t - startTime));
+            [b, endSample] = min(abs(t - endTime));
+            
+            if isempty(startSample) || isempty(endSample)
+                warning('startTime or endTime is not in the timestamps')
+            end
+            
+            t_new = t(startSample:endSample);
+            tm_t_new = tm_t(startSample:endSample);
         end
         
         function [jointAngleTimestamps,jointAngle_t,jointAngleRoll,jointAnglePitch,jointAngleYaw,...
@@ -221,7 +245,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %Optional argument of a 'timeoutBetweenPlots' can be used to make the plot
             %pauze between plots if you want to get a better understanding
             %of what is happening.
-             p = inputParser;
+            p = inputParser;
             addOptional(p,'timeoutBetweenPlots',0.0);
             parse(p,varargin{:});
             timeoutBetweenPlots = p.Results.timeoutBetweenPlots;
@@ -300,7 +324,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         function [roll,pitch,yaw,diff_t] = getDiff(tm_t1,tm_t2,varargin)
             %GETDIFF Same as cellminus() but calculates the roll pitch
             %yaw values during the calculation as well.
-            %    
+            %
             p = inputParser;
             addOptional(p,'inDegrees',0.0);
             parse(p,varargin{:});
@@ -341,7 +365,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             pitch_t = zeros(1,minSize);
             yaw_t = zeros(1,minSize);
             t = zeros(1,minSize);
-
+            
             parfor i=1:minSize
                 euler = tm_t{i}.getRPY(inDegrees);
                 roll_t(i)=euler(1);
