@@ -92,7 +92,7 @@ ResampledPlotStyle = '--b*'
 % Get the joint angles
 
 % 'Callibrate' roll sensor, to get the angles in the global reference frame
-Roll_callibrated = ThreeD.callibrate(Roll_resampled,20,20);
+Roll_callibrated = ThreeD.zeroTheRun(Roll_resampled,20,20);
 [roll_Roll,pitch_Roll,yaw_Roll,t_Roll]=ThreeD.getAndPlotRPYt(Roll_callibrated,'Roll Resampled Callibrated',...
     false,'timeseries',ResampledPlotStyle);
 
