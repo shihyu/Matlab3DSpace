@@ -53,6 +53,7 @@ classdef Markers3D < ThreeD
             display(['Array dropped Quaternions =', num2str(gapArray)]);
         end
         
+        
         function [vtm_t,gapArray] = readDataVicon(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
@@ -68,6 +69,7 @@ classdef Markers3D < ThreeD
             addOptional(p,'doFilter',false);
             parse(p,varargin{:});
             doFilter = p.Results.doFilter;
+            
             
             reader = c3dReader(filename,runName)
             rightBack = reader.readMarker(rightBackName);
@@ -159,6 +161,15 @@ classdef Markers3D < ThreeD
             end
         end
         
+        function vtm_t = create3DMarkersFromRawData(rawData)
+            N=size(rawData,2);
+            vtm_t = cell(1,N);
+            parfor i = 1:N
+                vtm = Markers3D(rawData(i,1:3),...
+                    rawData(i,4:6),rawData(i,7:9),t(i));
+                vtm_t{i} = vtm;
+            end
+        end
     end
     
     
