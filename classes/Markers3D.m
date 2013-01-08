@@ -54,7 +54,7 @@ classdef Markers3D < ThreeD
         end
         
         
-        function [vtm_t,gapArray] = readDataVicon(filename,runName,...
+        function [vtm_t,gapArray] = readDatVicon(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
@@ -126,7 +126,7 @@ classdef Markers3D < ThreeD
         
         
         
-        function [vtm_t,Fs] = readDataAdams(filename,runName,...
+        function [vtm_t,Fs] = readDatAdams(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READDATA Reads the ADAMS export file three markers in
             % and creates the ViconThreeMarker object.
@@ -161,12 +161,38 @@ classdef Markers3D < ThreeD
             end
         end
         
-        function vtm_t = create3DMarkersFromRawData(rawData)
-            N=size(rawData,2);
+        function vtm_t = create3DMarkersFromRawData(rawData,varargin)
+            %CREATES3DMARKERFROMRAWDATA
+            % Creates the 3D markers from the raw data and
+            % returns a cell containing all the data.
+            %
+            % OPTIONAL PARAMETERS
+            %  adams - Then the ThreeD.default_points_0 is used.
+            % absoluteOrientationMethod - @see ThreeD.Markers3D
+            
+            %Parameter Parsing.
+            p = inputParser;
+            addOptional(p,'adams',false);
+            addOptional(p,'absoluteOrientationMethod',false)
+            parse(p,varargin{:});
+            absoluteOrientationMethod = p.Results.absoluteOrientationMethod;
+            adams = p.Results.adams;
+            
+            if adams
+                points_0 = ThreeD.x_base_frame;
+            else
+                points_0 = ThreeD.default_points_0;
+            end
+            
+            N=size(rawData,1);
+            t = rawData(:,10);
             vtm_t = cell(1,N);
             parfor i = 1:N
                 vtm = Markers3D(rawData(i,1:3),...
-                    rawData(i,4:6),rawData(i,7:9),t(i));
+                    rawData(i,4:6),rawData(i,7:9),t(i),...
+                    'points_0',points_0,...
+                    'absoluteOrientationMethod',absoluteOrientationMethod);
+                
                 vtm_t{i} = vtm;
             end
         end
@@ -178,14 +204,34 @@ classdef Markers3D < ThreeD
                 front,timestamp,varargin)
             %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
             %Calculates and creates the quaternion of the plane represented
-            %by the three markers. rightback,leftback and front are Nx3
-            %matrices containg the x,y and z measurements of the
-            %point/marker in 3D space. Front is on the positive Y axis,
-            %rightback and leftback are on the X axis.
+            %by the three markers. 
+            % PARAMETERS:
+            %   rightback,leftback and front are Nx3
+            %   matrices containg the x,y and z measurements of the
+            %   point/marker in 3D space. Front is on the positive Y axis,
+            %   rightback and leftback are on the X axis.
+            % Optional PARAMETERS:
+            %   points_0 - The zero reference frame for the absolute
+            %      orientation calculation.
+            %   absoluteOrientationMethod - The method to use to calculate
+            %      the absolute orientation. Options are 'screw','kabsch'.
+            %      Default uses absor.
+            %
+            % RETURN A 3D marker.
+            
+            %Parameter Parsing.
+            p = inputParser;
+            addOptional(p,'points_0',ThreeD.default_points_0);
+            addOptional(p,'absoluteOrientationMethod',false)
+            parse(p,varargin{:});
+            points_0 = p.Results.points_0;
+            absoluteOrientationMethod = p.Results.absoluteOrientationMethod;
+            
             if isempty(rightback)
                 error('Markers3D:Markers3D',...
                     'Rightback is empty');
             end
+            
             midpoint = (rightback+leftback)/2;
             front = ThreeD.normWithOffset(front,midpoint);
             rightback = ThreeD.normWithOffset(rightback,midpoint);
@@ -206,15 +252,8 @@ classdef Markers3D < ThreeD
             %              our_point_0(3,1:2) = yValue;
             %Create the normalized matrix of the points.
             points_T = [ rightback' leftback' front' crosspoint'];
-            if ((~isempty(varargin))&&(~isempty(varargin{1})))&&...
-                    all(size(varargin{1})==[4 4])
-                points_0 = varargin{1};
-            else
-                points_0 = ThreeD.get0;
-            end
-            if ((~isempty(varargin))&&(length(varargin)==2)...
-                    &&(~isempty(varargin{2})))
-                if (strcmp(varargin{2},'screw')==1)
+       
+            if (strcmp(absoluteOrientationMethod,'screw')==1)
                     %Create the screw theory compliant points for Vikon
                     points_T(4,:) = 1;
                     %Get the homogenous matrix for these points
@@ -225,13 +264,12 @@ classdef Markers3D < ThreeD
                     H_T_0(4,1:3)  = [0 0 0];
                     %H_0_T = H_T_0';
                     H_0_T = invht(H_T_0);
-                elseif (strcmp(varargin{2},'kabsch')==1)
-                    display(['KABSCH:' varargin{2}])
+            elseif (strcmp(absoluteOrientationMethod,'kabsch')==1)
+                    display(['KABSCH:' absoluteOrientationMethod])
                     [H_0_T] = Kabsch(points_0(1:3,:),...
                         points_T(1:3,:));
                     H_0_T(4,1:3)=[0 0 0];
                     H_0_T(:,4)=[0 0 0 1]';
-                end
             else
                 [rotInfo] = absor(points_0(1:3,1:4),...
                     points_T(1:3,1:4));

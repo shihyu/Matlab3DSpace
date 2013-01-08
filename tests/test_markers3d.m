@@ -207,8 +207,8 @@ point1 = awgn(point1,50,0)
 point2 = H2*point0;
 
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
-marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'kabsch');
-marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'screw');
+marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','kabsch');
+marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','screw');
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 %0.013 radians = 0.75 degrees
 assertElementsAlmostEqual(marker1.getRPY(false),[0 pi/6 0 ],'absolute',0.013);
@@ -276,8 +276,8 @@ point2 = awgn(point2,50,0)+1019.45
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
-marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'kabsch');
-marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'screw');
+marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','kabsch');
+marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','screw');
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 %0.013 radians = 0.75 degrees
 assertElementsAlmostEqual(marker1.getH,H1,'absolute',0.015);
@@ -350,7 +350,7 @@ end
 
 
 
-function test_vicon3d_readDataVicon
+function test_vicon_create3DMarkersFromRawData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 points_0 = [
@@ -359,8 +359,12 @@ points_0 = [
         0 0 0 1];
 % [vtm_t] = Markers3D.readDataVicon(filename,...
 %     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON',points_0);
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON');
+%Intermediate steps
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData);
+assertEqual(size(vtm_t),[1 389]);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',false);
 % vtm_t{100}.plotT;
 % figure
 % ThreeD.plotRun(vtm_t,-1)
@@ -379,7 +383,9 @@ end
 function test_vicon3d_readDataAdams
 filename='test-data/test-data.h5';
 runName = 'testrun';
-[vtm_t] = Markers3D.readDataAdams(filename,runName,'RBO','LBO','FON');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON','adams',true);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 501]);
 current = vtm_t{1}.getTimestamp();
@@ -390,7 +396,9 @@ for i = 2:length(vtm_t)
     current = vtm_t{i}.getTimestamp();
 end
 
-[vtm_t1] = Markers3D.readDataAdams(filename,runName,'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+vtm_t1 = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 vtm_t1{1}.plotT()
 %ThreeD.plotRun(vtm_t1);
 assertEqual(size(vtm_t1),[1 501]);
@@ -477,9 +485,9 @@ display(['Processing RUN:' runName adamsColumns]);
 display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
-%Horn
-[vtm_t] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 % ThreeD.plotRun(vtm_t,0.4);
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
@@ -538,11 +546,14 @@ data = reader.readData(false);
 steeringAngle = data.SteeringAngle';
 
 
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON','adams',true);
+theChanger = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 
-[theChanger] = Markers3D.readDataAdams(filename,runName,...
-    'RBO','LBO','FON');
-[theStatic] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+theStatic = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
+
 
 % ThreeD.plotRun(theChanger,0.1);
 % ThreeD.plotRun([theStatic;theChanger],0.4);
@@ -574,107 +585,3 @@ runName = '/adams/pitchyawcombined';
 processRunCombined(filename,runName);
 % runName = '/adams/rollyawcombined';
 % processRunCombined(filename,runName);
-
-function test_filterMarkerData
-close all;
-assertEqual(1,1);
-Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
-
-expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
-    0.0,0.0,0.0,0.005;
-    0.4,0.5,0.6,0.01],1,0.1,15,4);
-%assertEqual(any(isnan(expected)),0)
-
-filename='test-data/test-data.h5';
-runName = '/vicon';
-points_0 = [
-        1 -1 0 0;
-        0 0 1 0;
-        0 0 0 1];
-% [vtm_t] = Markers3D.readDataVicon(filename,...
-%     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',true);
-display('Should not filter now');
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',false);
-
-function test_MissingMarkerdata
-close all;
-assertEqual(1,1);
-Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
-
-expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
-    0.0,0.0,0.0,0.005;
-    0.4,0.5,0.6,0.01],1,0.1,15,4);
-%assertEqual(any(isnan(expected)),0)
-
-filename='test-data/test-data.h5';
-runName = '/vicon';
-points_0 = [
-        1 -1 0 0;
-        0 0 1 0;
-        0 0 0 1];
-% [vtm_t] = Markers3D.readDataVicon(filename,...
-%     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',true);
-display('Should not filter now');
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',false);
-
-
-
-function test_findOutliers
-markerdata = [0.01, 0.0, 0.03, 0.04, 0.05];
-[markeroutliers] = Markers3D.findOutliers(markerdata,...
-                100,200);
-expected = [0.01, NaN, 0.03, 0.04, 0.05];
-assertEqual(markeroutliers,expected);
-
-markerdata = [0.02, 0.02, 0.03, 0.04, 0.05, 0.0, 0, 0, 0.1, 0.12, 0.13, 0, 0.16 ];
-[markeroutliers] = Markers3D.findOutliers(markerdata,...
-                1,200);
-expected = [0.02, 0.02, 0.03, 0.04, 0.05, NaN, NaN, NaN, 0.1, 0.12, 0.13, NaN, 0.16];
-assertEqual(markeroutliers,expected);
-
-function test_fillGaps
-markerOutliers = [0.02, 0.02, 0.03, 0.04, 0.05, NaN, NaN, NaN, 0.1, 0.12, 0.13, NaN, 0.16];
-expected = [0.02, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.085, 0.1, 0.12, 0.13, 0.145, 0.16];
-[filtermarkers] = Markers3D.fillGaps(markerOutliers,...
-                10);   
-assertEqual(filtermarkers,expected);
-
-function test_findFillGaps
-markerdata = [3,3.1,3.2,3.3,3.4,3.5;4,0,4.2,0,4.4,0;0,5.1,5.2,0,5.4,0]';
-expected = [3,3.1,3.2,3.3,3.4,3.5;4,4.1,4.2,4.3,4.4,4.5;5,5.1,5.2,5.3,5.4,5.5]';
-[filMarkers,gapArrayMarker] = Markers3D.findFillGaps(markerdata,...
-    100, 100,200);
-assertEqual(filMarkers,expected);
-
-
-
-function  test_eraseNan
-marker1 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
-marker2 = [2,3.1,0, 3; 3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
-marker3 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
-expected1 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
-expected2 = [2,3.1,0, 3; 3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
-expected3 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
-
-
-[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
-
-assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
-
-marker1 = [NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN; NaN, NaN, NaN, NaN];
-marker2 = [2,3.1,0,3; 3,3.4,3.5,3; 4,NaN,4.2,3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
-marker3 = [3,3.1,3.2,3; 3.3,3.4,3.5,3; 4,NaN,4.2,3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
-expected1 = [0,0,0,0; 0,0,0,0;0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
-expected2 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
-expected3 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
-
-
-[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
-
-assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
