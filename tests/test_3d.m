@@ -374,6 +374,18 @@ t = [0.3 0.2 0.4 0.1];
 assertEqual([1 2 3 4; 4 2 1 3]',q);
 assertEqual([0.1 0.2 0.3 0.4]',t);
 
+function test_setStartTime
+startTime = 1.3;
+endTime = 2.3;
+Fs=10;
+t = 0:0.1:4;
+tm_t = t.*3;
+t_exp = 1.3:0.1:2.3;
+tm_t_exp = t_exp.*3;
+[t_new,tm_t_new]= ThreeD.setStartTime(t,tm_t, startTime, endTime, Fs);
+assertEqual([t_exp,tm_t_exp],[t_new,tm_t_new]);
+
+
 
 
 

@@ -90,10 +90,31 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                         filtfilt(B, A, markerdata(:, dataArray(iData,1) : dataArray(iData,2))')';
                 end
             end
+            display(['Data filtered with butterworth low pas filter', 'freqLowPass =', num2str(freqLowPass)...
+                , 'orderLowPass =', num2str(orderLowPass)]);
         end
             
+        function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
+            % SETSTARTTIME Sets the starttime of an object
+            % Can be used to make objects of different sensors the same
+            % length
+            t_step = 1/Fs;
+            integerTest = startTime/t_step;
+            integerTest2 = endTime/t_step;
+            if ~mod(integerTest,1) ==0 || ~mod(integerTest2,1) ==0 ...
+                warning('starting or ending sample is not dividable by the time step')
+            end
+            [b, startSample] = min(abs(t - startTime));
+            [b, endSample] = min(abs(t - endTime));           
+
+            if isempty(startSample) || isempty(endSample)
+                warning('startTime or endTime is not in the timestamps')
+            end
             
-            
+            t_new = t(startSample:endSample);
+            tm_t_new = tm_t(startSample:endSample);
+        end
+      
             function [jointAngleTimestamps,jointAngle_t,jointAngleRoll,jointAnglePitch,jointAngleYaw,...
                     sensor1RollAngle,sensor1PitchAngle...
                     sensor1YawAngle,figures] = ...

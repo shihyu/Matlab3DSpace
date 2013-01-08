@@ -118,7 +118,7 @@ classdef Markers3D < ThreeD
             %or bad measurements.
             
             p = inputParser;
-            addOptional(p,'lengthThreshold',14.55000001);
+            addOptional(p,'lengthThreshold',10.55000001);
             parse(p,varargin{:});
             lengthThreshold = p.Results.lengthThreshold;
             
@@ -248,7 +248,7 @@ classdef Markers3D < ThreeD
             end
             vtm_t = vtm_tmp;
             display(['Array dropped Quaternions =', num2str(gapArray)]);
-        end
+         end
         
         
         
@@ -285,8 +285,8 @@ classdef Markers3D < ThreeD
             end
         end
         
-        function [vtm_t,gapArray] = readDataVicon(filename,runName,...
-                rightBackName,leftBackName,frontName,varargin)
+        function [vtm_t,QuatgapArray] = readDataVicon(filename,runName,...
+                rightBackName,leftBackName,frontName, varargin)
             %READDATA Reads the VICON three markers in
             % and creates the ViconThreeMarker object.
             %A different point_0 (base frame) can be sent in as the first
@@ -297,26 +297,26 @@ classdef Markers3D < ThreeD
             
             %Parameter Parsing.
             p = inputParser;
-            addOptional(p,'doFilter',false);
+            addOptional(p,'doInterpolate',false);
             parse(p,varargin{:});
-            doFilter = p.Results.doFilter;
+            doInterpolate = p.Results.doInterpolate;
             
             reader = c3dReader(filename,runName)
             rightBack = reader.readMarker(rightBackName);
             leftBack = reader.readMarker(leftBackName);
             front = reader.readMarker(frontName);
             
-            
-            if doFilter
+                        
+            if doInterpolate
                 display('Find outliers raw Marker Data');
                 display('Fill gaps in raw Marker data');
                 
                 [rightBackGap,rBGapArray] = Markers3D.findFillGaps(rightBack,...
-                    50,1, 200);
+                    20,1, 100); % input parameters: (markerdata, maxGap, maxVeljump,Fs)
                 [leftBackGap,lBGapArray] = Markers3D.findFillGaps(leftBack,...
-                    50,1, 200);
+                    20,1, 100);
                 [frontGap,foGapArray] = Markers3D.findFillGaps(front,...
-                    50,1, 200);
+                    20,1, 100);
                 
 
                 N = length(rightBackGap);
@@ -325,6 +325,10 @@ classdef Markers3D < ThreeD
                 display(['Interpolated markers in FO is =', num2str(size(foGapArray, 1))]);
                 InterpolatedMarkers = size(rBGapArray, 1)+size(lBGapArray, 1)+ ...
                 size(foGapArray, 1);
+             
+
+             
+            
             if ((InterpolatedMarkers/(3*N))*100) > 5
                 warning('Markers3D:readDataVicon','Interpolated markers in raw data is more than 5 percent');
             end 
@@ -333,9 +337,9 @@ classdef Markers3D < ThreeD
                 %               size(rightBack)
                 %
                 %              length(rightBack(:,4))
-                rightBack = [rightBackGap,rightBack(:,4)];
-                leftBack = [leftBackGap,leftBack(:,4)];
-                front = [frontGap,front(:,4)];
+                rightBackGapp = [rightBackGap,rightBack(:,4)];
+                leftBackGapp = [leftBackGap,leftBack(:,4)];
+                frontGapp = [frontGap,front(:,4)];
                 
             end
             %             display('Right Back')
@@ -344,13 +348,13 @@ classdef Markers3D < ThreeD
             %             display(size(leftBack));
             %             display('Front')
             %             display(size(front));
-            N=size(rightBack,1);
+            N=size(rightBackGapp,1);
             vtm_t = cell(1,N);
             if ~isempty(varargin)
                 varargin = varargin{:};
             end
             
-            [vtm_t,gapArray] = Markers3D.dropQuaternions(rightBack,leftBack,front,N);
+            [vtm_t,QuatgapArray] = Markers3D.dropQuaternions(rightBackGapp,leftBackGapp,frontGapp,N);
 
         end
         
