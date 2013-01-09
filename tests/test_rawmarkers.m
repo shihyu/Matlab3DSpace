@@ -179,9 +179,10 @@ marker3=[20,50,0]
 len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
-result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertEqual(result,[false,false,false]);
+[result,distance] = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
+assertEqual(result,[false,false,true]);
 
+%Test Matrices
 marker1 = [1,1,1;1,1,1]
 marker2=[20,0,0;20,0,0]
 marker3=[20,50,0;20,50,0]
@@ -189,7 +190,7 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-assertEqual(result,[false,false,false;false,false,false]);
+assertEqual(result,[false,false,true;false,false,true]);
 
 
 function test_findOutliers
@@ -219,11 +220,11 @@ assertElementsAlmostEqual(filMarkers,expected);
 function test_filterMarkerData
 close all;
 assertEqual(1,1);
-Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
+RawMarkers.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01]);
 
-expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
+expected = RawMarkers.filterMarkerData([0.1,0.2,0.3,0;
     0.0,0.0,0.0,0.005;
-    0.4,0.5,0.6,0.01],1,0.1,15,4);
+    0.4,0.5,0.6,0.01]);
 %assertEqual(any(isnan(expected)),0)
 
 filename='test-data/test-data.h5';
@@ -234,20 +235,20 @@ points_0 = [
     0 0 0 1];
 % [vtm_t] = Markers3D.readDataVicon(filename,...
 %     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',true);
-display('Should not filter now');
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',false);
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON','doFilter',true);
+% display('Should not filter now');
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON','doFilter',false);
 
 function test_MissingMarkerdata
 close all;
 assertEqual(1,1);
-Markers3D.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01],10,0.1,15,4);
+RawMarkers.filterMarkerData([0.1,0.2,0.3,0;0.4,0.5,0.6,0.01]);
 
-expected = Markers3D.filterMarkerData([0.1,0.2,0.3,0;
+expected = RawMarkers.filterMarkerData([0.1,0.2,0.3,0;
     0.0,0.0,0.0,0.005;
-    0.4,0.5,0.6,0.01],1,0.1,15,4);
+    0.4,0.5,0.6,0.01]);
 %assertEqual(any(isnan(expected)),0)
 
 filename='test-data/test-data.h5';
@@ -258,11 +259,11 @@ points_0 = [
     0 0 0 1];
 % [vtm_t] = Markers3D.readDataVicon(filename,...
 %     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',true);
-display('Should not filter now');
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON','doFilter',false);
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON','doFilter',true);
+% display('Should not filter now');
+% [vtm_t] = Markers3D.readDataVicon(filename,...
+%     runName,'RBO','LBO','FON','doFilter',false);
 
 function  test_eraseNan
 marker1 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 4,NaN,4.2, 3; 0,4.4,NaN,3; 0,5.1,5.2,3; NaN,5.4,NaN,3];
@@ -273,7 +274,7 @@ expected2 = [2,3.1,0, 3; 3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
 expected3 = [3,3.1,3.2, 3; 3.3,3.4,3.5, 3; 0,0,0,0; 0,0,0,0; 0,5.1,5.2,3; 0,0,0,0];
 
 
-[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
+[marker1n,marker2n,marker3n] = RawMarkers.eraseNan(marker1,marker2,marker3);
 
 assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
 
@@ -285,7 +286,7 @@ expected2 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
 expected3 = [0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0; 0,0,0,0];
 
 
-[marker1n,marker2n,marker3n] = Markers3D.eraseNan(marker1,marker2,marker3);
+[marker1n,marker2n,marker3n] = RawMarkers.eraseNan(marker1,marker2,marker3);
 
 assertEqual([marker1n,marker2n,marker3n],[expected1,expected2,expected3]);
 

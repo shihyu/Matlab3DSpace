@@ -27,8 +27,10 @@ classdef Markers3D < ThreeD
                     vtm_t{i} = -1;
                     CountDroppedMarkers = CountDroppedMarkers +1;
                 else
-                    vtm = Markers3D(rightBack(i,1:3),...
-                        leftBack(i,1:3),front(i,1:3),rightBack(i,4:4));
+                    vtm = Markers3D('rightBack',rightBack(i,1:3),...
+                        'leftBack',leftBack(i,1:3),...
+                        'front',front(i,1:3),...
+                        'timeStamp',rightBack(i,4:4));
                     vtm_t{i} = vtm;
                 end
             end
@@ -80,8 +82,10 @@ classdef Markers3D < ThreeD
             t = rawData(:,10);
             vtm_t = cell(1,N);
             parfor i = 1:N
-                vtm = Markers3D(rawData(i,1:3),...
-                    rawData(i,4:6),rawData(i,7:9),t(i),...
+                vtm = Markers3D('rightBack',rawData(i,1:3),...
+                    'leftBack',rawData(i,4:6),...
+                    'front',rawData(i,7:9),...
+                    'timeStamp',t(i),...
                     'points_0',points_0,...
                     'absoluteOrientationMethod',absoluteOrientationMethod);
                 
@@ -92,8 +96,7 @@ classdef Markers3D < ThreeD
     
     
     methods
-        function vtm = Markers3D(rightback,leftback,...
-                front,timestamp,varargin)
+        function vtm = Markers3D(varargin)
             %VICONTHREEMARKERS(rightback,leftback,front,timestamp)
             %Calculates and creates the quaternion of the plane represented
             %by the three markers. 
@@ -113,17 +116,25 @@ classdef Markers3D < ThreeD
             
             %Parameter Parsing.
             p = inputParser;
+            p.addParamValue('rightback',-1,@isvector);
+            p.addParamValue('leftback',-1,@isvector);
+            p.addParamValue('front',-1,@isvector);
+            p.addParamValue('timeStamp',-1,@isvector);
+
             addOptional(p,'points_0',ThreeD.default_points_0);
             addOptional(p,'absoluteOrientationMethod',false)
             parse(p,varargin{:});
             points_0 = p.Results.points_0;
             absoluteOrientationMethod = p.Results.absoluteOrientationMethod;
-            
-            if isempty(rightback)
-                error('Markers3D:Markers3D',...
-                    'Rightback is empty');
-            end
-            
+            rightback  = ...
+                p.Results.rightback;
+            leftback  = ...
+                p.Results.leftback;
+            front = ...
+                p.Results.front;
+            timeStamp = ...
+                p.Results.timeStamp;
+    
             midpoint = (rightback+leftback)/2;
             front = ThreeD.normWithOffset(front,midpoint);
             rightback = ThreeD.normWithOffset(rightback,midpoint);
@@ -168,7 +179,7 @@ classdef Markers3D < ThreeD
                 H_0_T = rotInfo.q';
             end
             vtm@ThreeD(H_0_T);
-            vtm.timestamp = timestamp;
+            vtm.timestamp = timeStamp;
         end
     end
 end

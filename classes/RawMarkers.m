@@ -3,6 +3,21 @@ classdef RawMarkers
     % of raw C3D Three Marker data from SofieHDFFormat.
     % Various proxessing
     methods(Static)
+        function [marker1n,marker2n,marker3n] = eraseNan(marker1,marker2,marker3)
+            N=size(marker1,1);
+            for i = 1:N
+                if (any(isnan(marker1(i,1:4)))) || ...
+                        (any(isnan(marker2(i,1:4)))) || ...
+                        (any(isnan(marker3(i,1:4))))
+                    marker1n(i,1:4) =0;
+                    marker2n(i,1:4) =0;
+                    marker3n(i,1:4) =0;
+                else marker1n(i,:) = marker1(i,:);
+                    marker2n(i,:) = marker2(i,:);
+                    marker3n(i,:) = marker3(i,:);
+                end
+            end
+        end
         function [yesOrNo] = isNanOrZero(marker,varargin)
             p = inputParser;
             addOptional(p,'allOrSome',true);
@@ -34,11 +49,12 @@ classdef RawMarkers
             addOptional(p,'plotTheDistances',false);
             parse(p,varargin{:});
             lengthThreshold = p.Results.lengthThreshold;
-            plotTheDistances = p.Results.plotTheDistances;            
+            plotTheDistances = p.Results.plotTheDistances;
             
-            RBLB = norm(rawData(:,1:3) - rawData(:,4:6));
-            RBFT = norm(rawData(:,1:3) - rawData(:,7:9));
-            FTLB = norm(rawData(:,7:9) - rawData(:,4:6));
+            RBLB = sqrt(sum((rawData(:,1:3) - rawData(:,4:6)).^2,2))
+            RBFT = sqrt(sum((rawData(:,1:3) - rawData(:,7:9)).^2,2))
+            FTLB = sqrt(sum((rawData(:,7:9) - rawData(:,4:6)).^2,2))
+
             
             if plotTheDistances
                 figure;
@@ -87,6 +103,7 @@ classdef RawMarkers
                 yesOrNoAll(yesOrNoAll==0)=NaN; %set all zeroes to NaN
                 yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN 
                 yesOrNoOutlier(yesOrNoOutlier==0)=NaN; %set all zeroes to NaN 
+
                 
                 subplot(3,1,1);
                 plot(rawData(:,10),rawData(:,1:3), '--*b');
