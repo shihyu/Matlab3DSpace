@@ -251,10 +251,7 @@ classdef RawMarkers
                 , 'orderLowPass =', num2str(orderLowPass)]);
         end
         
-<<<<<<< HEAD
         
-=======
->>>>>>> FETCH_HEAD
         function [rawData] = readFromFile(filename,runName,...
                 rightBackName,leftBackName,frontName,varargin)
             %READFROMFILE Read the raw data from a file
