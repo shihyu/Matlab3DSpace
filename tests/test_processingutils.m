@@ -8,7 +8,7 @@ data1 = [0 1 0 0 0];
 data2 = [0 0 0 1 0 0];
 metric1 = [0 1 0 0 0];
 metric2 = [0 0 0 1 0 0];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,1,false)
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0]);
 assertEqual(data1(1:4),result2);
@@ -20,7 +20,7 @@ data2 = [0 1 0 0 0];
 metric1 = [0 0 0 1 0 0];
 metric2 = [0 1 0 0 0];
 
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,1,false)
 assertEqual(data2,result2);
 assertEqual(result1,[0 1 0 0]);
 assertEqual(data2(1:4),result1);
@@ -30,7 +30,7 @@ data1 = [0 1 0 0 2 0 0 1];
 data2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 metric1 = [0 1 0 0 2 0 0 1];
 metric2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,1,false)
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0 4 0 0 2 0 1 1 3]);
 
@@ -39,7 +39,7 @@ data1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 data2 = [0 1 0 0 2 0 0 1];
 metric1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 metric2 = [0 1 0 0 2 0 0 1];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,1,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,1,false)
 assertEqual(data2,result2);
 assertEqual(result1,[0 1 0 0 4 0 0 2 0 1 1 3]);
 
@@ -48,7 +48,7 @@ data1 = [0 1 0 0 2 0 0 1];
 data2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 metric1 = [0 1 0 0 2 0 0 1];
 metric2 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,2,false)
 assertEqual(data1,result1);
 assertEqual(result2,[0 1 0 0 4 0 0 2 0 1 1 3]);
 
@@ -57,7 +57,7 @@ data1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 data2 = [0 1 0 0 2 0 0 1];
 metric1 = [0 1 2 0 0 1 0 0 1 0 0 4 0 0 2 0 1 1 3];
 metric2 = [0 1 0 0 2 0 0 1];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,2,false)
 assertEqual(data2,...
     result2);
 assertEqual(result1,[0  1 0 0 4 0 0 2 0 1 1 3]);
@@ -67,13 +67,13 @@ data1 = [0 0 0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3];
 data2 = [0 0 1 0 0 2 0 0 1];
 metric1 = [0 0 0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3];
 metric2 = [0 0 1 0 0 2 0 0 1];
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,false)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,2,false)
 assertEqual(data2,...
     result2);
 assertEqual(result1,[0 0 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
 
 
-[result1,result2] = synchronise(metric1,metric2,data1,data2,Fs,2,true)
+[result1,result2] = ThreeD.synchronise(metric1,metric2,data1,data2,Fs,2,true)
 assertEqual([1 0 0 2 0 0 1],...
     result2);
 assertEqual(result1,[ 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
@@ -99,7 +99,7 @@ roll_t = ThreeD.changeStartTime(roll_t,0);
 [roll_r,pitch_r,yaw_r]=ThreeD.getRPYt(roll_t,true);
 [roll_s,pitch_s,yaw_s]=ThreeD.getRPYt(steering_t,true);
 
-[roll_t,steering_t] = synchroniseWithRespectToRPY(...
+[roll_t,steering_t] = ThreeD.synchroniseWithRespectToRPY(...
     roll_r,pitch_r,yaw_r,roll_t,...
     roll_s,pitch_s,yaw_s,steering_t,200);
 [roll_r,pitch_r,yaw_r,t]=ThreeD.getRPYt(roll_t,true);

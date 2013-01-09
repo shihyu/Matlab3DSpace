@@ -207,8 +207,8 @@ point1 = awgn(point1,50,0)
 point2 = H2*point0;
 
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
-marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'kabsch');
-marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'screw');
+marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','kabsch');
+marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','screw');
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 %0.013 radians = 0.75 degrees
 assertElementsAlmostEqual(marker1.getRPY(false),[0 pi/6 0 ],'absolute',0.013);
@@ -276,8 +276,8 @@ point2 = awgn(point2,50,0)+1019.45
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 marker1 = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0);
-marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'kabsch');
-marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,0,'screw');
+marker1k = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','kabsch');
+marker1s = Markers3D(point1(1:3,1)',point1(1:3,2)',point1(1:3,3)',0,'absoluteOrientationMethod','screw');
 marker2 = Markers3D(point2(1:3,1)',point2(1:3,2)',point2(1:3,3)',0);
 %0.013 radians = 0.75 degrees
 assertElementsAlmostEqual(marker1.getH,H1,'absolute',0.015);
@@ -350,7 +350,7 @@ end
 
 
 
-function test_vicon3d_readDataVicon
+function test_vicon_create3DMarkersFromRawData
 filename='test-data/test-data.h5';
 runName = '/vicon';
 points_0 = [
@@ -359,8 +359,12 @@ points_0 = [
         0 0 0 1];
 % [vtm_t] = Markers3D.readDataVicon(filename,...
 %     runName,'RBO','LBO','FON',points_0);
-[vtm_t] = Markers3D.readDataVicon(filename,...
-    runName,'RBO','LBO','FON',points_0);
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON');
+%Intermediate steps
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData);
+assertEqual(size(vtm_t),[1 389]);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',false);
 % vtm_t{100}.plotT;
 % figure
 % ThreeD.plotRun(vtm_t,-1)
@@ -379,7 +383,9 @@ end
 function test_vicon3d_readDataAdams
 filename='test-data/test-data.h5';
 runName = 'testrun';
-[vtm_t] = Markers3D.readDataAdams(filename,runName,'RBO','LBO','FON');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON','adams',true);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 501]);
 current = vtm_t{1}.getTimestamp();
@@ -390,7 +396,9 @@ for i = 2:length(vtm_t)
     current = vtm_t{i}.getTimestamp();
 end
 
-[vtm_t1] = Markers3D.readDataAdams(filename,runName,'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+vtm_t1 = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 vtm_t1{1}.plotT()
 %ThreeD.plotRun(vtm_t1);
 assertEqual(size(vtm_t1),[1 501]);
@@ -477,9 +485,9 @@ display(['Processing RUN:' runName adamsColumns]);
 display(['==================================================']);
 reader = adamsReader(filename,runName);
 data = reader.readData(false);
-%Horn
-[vtm_t] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 % ThreeD.plotRun(vtm_t,0.4);
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
@@ -538,11 +546,14 @@ data = reader.readData(false);
 steeringAngle = data.SteeringAngle';
 
 
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON','adams',true);
+theChanger = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 
-[theChanger] = Markers3D.readDataAdams(filename,runName,...
-    'RBO','LBO','FON');
-[theStatic] = Markers3D.readDataAdams(filename,runName,...
-    'RBT','LBT','FTN');
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+theStatic = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
+
 
 % ThreeD.plotRun(theChanger,0.1);
 % ThreeD.plotRun([theStatic;theChanger],0.4);

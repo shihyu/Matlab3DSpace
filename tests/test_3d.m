@@ -383,7 +383,7 @@ tm_t = t.*3;
 t_exp = 1.3:0.1:2.3;
 tm_t_exp = t_exp.*3;
 [t_new,tm_t_new]= ThreeD.setStartTime(t,tm_t, startTime, endTime, Fs);
-assertEqual([t_exp,tm_t_exp],[t_new,tm_t_new]);
+assertElementsAlmostEqual([t_exp,tm_t_exp],[t_new,tm_t_new]);
 
 
 

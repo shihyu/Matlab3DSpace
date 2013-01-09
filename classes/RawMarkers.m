@@ -26,6 +26,9 @@ classdef RawMarkers
                 areTheMarkersWellSpaced(rawData,varargin)
             %areTheMarkersWellSpaced Tests to see if the markers
             %are in a good triangle.
+            % RETURNS
+            % yesOrNo = [RBLB-RBFT,RBLB-FTLB,FTLB-RBLT];
+            % distances = [RBLB,RBFT,FTLB]
             p = inputParser;
             addOptional(p,'lengthThreshold',14.0);
             addOptional(p,'plotTheDistances',false);
@@ -36,9 +39,10 @@ classdef RawMarkers
             RBFT = norm(rawData(:,1:3) - rawData(:,7:9));
             FTLB = norm(rawData(:,7:9) - rawData(:,4:6));
             
-            distances = [abs(RBLB - RBFT),abs(RBLB - FTLB),...
+            distances = [RBLB,RBFT,FTLB];
+            yesOrNo = [abs(RBLB - RBFT),abs(RBLB - FTLB),...
                 abs(FTLB - RBFT)];
-            yesOrNo = distances <= lengthThreshold;
+            yesOrNo = yesOrNo<= lengthThreshold;
         end
         
         function [yesOrNoAll,yesOrNoSome] = ...
@@ -247,16 +251,47 @@ classdef RawMarkers
                 , 'orderLowPass =', num2str(orderLowPass)]);
         end
         
+<<<<<<< HEAD
         
+=======
+>>>>>>> FETCH_HEAD
         function [rawData] = readFromFile(filename,runName,...
-                rightBackName,leftBackName,frontName)
+                rightBackName,leftBackName,frontName,varargin)
             %READFROMFILE Read the raw data from a file
             %RETURNS rawData = [rightback,leftback,front,t];
-            reader = c3dReader(filename,runName)
-            rightBack = reader.readMarker(rightBackName);
-            leftBack = reader.readMarker(leftBackName);
-            front = reader.readMarker(frontName);
-            rawData = [rightBack(:,1:3),leftBack(:,1:3),front()];
+            %Optional Parameter:
+            %  adams - Set true to read adams file.
+            %Parameter Parsing.
+            p = inputParser;
+            addOptional(p,'adams',false);
+            parse(p,varargin{:});
+            adams = p.Results.adams;
+            if adams
+                reader = adamsReader(filename,runName);
+                data = reader.readData(false);
+                t=data.Time;
+                
+                RBO = [
+                    data.([rightBackName 'X']),...
+                    data.([rightBackName 'Y']),...
+                    data.([rightBackName 'Z'])];
+                LBO = [
+                    data.([leftBackName 'X']),...
+                    data.([leftBackName 'Y']),...
+                    data.([leftBackName 'Z'])];
+                FON = [
+                    data.([frontName 'X']),...
+                    data.([frontName 'Y']),...
+                    data.([frontName 'Z'])];
+                rawData = [RBO,LBO,FON,t];
+            else
+                reader = c3dReader(filename,runName)
+                rightBack = reader.readMarker(rightBackName);
+                leftBack = reader.readMarker(leftBackName);
+                front = reader.readMarker(frontName);
+                rawData = [rightBack(:,1:3),leftBack(:,1:3),...
+                    front(:,1:3),front(:,4)];
+            end
         end
     end
 end
