@@ -207,13 +207,13 @@ function test_fillGaps
 markerOutliers = [0.02, 0.02, 0.03, 0.04, 0.05, NaN, NaN, NaN, 0.1, 0.12, 0.13, NaN, 0.16]';
 expected = [0.02, 0.02, 0.03, 0.04, 0.05, 0.0625, 0.075, 0.0875, 0.1, 0.12, 0.13, 0.145, 0.16]';
 [filtermarkers] = RawMarkers.fillGaps(markerOutliers);
-assertEqual(filtermarkers,expected);
+assertElementsAlmostEqual(filtermarkers,expected);
 
 function test_findFillGaps
 rawData = [3,3.1,3.2,3.3,3.4,3.5;4,0,4.2,0,4.4,0;0,5.1,5.2,0,5.4,0;3,3.1,3.2,3.3,3.4,3.5;4,0,4.2,0,4.4,0;0,5.1,5.2,0,5.4,0;3,3.1,3.2,3.3,3.4,3.5;4,0,4.2,0,4.4,0;0,5.1,5.2,0,5.4,0;0,0.1,0.2,0.3,0.4,0.5]';
 expected = [3,3.1,3.2,3.3,3.4,3.5;4,4.1,4.2,4.3,4.4,NaN;NaN,5.1,5.2,5.3,5.4,NaN;3,3.1,3.2,3.3,3.4,3.5;4,4.1,4.2,4.3,4.4,NaN;NaN,5.1,5.2,5.3,5.4,NaN;3,3.1,3.2,3.3,3.4,3.5;4,4.1,4.2,4.3,4.4,NaN;NaN,5.1,5.2,5.3,5.4,NaN;0,0.1,0.2,0.3,0.4,0.5]';
 [filMarkers,gapArrayMarker] = RawMarkers.findFillGaps(rawData);
-assertEqual(filMarkers,expected);
+assertElementsAlmostEqual(filMarkers,expected);
 
 
 function test_filterMarkerData
