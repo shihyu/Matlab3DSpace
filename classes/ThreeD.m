@@ -262,37 +262,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             title(theTitle)
         end
         
-        function [markerdataFilt] = filterData(markerdata,Fs,varargin)
-            % low-pass filter the data
-            %Fs the sampling frequency of the data.
-            % freqLowPass = 15; % the low pass filter frequency [Hz]
-            % orderLowpass = 4; % order of the filter
-            p = inputParser;
-            addOptional(p,'freqLowPass',15);
-            addOptional(p,'orderLowPass',4);
-            parse(p,varargin{:});
-            
-            freqLowPass = p.Results.freqLowPass;
-            orderLowPass = p.Results.orderLowPass;
-            dt = 1/Fs;
-            markerdataFilt = nan(size(markerdata)); % NaN matrix for the marker data
-            omegaLow = 2 * freqLowPass * dt;
-            [B, A]=butter(orderLowPass, omegaLow, 'low'); % Butterworth filter
-            % make a n x 2 matrix containg on every row the beginning and the ending of
-            % a continues set of data.
-            dataArray = [find(diff(~isnan([NaN; markerdata(1,:)'])) > 0) ...
-                find(diff(~isnan([markerdata(1,:)'; NaN])) < 0)];
-            
-            for iData = 1:size(dataArray, 1); % loop all the gaps
-                if dataArray(iData,2) - dataArray(iData,1) > orderLowPass * 3 % length data must be 3 times the filter order
-                    markerdataFilt(:, dataArray(iData,1) : dataArray(iData,2)) = ...
-                        filtfilt(B, A, markerdata(:, dataArray(iData,1) : dataArray(iData,2))')';
-                end
-            end
-            display(['Data filtered with butterworth low pas filter', 'freqLowPass =', num2str(freqLowPass)...
-                , 'orderLowPass =', num2str(orderLowPass)]);
-        end
-        
+     
         
         function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
             % SETSTARTTIME Sets the starttime of an object
