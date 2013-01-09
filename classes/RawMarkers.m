@@ -34,10 +34,17 @@ classdef RawMarkers
             addOptional(p,'plotTheDistances',false);
             parse(p,varargin{:});
             lengthThreshold = p.Results.lengthThreshold;
+            plotTheDistances = p.Results.plotTheDistances;            
             
             RBLB = norm(rawData(:,1:3) - rawData(:,4:6));
             RBFT = norm(rawData(:,1:3) - rawData(:,7:9));
             FTLB = norm(rawData(:,7:9) - rawData(:,4:6));
+            
+            if plotTheDistances
+                figure;
+                subplot(3,3,1);
+                plot(RBLB')
+            end
             
             distances = [RBLB,RBFT,FTLB];
             yesOrNo = [abs(RBLB - RBFT),abs(RBLB - FTLB),...
@@ -52,36 +59,46 @@ classdef RawMarkers
             yesOrNoAll = RawMarkers.isNanOrZero(rawData(:,1:9));
             yesOrNoSome = RawMarkers.isNanOrZero(rawData(:,1:9),...
                 'allOrSome',false);
+            
             p = inputParser;
             addOptional(p,'yesOrNoPlot',false);
+            addOptional(p,'sensorName','sensorName');
+            addOptional(p,'keepColumnLogicResult',false);
             parse(p,varargin{:});
             yesOrNoPlot = p.Results.yesOrNoPlot;
+            sensorName = p.Results.sensorName;
+            keepColumnLogicResult = p.Results.keepColumnLogicResult;
             
             if yesOrNoPlot
+                yesOrNoAll=double(yesOrNoAll);
+                yesOrNoSome=double(yesOrNoSome);                
+                yesOrNoAll(yesOrNoAll==0)=NaN; %set all zeroes to NaN
+                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN 
+                
                 subplot(3,1,1);
                 plot(rawData(:,10),rawData(:,1:3), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:), '*r');
-                plot(rawData(:,10),yesOrNoSome(:), '*g');
-                title([rightBackName '- raw data with dropped samples']);
+                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
+                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                title([sensorName '- Right Back raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
                 
                 subplot(3,1,2);
                 plot(rawData(:,10),rawData(:,4:6), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:), '*r');
-                plot(rawData(:,10),yesOrNoSome(:), '*g');
-                title([leftBackName '- raw data with dropped samples']);
+                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
+                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                title([sensorName '- Left Back raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
                 
                 subplot(3,1,3);
                 plot(rawData(:,10),rawData(:,7:9), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:), '*r');
-                plot(rawData(:,10),yesOrNoSome(:), '*g');
-                title([frontName '- raw data with dropped samples']);
+                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
+                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                title([sensorName '- front raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
             end
@@ -282,7 +299,7 @@ classdef RawMarkers
                     data.([frontName 'Z'])];
                 rawData = [RBO,LBO,FON,t];
             else
-                reader = c3dReader(filename,runName)
+                reader = c3dReader(filename,runName);
                 rightBack = reader.readMarker(rightBackName);
                 leftBack = reader.readMarker(leftBackName);
                 front = reader.readMarker(frontName);
