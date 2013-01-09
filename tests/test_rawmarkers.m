@@ -181,7 +181,6 @@ len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-<<<<<<< HEAD
 assertEqual(result,[false,false,false]);
 
 function test_findOutliers

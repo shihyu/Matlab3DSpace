@@ -271,7 +271,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             t_step = 1/Fs;
             integerTest = startTime/t_step;
             integerTest2 = endTime/t_step;
-            if ~mod(integerTest,1) ==0 || ~mod(integerTest2,1) ==0 ...
+            if ~mod(integerTest,1) ==0 || ~mod(integerTest2,1) ==0
                     warning('starting or ending sample is not dividable by the time step')
             end
             [b, startSample] = min(abs(t - startTime));

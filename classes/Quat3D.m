@@ -3,12 +3,30 @@ classdef Quat3D < ThreeD
     %of data from Quaternion data stored in the SFIE-HDF-FORMAT.
     methods (Static)
         
-        function [qtm_t,sync] = readDataPromove(filename,...
-                runName,nodeId,Fs_wanted,Fs_recorded)
+        function [qtm_t,sync] = readDataSHDF(filename,...
+                runName,varargin)
             %READDATA Read the quaternion data. This is static function is
-            %custom for CSV files that Intertia Technology outputs from
-            %their ProMoveGUI. Set nodeId to -1 if you must read all the
+            %custom for reading data from the SOFIHDFFORMAT file format.
+            %The table must contain quat1,quat2,quat3 and quat4 columns
+            %
+            %OPTIONAL PARAMTERS:
+            %   nodeId -set this to read a specific node ID. default reads
+            %            all.
+            %   Fs_wanted,Fs_recorded - Set both to resample the data.
             %data in the file as if it was from one node.
+            p = inputParser;
+            p.addOptional('nodeId',-1);
+            p.addOptional('Fs_wanted',-1);
+            p.addOptional('Fs_recorded',-1);
+            p.parse(varargin{:});
+            
+            nodeId = ...
+                p.Results.nodeId ;
+            Fs_wanted= ...
+                p.Results.Fs_wanted ;
+            Fs_recorded = ...
+                p.Results.Fs_recorded ;
+            
             reader = promoveReader(filename,runName);
             [q,sync] = reader.readNodeData(nodeId);
             if isempty(q)
@@ -19,7 +37,7 @@ classdef Quat3D < ThreeD
             [t,q] = ThreeD.sortAccordingToTimestamp(t,q);
             if Fs_wanted ~= Fs_recorded
                 if length(sync)==length(q)
-                sync = resample(sync,Fs_wanted,Fs_recorded);
+                    sync = resample(sync,Fs_wanted,Fs_recorded);
                 end
                 q = resample(q(:,1:5),Fs_wanted,Fs_recorded);
             end
@@ -31,18 +49,7 @@ classdef Quat3D < ThreeD
                 qtm = Quat3D(q(i,:))
                 qtm_t{i} = qtm;
             end
-        end
-        
-        function [qtm_t,sync] = readDataRaw(filename,...
-                runName,Fs_wanted,Fs_recorded)
-            %READDATA Read the quaternion data. This reads from a raw
-            %recording file. Ie with quat1 quat2 quat3 quat4 and
-            %timestamp.
-            [qtm_t,sync] = Quat3D.readDataPromove(...
-                filename,...
-                runName,-1,Fs_wanted,Fs_recorded);
-        end
-        
+        end        
     end
     
     methods

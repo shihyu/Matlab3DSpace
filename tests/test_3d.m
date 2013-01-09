@@ -141,9 +141,10 @@ assertEqual(result1,[ 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
 function test_synchroniseWithRespectToRPY
 filename='./test-data/test-data.h5'
 runName = 'promove'
-[steering_t] = Quat3D.readDataPromove(filename,runName,1,10,200);
-[roll_t] = Quat3D.readDataPromove(filename,runName,...
-    2,200,200);
+[steering_t] = Quat3D.readDataSHDF(filename,runName,'nodeId',1,...
+    'Fs_wanted',10,'Fs_recorded',200);
+[roll_t] = Quat3D.readDataSHDF(filename,runName,...
+    'nodeId',2);
 steering_t = ThreeD.changeStartTime(steering_t,0);
 roll_t = ThreeD.changeStartTime(roll_t,0);
 
@@ -407,7 +408,8 @@ end
 function test_promove3d_readData
 filename='test-data/test-data.h5';
 runName = '/promove';
-[vtm_t] = Quat3D.readDataPromove(filename,runName,1,10,200);
+[vtm_t] = Quat3D.readDataSHDF(filename,runName,'Fs_wanted',10,...
+    'Fs_recorded',200,'nodeId',1);
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
 assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
@@ -467,8 +469,8 @@ assertEqual(size(diff_t),[1,2]);
 function test_getRPHt
 filename='test-data/test-data.h5';
 runName = '/promove';
-[vtm_t] = Quat3D.readDataPromove(filename,runName,1,...
-    10,200);
+[vtm_t] = Quat3D.readDataSHDF(filename,runName,'nodeId',1,...
+    'Fs_wanted',10,'Fs_recorded',200);
 [roll,pitch,yaw,t] = ThreeD.getRPYt(vtm_t,true);
 assertTrue(yaw(1)>0);
 assertTrue(pitch(1)~=0);

@@ -12,8 +12,9 @@ assertEqual(qvt.getT,[0 0 1 0; -1 1 0 0; 0 0 0 1; 1 1 1 1]);
 function quatReadNonExistantNode
 filename='test-data/test-data.h5';
 runName = '/promove2';
-[vtm_t] = Quat3D.readDataPromove(filename,...
-    runName,1,10,200);
+[vtm_t] = Quat3D.readDataSHDF(filename,...
+    runName,'nodeId',1,...
+    'Fs_wanted',10,'Fs_recorded',200);
 
 function test_promove3d_readData
 filename='test-data/test-data.h5';
@@ -21,7 +22,8 @@ assertExceptionThrown(@quatReadNonExistantNode,...
     'Quat3D:readData')
 
 runName = '/promove';
-[vtm_t,sync] = Quat3D.readDataPromove(filename,runName,1,10,200);
+[vtm_t,sync] = Quat3D.readDataSHDF(filename,runName,'nodeId',1,...
+    'Fs_wanted',10,'Fs_recorded',200);
 assertFalse(any(sync))
 vtm_t{1}.plotT()
 assertEqual(size(vtm_t),[1 724]);
@@ -68,6 +70,6 @@ function test_promove3d_readData_withSync
 filename='test-data/test-data.h5';
 runName = '/newpromovewithsync';
 
-[vtm_t,sync] = Quat3D.readDataPromove(filename,runName,1,200,200);
+[vtm_t,sync] = Quat3D.readDataSHDF(filename,runName,'nodeId',1);
 assertTrue(any(sync))
 
