@@ -176,13 +176,21 @@ assertEqual(result,[false,true,false]);
 marker1 = [1,1,1]
 marker2=[20,0,0]
 marker3=[20,50,0]
-markers = [marker1;marker2;marker3];
 len1 =  norm(marker1-marker2)
 len2 =  norm(marker1-marker3)
 len3 = norm(marker2-marker3)
 result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
-<<<<<<< HEAD
 assertEqual(result,[false,false,false]);
+
+marker1 = [1,1,1;1,1,1]
+marker2=[20,0,0;20,0,0]
+marker3=[20,50,0;20,50,0]
+len1 =  norm(marker1-marker2)
+len2 =  norm(marker1-marker3)
+len3 = norm(marker2-marker3)
+result = RawMarkers.areTheMarkersWellSpaced([marker1,marker2,marker3])
+assertEqual(result,[false,false,false;false,false,false]);
+
 
 function test_findOutliers
 markerdata = [0.01, 0.0, 0.03, 0.04, 0.05]';
