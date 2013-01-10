@@ -215,7 +215,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 plot(t(1:N2),metric_2(1:N2),'--m');
                 title('ORIGINAL METRICS:');
                 grid on;
-                
+
                 subplot(2,1,2);
                 hold on;
             end
@@ -269,7 +269,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             [corrValue]=max(R12);
             title(theTitle)
         end
-        
+
         function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
             % SETSTARTTIME Sets the starttime of an object
             % Can be used to make objects of different sensors the same
@@ -294,6 +294,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         function [jointAngle_t] = ...
                 getjointangles(sensor1_t,sensor2_t,angleName,...
                 callibrateStart,varargin)
+
             p = inputParser;
             p.addOptional('doPlot',false);
             p.parse(varargin{:});
