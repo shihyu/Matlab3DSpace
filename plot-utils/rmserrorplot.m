@@ -1,4 +1,5 @@
-function [RMSVector,PCoeffVector,theFigure]=rmserrorplot(A,B,theTitle,plotDifference)
+function [RMSVector,PCoeffVector,...
+    VerschilVector,theFigure]=rmserrorplot(A,B,theTitle,plotDifference)
 %RMSERRORPLOT Plots a standard RMS error box plot used to see how big the
 %error between the orginal and the normal is.
 %Arguments: A,B the cell of vectors that must have each value compared to
@@ -10,6 +11,7 @@ PCoeffVector = [];
 RMSVerschilLengte = [];
 IdentificationVector = [];
 RMSVerschilVector = [];
+VerschilVector = cell(1,length(A));
 theXLabel = [];
 for j = 1:length(A)
     Aj = A{j};
@@ -19,6 +21,7 @@ for j = 1:length(A)
     RMS = sqrt(mean(Verschil.^2));
     RMSVector = [RMSVector, RMS];
     RMSVerschil = abs(Verschil-RMS)';
+    VerschilVector{j} = Verschil;
     RMSVerschilLengte = [RMSVerschilLengte, numel(RMSVerschil)];
     RMSVerschilVector = [RMSVerschilVector; RMSVerschil];
     Identification = [repmat(j,RMSVerschilLengte(j),1)];
@@ -33,11 +36,11 @@ for j = 1:length(A)
        figure('visible','on','WindowStyle','docked',...
                 'Name',[theTitle ' - DATA PLOT' num2str(j)]);
        subplot(2,1,1);
-       plot(Aj);
+       plot(Aj,'b--.');
        hold on;
        title([theTitle ' A and B PLOT(red)']);
        subplot(2,1,1);
-       plot(Bj,'r--');
+       plot(Bj,'r--.');
        hold off;
        subplot(2,1,2);
        plot(Verschil);
