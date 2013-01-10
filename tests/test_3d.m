@@ -172,9 +172,9 @@ assertTrue(all(abs(ErrorVector{1})<1e-2));
 
 function test_synchroniseWithRespectToRPY
 filename='./test-data/test-data.h5'
-runName = 'promove'
-[steering_t] = Quat3D.readDataSHDF(filename,runName,'nodeId',1,...
-    'Fs_wanted',10,'Fs_recorded',200);
+runName = 'newpromovewithsync'
+%Resample to make it more difficult
+[steering_t] = Quat3D.readDataSHDF(filename,runName,'nodeId',1);
 [roll_t] = Quat3D.readDataSHDF(filename,runName,...
     'nodeId',2);
 steering_t = ThreeD.changeStartTime(steering_t,0);

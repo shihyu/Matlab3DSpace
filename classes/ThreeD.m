@@ -161,12 +161,15 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             p.addParamValue('Fs',-1,@isscalar);
             p.addParamValue('theStart',-1,@isscalar);
             addOptional(p,'metricIsAlsoStartOfExperiment',false);
+            addOptional(p,'doPlot',false);
             parse(p,varargin{:});
             
             metricIsAlsoStartOfExperiment = ...
                 p.Results.metricIsAlsoStartOfExperiment;
             theStart = ...
                 p.Results.theStart;
+            doPlot = ...
+                p.Results.doPlot;
             Fs= ...
                 p.Results.Fs;
             metric_1= ...
@@ -203,17 +206,19 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             N1 = N1-(theStart-1);
             N2 = N2-(theStart-1);
             t = [0:1/Fs:N/Fs-1/Fs];
-            figRPYAR_IMU_sync=figure('visible','on','WindowStyle','docked',...
-                'Name','SYNCHRONISE');
-            subplot(2,1,1);
-            hold on;
-            plot(t(1:N1),metric_1(1:N1),'--k');
-            plot(t(1:N2),metric_2(1:N2),'--m');
-            title('ORIGINAL METRICS:');
-            grid on;
-            
-            subplot(2,1,2);
-            hold on;
+            if doPlot
+                figRPYAR_IMU_sync=figure('visible','on','WindowStyle','docked',...
+                    'Name','SYNCHRONISE');
+                subplot(2,1,1);
+                hold on;
+                plot(t(1:N1),metric_1(1:N1),'--k');
+                plot(t(1:N2),metric_2(1:N2),'--m');
+                title('ORIGINAL METRICS:');
+                grid on;
+
+                subplot(2,1,2);
+                hold on;
+            end
             %Get correlation.
             [R12] = xcorr(metric_1',metric_2');
             [corrValue,max_lags_12]=max(R12);
@@ -327,13 +332,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     ['GETJOINTANGLES: Calculated '  angleName '(un-callibrated).' ],...
                     false,'plotStyle',jointAnglePlotStyle);
             end
-            %Callibrate to see what happens! We want to make this frame the origin...
-%             jointAngle_t = ThreeD.zeroTheRun(jointAngle_t,callibrateStart,30);
-%             if doPlot
-%                 ThreeD.getAndPlotRPYt(jointAngle_t,...
-%                     ['GETJOINTANGLES: Calulated '  angleName '(callibrated).' ],...
-%                     false,'plotStyle',jointAnglePlotStyle);
-%             end
         end
         
         function [normedPoint] = normWithOffset(point,reference)
