@@ -57,7 +57,7 @@ assertTrue(max(yaw)>0);
 diff_t = ThreeD.cellminus(vtm_t(1:3),vtm_t(1:3));
 [roll,pitch,yaw,t]=ThreeD.getRPYt(...
     diff_t,true);
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'timeseries','--r');
+ThreeD.plotRPY(roll,pitch,yaw,t,'plotStyle','--r');
 class(diff_t)
 euler=diff_t{1}.getRPY(true)
 assertElementsAlmostEqual([0 0 0],euler)

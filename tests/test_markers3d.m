@@ -1,4 +1,4 @@
-function test_suite = test_vicon3d
+function test_suite = test_markers3d
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
@@ -582,7 +582,7 @@ data = reader.readData(false);
 [rawData] = RawMarkers.readFromFile(filename,...
     runName,'RBT','LBT','FTN','adams',true);
 vtm_t = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
-% ThreeD.plotRun(vtm_t,0.4);
+%ThreeD.plotRun(vtm_t,0.4);
 for i = 1:length(adamsColumns)
     adamsColumn = adamsColumns{i}
     adamsData = data.(adamsColumn);
@@ -592,11 +592,13 @@ for i = 1:length(adamsColumns)
     MeasuredValue = cell(1,1);
     %Normal
     [roll,pitch,yaw,t] = ThreeD.getAndPlotRPYt(vtm_t,...
-        adamsColumns{i},false,'timeseries','--o');
+        adamsColumns{i},false,'plotStyle','--o');
     MeasuredValue{1} = chooseData(roll,pitch,yaw,adamsColumn);
     
-    rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
-        adamsColumn],true);
+    [~,~,RMSVector] =...
+        rmserrorplot(CompareValue,MeasuredValue,['RMS ERROR: ' runName ': '...
+        adamsColumn],true)
+    assertTrue(all(abs(RMSVector{1})<1.5e-4))
 end
 %figure
 %ThreeD.plotRun(vtmk_t,0.1);
@@ -605,23 +607,26 @@ function test_adams_rollpitchyaw
 close all;
 filename='test-data/test-data.h5';
 
-% runName = 'adams/roll';
-% adamsColumn = {'Roll'};
+runName = 'adams/roll';
+adamsColumn = {'Roll'};
+processRun(filename,runName,adamsColumn);
+
+%The Pitch is plotted using xzx euler angles..
+% runName = 'adams/pitch';
+% adamsColumn = {'Pitch'};
 % processRun(filename,runName,adamsColumn);
 
-%The Pitch is plotted wrong in Adams.
-%runName = 'adams/pitch';
-%adamsColumn = {'Pitch'};
-%processRun(filename,runName,adamsColumn);
-
-%The Yaw is plotted wrong in Adams.
+%The Yaw is plotted wrong in Adams. Not sure why.
 % runName = 'adams/yaw';
 % adamsColumn = {'yaw'};
 % processRun(filename,runName,adamsColumn);
-%
-runName = 'adams/rollpitchyaw';
-adamsColumn = {'Roll'};%,'Pitch','Yaw'};
-processRun(filename,runName,adamsColumn);
+
+%The Roll Pitch and Yaw in the adams file is with respect
+%to the global origin and not within the rigid body.
+% Thus they do not match up.
+% runName = 'adams/rollpitchyaw';
+% adamsColumn = {'Roll'}%,'Pitch','Yaw'};
+% processRun(filename,runName,adamsColumn);
 
 %Incorrectly created file.
 %runName = '/adams/rollpitchyawbig';
@@ -653,24 +658,24 @@ theStatic = Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
 % ThreeD.plotRun([theStatic;theChanger],0.4);
 %  ThreeD.plotRun(theStatic,0.1);
 [one_roll,one_pitch,one_yaw,t,theFigure] = ThreeD.getAndPlotRPYt(theChanger,...
-    ['CHANGER (B) STATIC (R) DIFF (G) ' runName],false,'timeseries','-o');
+    ['CHANGER (B) STATIC (R) DIFF (G) ' runName],false,'plotStyle','-o');
 [two_roll,two_pitch,two_yaw,t] = ThreeD.getAndPlotRPYt(theStatic,...
-    ['SENSOR TWO ' runName],theFigure,'timeseries','--r*');
+    ['SENSOR TWO ' runName],theFigure,'plotStyle','--r*');
 %STILL NOT SURE WHY! should be:
 %diff_t = ThreeD.cellminus(theChanger,theStatic);
 diff_t = ThreeD.cellInverseMultiply(theChanger,theStatic);
 % notSureWhyDiff = ThreeD.cellMultiply(theChanger,theStatic); 
 [diff_roll,diff_pitch,diff_yaw,t] = ThreeD.getAndPlotRPYt(diff_t,...
-    ['SENSOR DIFFERENCE: ' runName ],theFigure,'timeseries','--go');
+    ['SENSOR DIFFERENCE: ' runName ],theFigure,'plotStyle','--go');
 % assertElementsAlmostEqual(diff_roll,zeros(1,...
 %     length(diff_roll)));
 % assertElementsAlmostEqual(diff_pitch,zeros(1,...
 %     length(diff_pitch)));
 % assertElementsAlmostEqual(max(abs(diff_yaw)),45,'relative',0.0001);
-rmserrorplot({diff_yaw},...
+RMSVector=rmserrorplot({diff_yaw},...
     {steeringAngle},['RMS ERROR: ' runName ...
     ': SteeringAngle'],true);
-
+assertTrue(all(RMSVector<3))
 
 function test_adams_rollpitchyaw_combined
 close all;

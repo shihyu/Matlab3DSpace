@@ -45,21 +45,21 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             plotSensor(point,style);
         end
         
-        function plotAngle(t,data,typeOfPlot,theLabel,plotStyle)
+        function plotAngle(t,data,plotType,theLabel,plotStyle)
             %PLOTANGLE Used in the plotRPY function.
-            %t is the time to plot against, data is the data and typeOfPlot
+            %t is the time to plot against, data is the data and plotType
             %is either 'normal' for plot, 'stem' for stem plot or
             %'timeseries' for timeseries plot.
-            if strcmp(typeOfPlot,'normal')==1
+            if strcmp(plotType,'normal')==1
                 plot(t,data);
-            elseif strcmp(typeOfPlot,'stem')==1
+            elseif strcmp(plotType,'stem')==1
                 stem(t,data);
-            elseif strcmp(typeOfPlot,'timeseries')==1
+            elseif strcmp(plotType,'timeseries')==1
                 ts = timeseries(data,t);
                 ts.TimeInfo.Units = theLabel;
                 ts.plot(plotStyle,'MarkerSize',5);
             else
-                error('ThreeD:plotAngleTypeNotCorrect',['The typeOfPlot'...
+                error('ThreeD:plotAngleTypeNotCorrect',['The plotType'...
                     ' should be either stem, normal or timeseries']);
             end
         end
@@ -146,6 +146,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             display('FINISHED SYNCING WITH RESPECT TO RPY');
         end
+        
         function [ data_1,data_2,corrValue] = synchronise(varargin)
             %SYNCHRONISE Performs simple cross-correlation synchronisation between two
             %signals using the metric_1 and metric_2 as the correlation signal.
@@ -261,9 +262,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             [corrValue]=max(R12);
             title(theTitle)
         end
-        
-     
-        
+            
         function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
             % SETSTARTTIME Sets the starttime of an object
             % Can be used to make objects of different sensors the same
@@ -285,10 +284,15 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             tm_t_new = tm_t(startSample:endSample);
         end
         
-        function [jointAngleTimestamps,jointAngle_t,jointAngleRoll,jointAnglePitch,jointAngleYaw,...
-                sensor1RollAngle,sensor1PitchAngle...
-                sensor1YawAngle,figures] = ...
-                getjointangles(sensor1_t,sensor2_t,angleName,callibrateStart)
+        function [jointAngle_t] = ...
+                getjointangles(sensor1_t,sensor2_t,angleName,...
+            callibrateStart,varargin)
+            p = inputParser;
+            p.addOptional('doPlot',false);
+            p.parse(varargin{:});
+            
+            doPlot= ...
+                p.Results.doPlot ;
             %GETJOINTANGLES Calculates the angles between two sensors. Sensor 1 is
             %the base sensor. Anglename is a name, so should be given
             %between '.
@@ -298,15 +302,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             jointAnglePlotStyle = '--m.';
             %ThreeD.plotRun([sensor1_t;sensor2_t]);
             figures =[];
-            [~,~,~,~,unCallibratedOrignalFigure]=...
+            if doPlot
                 ThreeD.getAndPlotRPYt(sensor2_t,...
-                ['GETJOINTANGLES: Uncalibrated original sensor position: Sensor 1(' sensor1Style...
-                ') Sensor 2 (' sensor2Style ')' ],false,'timeseries',sensor2Style);
-            figures = [figures unCallibratedOrignalFigure];
-            [sensor1RollAngle,sensor1PitchAngle,sensor1YawAngle,~]=...
+                    ['GETJOINTANGLES: Uncalibrated original sensor position: Sensor 1(' sensor1Style...
+                    ') Sensor 2 (' sensor2Style ')' ],false,'plotStyle',sensor2Style);
                 ThreeD.getAndPlotRPYt(sensor1_t,...
-                '',unCallibratedOrignalFigure,'timeseries',sensor1Style);
-            
+                    '',unCallibratedOrignalFigure,'plotStyle',sensor1Style);
+            end
             %joint Angle:
             % psiS = Steering Column Frame
             % psiR = Roll sensor frame, on the bicycle frame.
@@ -320,22 +322,18 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             % Thus joint_angle = H_SR
             % jointAngle_t = sensor1_t'*sensor2_t
             jointAngle_t = ThreeD.cellInverseMultiply(sensor1_t,sensor2_t);
-            
-            ThreeD.getAndPlotRPYt(jointAngle_t,...
-                ['GETJOINTANGLES: Calculated '  angleName '(un-callibrated).' ],...
-                false,'timeseries',jointAnglePlotStyle);
-            %Callibrate to see what happens! We want to make this frame the origin...
-            jointAngle_t = ThreeD.zeroTheRun(jointAngle_t,callibrateStart,30);
-            [jointAngleRoll,jointAnglePitch,jointAngleYaw,jointAngleTimestamps,steeringAnglePlot] = ...
+            if doPlot
                 ThreeD.getAndPlotRPYt(jointAngle_t,...
-                ['GETJOINTANGLES: Calulated '  angleName '(callibrated).' ],...
-                false,'timeseries',jointAnglePlotStyle);
-            figures = [figures steeringAnglePlot];
-            %Make sure they all have the same length.
-            minLength = min(length(jointAngleTimestamps),length(sensor1RollAngle));
-            sensor1RollAngle = sensor1RollAngle(1:minLength);
-            sensor1PitchAngle = sensor1PitchAngle(1:minLength);
-            sensor1YawAngle = sensor1YawAngle(1:minLength);
+                    ['GETJOINTANGLES: Calculated '  angleName '(un-callibrated).' ],...
+                    false,'plotStyle',jointAnglePlotStyle);
+            end
+            %Callibrate to see what happens! We want to make this frame the origin...
+%             jointAngle_t = ThreeD.zeroTheRun(jointAngle_t,callibrateStart,30);
+%             if doPlot
+%                 ThreeD.getAndPlotRPYt(jointAngle_t,...
+%                     ['GETJOINTANGLES: Calulated '  angleName '(callibrated).' ],...
+%                     false,'plotStyle',jointAnglePlotStyle);
+%             end
         end
         
         function [normedPoint] = normWithOffset(point,reference)
@@ -467,6 +465,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 diff{i} = obj1{i}'.*obj2{i};
             end
         end
+        
         function diff = cellMultiply(obj1,obj2)
             % cellMultiply Implement obj1*obj2 for ThreeD when using
             % cells.
@@ -504,7 +503,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
-        
         function [roll_t,pitch_t,yaw_t,t] = getRPYt(tm_t,varargin)
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
@@ -515,7 +513,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     num2str(tm_t)]);
             end
             p = inputParser;
-            addOptional(p,'inDegrees',0.0);
+            addOptional(p,'inDegrees',true);
             parse(p,varargin{:});
             inDegrees = p.Results.inDegrees;
             
@@ -541,10 +539,26 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 yaw_t);
         end
         
-        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot,plotStyle)
+        function plotRPY(roll,pitch,yaw,t,varargin)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs,t,type)
-            %Type
+            %
             %PLOT the Roll Pitch and Yaw for the run.
+            %OPTIONAL PARAMTERS:
+            % inDegrees - Plot using degrees.
+            % plotType - @see ThreeD.plotAngle()
+            % plotStyle - @see ThreeD.plotAngle()
+            p = inputParser;
+            p.addOptional('inDegrees',true);
+            p.addOptional('plotType','timeseries');
+            p.addOptional('plotStyle','--*b');
+            p.parse(varargin{:});
+            
+            inDegrees = ...
+                p.Results.inDegrees ;
+            plotType = ...
+                p.Results.plotType ;
+            plotStyle = ...
+                p.Results.plotStyle;
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
@@ -557,21 +571,21 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             XMIN = min(t);
             XMAX = max(t);
             subplot(3,1,1);
-            ThreeD.plotAngle(t,roll,typeOfPlot,YLABEL,plotStyle)
+            ThreeD.plotAngle(t,roll,plotType,YLABEL,plotStyle)
             hold on;
             grid on;
             %             xlim([XMIN XMAX])
-            title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
+            title(['ROLL(x): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             subplot(3,1,2);
-            ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL,plotStyle)
+            ThreeD.plotAngle(t,pitch,plotType,YLABEL,plotStyle)
             grid on;
             hold on;
             %             xlim([XMIN XMAX])
-            title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
+            title(['PITCH(y): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
             subplot(3,1,3);
-            ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL,plotStyle)
+            ThreeD.plotAngle(t,yaw,plotType,YLABEL,plotStyle)
             grid on;
             hold on;
             %             xlim([XMIN XMAX])
@@ -579,22 +593,30 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
             xlabel(XLABEL);
         end
-        function plotRS(roll,steer,inDegrees,Fs,varargin)
+        
+        function plotRS(roll,steer,Fs,varargin)
             %PLOTRPY(roll,steer,inDegrees,Fs,t,type)
             %Type
             %PLOT the Roll and Steering angle for the run.
+            p = inputParser;
+            p.addOptional('inDegrees',true);
+            p.addOptional('plotType','timeseries');
+            p.addOptional('t',-1);
+            p.parse(varargin{:});
+            
+            inDegrees = ...
+                p.Results.inDegrees;
+             plotType   = ...
+                p.Results.plotType ;
+             t = ...
+                p.Results.t ;
+            
             YMAX = max(max(abs(roll)),max(abs(steer)));
             YMIN=-YMAX;
-            typeOfPlot=1;
-            if length(varargin)>0
-                t = varargin{1};
-                if length(varargin)==2
-                    typeOfPlot=varargin{2};
-                end
-            else
+            if t == -1
                 minSize = length(roll);
                 t = 0:1/Fs:(minSize-1)/Fs;
-                typeOfPlot=0;
+                plotType=0;
             end
             if inDegrees
                 YLABEL='(degrees)';
@@ -608,14 +630,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             hold on;
             
             subplot(2,1,1);
-            ThreeMarkers.plotAngle(t,roll,typeOfPlot,YLABEL)
+            ThreeMarkers.plotAngle(t,roll,plotType,YLABEL)
             hold on;
             grid on;
             xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
             subplot(2,1,2);
-            ThreeMarkers.plotAngle(t,steer,typeOfPlot,YLABEL)
+            ThreeMarkers.plotAngle(t,steer,plotType,YLABEL)
             grid on;
             hold on;
             xlim([XMIN XMAX])
@@ -623,14 +645,12 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             ylabel(YLABEL);
         end
         
-        
         function [roll,pitch,yaw,t,theFigure] = ...
-                getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
-                plotStyle)
+                getAndPlotRPYt(theRun_t,theTitle,theFigure,varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
             % Set theFigure to the figure handler if you would like to plot
             % on the same figure or to false if you want a new figure.
-            [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);
+            [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t);
             if theFigure==false
                 theFigure = figure('visible','on','WindowStyle','docked',...
                     'Name',theTitle);
@@ -642,7 +662,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             t_diff = t-t_shift(1:length(t_shift)-1);
             Fs = mean(1./t_diff(2:length(t_diff)));
             %t = t - t(1);
-            ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
+            ThreeD.plotRPY(roll,pitch,yaw,t,...
+                varargin{:});
         end
         
         function [Fs,Variance] = estimateFsAndVariance(t)
@@ -765,23 +786,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
             t = quats.Time;
         end
-        
-        
-        %         function [vtm_g] = FillGaps(vtm_t ,t_wanted, gapArray, maxGap)
-        %             %FILLGAPS is used to count the gaps in a data array.
-        %             % And afterwards fill them with resampling.
-        %             N = length(gapArray);
-        %             parfor iGap = 1:N; % loop all the gaps
-        %                 isAtBeginning = gapArray(iGap) == 1; % check if the gap is at the beginning
-        %                 isAtEnd = gapArray(iGap) == length(vtm_t); % check if the gap is at the end
-        %                 isTooLarge = gapArray(iGap+1) - gapArray(iGap) > maxGap; % gap is too large to interpolate
-        %                 if ~isAtBeginning && ~isAtEnd && ~isTooLarge % only interpolate if none of these conditions are true
-        %                     [vtm_g, t] = ThreeD.resample(vtm_t,t_wanted);
-        %                 else vtm_g = vtm_t
-        %                     warning('ThreeD:FillGaps','Dropped markers is more than 5 percent');
-        %                 end
-        %             end
-        %         end
         
         function [tm_t] = changeStartTime(tm_t,newStartTime)
             %CHANGESTARTTIME(tm_t,newStartTime) Change the run to have the
@@ -907,10 +911,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %GETRPY(tm,inDegrees) Gets the Roll Pitch and Yaw of the
             %object, set inDegrees to true to get the values in degrees.
             euler = quaternion2euler(tm.getQ,inDegrees,'xyz');
-            %             euler = invrpy(tm.getH);
-            %             if inDegrees
-            %                 euler = euler/pi*180;
-            %             end
+            %Adams uses zxz.
+            %euler = quaternion2euler(tm.getQ,inDegrees,'zxz');
         end
         
         function [quaternion]=getQ(tm)

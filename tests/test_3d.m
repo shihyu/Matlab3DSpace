@@ -129,14 +129,46 @@ assertEqual([1 0 0 2 0 0 1],...
     result2);
 assertEqual(result1,[ 1 0 0 8 0 0 1 0 0 2 0 0 1 0 1 1 3]);
 
-% function test_getbicycleangles
-% filename='test-data/test-data.h5';
-% runName = 'testrun';
-% figures = [];
-% [roll_angle,steering_angle] = getbicycleangles(...
-%     figures,...
-%     filename,runName,...
-%     200,200,1,2,1,0,false,0);
+function test_getjointangles
+filename='test-data/test-data.h5';
+runName='adamslongrun';
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBO','LBO','FON','adams',true);
+steering_t = ...
+    Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
+[rawData] = RawMarkers.readFromFile(filename,...
+    runName,'RBT','LBT','FTN','adams',true);
+roll_t = ...
+    Markers3D.create3DMarkersFromRawData(rawData,'adams',true);
+
+reader = adamsReader(filename,runName);
+adamsData = reader.readData(false);
+
+steerSensorPlotStyle = '--ob';
+rollPlotStyle = '--or';
+steerAnglePlotStyle = '--om';
+%ThreeD.plotRun([roll_t;steering_t]);
+callibrateStart=1;
+[steeringAngle_t] = ...
+    ThreeD.getjointangles(roll_t,steering_t,'STEERING',callibrateStart);
+%And the steering angle sits in the yaw access.
+jointAnglePlotStyle = '--m.';
+[~,~,steer_yaw] = ...
+    ThreeD.getAndPlotRPYt(steeringAngle_t,...
+                    'Joint Yaw Angle=>Steer on bike',...
+                    false,'plotStyle',jointAnglePlotStyle);
+[~,~,ErrorVector] =...
+    rmserrorplot({steer_yaw},{adamsData.Steeringangle'},...
+        ['RMS ERROR: ' runName ...
+    ': SteeringAngle'],true)
+assertTrue(all(abs(ErrorVector{1})<0.15));
+[roll_roll] = ...
+    ThreeD.getAndPlotRPYt(roll_t,...
+                    'Roll Sensor Roll Angle',...
+                    false,'plotStyle',jointAnglePlotStyle);
+[~,~,ErrorVector]=rmserrorplot({roll_roll},{adamsData.rollangle'},['RMS ERROR: ' runName ...
+    ': ROLL ANGLE'],true);
+assertTrue(all(abs(ErrorVector{1})<1e-2));
 
 function test_synchroniseWithRespectToRPY
 filename='./test-data/test-data.h5'
@@ -167,10 +199,10 @@ figure
 minSize = min(length(steering_t),length(roll_t));
 ThreeD.plotRPY(...
     roll_r(1:minSize),pitch_r(1:minSize),yaw_r(1:minSize),t(1:minSize),...
-    true,'timeseries','--g');
+    'plotStyle','--g');
 ThreeD.plotRPY(...
     roll_s(1:minSize),pitch_s(1:minSize),yaw_s(1:minSize),...
-    t_s(1:minSize),true,'timeseries','--r');
+    t_s(1:minSize),'plotStyle','--r');
 
 function test_normWithOffset
 if ([0 0 0]-[0 0 0] <= repmat(eps, size([0 0 0])))
@@ -195,15 +227,19 @@ rightback = [0 1  0];
 leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.4;
-cvt = Markers3D(rightback,...
-    leftback,front,theTimestamp);
+cvt = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
 rightback = [0 1  0];
 leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.5;
 theQuat = cvt.getQ;
-cvt2 = Markers3D(rightback,...
-    leftback,front,theTimestamp);
+cvt2 = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
 tm_t = {cvt,cvt2,cvt2};
 [tm_t,t] = ThreeD.resample(tm_t,[2.43,2.45]);
 t
@@ -226,8 +262,10 @@ rightback = [0 1  0];
 leftback = [0 -1  0];
 front = [1 0  0];
 theTimestamp = 2.4;
-cvt = Markers3D(rightback,...
-    leftback,front,theTimestamp);
+cvt = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
 assertEqual(cvt.getTimestamp(),2.4);
 assertEqual(cvt.get0,[0 0 1 0; -1 1 0  0; 0 0 0 1; 1 1 1 1]);
 cvt1 = cvt;
@@ -448,8 +486,8 @@ assertElementsAlmostEqual(vtm_t{1}.getTimestamp, 1.743399479347263e+05);
 diff_t = ThreeD.cellminus(vtm_t(1:3),vtm_t(1:3));
 [roll,pitch,yaw,t]=ThreeD.getRPYt(...
     diff_t,true);
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal','--b');
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'stem','--b');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'plotType','normal','plotStyle','--b');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'plotType','stem','plotStyle','--b');
 assertEqual(t(1),diff_t{1}.getTimestamp);
 assertElementsAlmostEqual(diff_t{1}.getTimestamp, 1.743399479347263e+05);
 
@@ -477,7 +515,8 @@ assertTrue(pitch(1)~=0);
 assertTrue(roll(1)~=0);
 assertEqual(size(roll),size(pitch),size(yaw));
 figure
-ThreeD.plotRPY(roll,pitch,yaw,t,true,'normal','--b');
+ThreeD.plotRPY(roll,pitch,yaw,t,true,'plotType',...
+    'normal','plotStyle','--b');
 
 
 function test_callibrate
@@ -524,9 +563,9 @@ qvt4 = qvt2.setTimestamp(11.4);
 q1_t= {qvt1,qvt2};
 q2_t= {qvt3,qvt4};
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q1_t,...
-    'TEST',false,'timeseries','--b')
+    'TEST',false,'plotStyle','--b')
 [roll,pitch,yaw,t,theFigure] = ThreeD.getAndPlotRPYt(q2_t,...
-    'TEST AGAIN',theFigure,'timeseries','--b')
+    'TEST AGAIN',theFigure,'plotStyle','--b')
 
 function test_sortAccordingToTimestamp(t,tm_t)
 q = [3 2 4 1];
