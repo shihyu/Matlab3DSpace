@@ -58,8 +58,7 @@ classdef RawMarkers
             
             if plotTheDistances
                 figure;
-                subplot(3,3,1);
-                plot(RBLB')
+                boxplot([RBLB;RBFT;FTLB])
             end
             
             distances = [RBLB,RBFT,FTLB];
@@ -68,13 +67,25 @@ classdef RawMarkers
             yesOrNo = yesOrNo<= lengthThreshold;
         end
         
-        function [yesOrNoAll,yesOrNoSome] = ...
+        function [yesOrNoAll,yesOrNoSome,yesOrNoOutlier] = ...
                 areMarkersDropped(rawData,varargin)
             %areMarkersDropped  To test for dropped markers
-            %or bad measurements.
+            %or bad measurements. Markers are Dropped when they are all
+            %zero or Nan or when some of them are (in the raw markerdata
+            %matrix of 9 columns (x,y,z of the three markers)).
+            %Also it is checked if they contain outliers
+            
             yesOrNoAll = RawMarkers.isNanOrZero(rawData(:,1:9));
             yesOrNoSome = RawMarkers.isNanOrZero(rawData(:,1:9),...
                 'allOrSome',false);
+                  
+            for i = 1:9
+                markerOutliers = RawMarkers.findOutliers(rawData(:,i));
+            end
+        
+            yesOrNoOutlier = RawMarkers.isNanOrZero(markerOutliers,...
+                'allOrSome',false);
+            
             
             p = inputParser;
             addOptional(p,'yesOrNoPlot',false);
@@ -87,15 +98,19 @@ classdef RawMarkers
             
             if yesOrNoPlot
                 yesOrNoAll=double(yesOrNoAll);
-                yesOrNoSome=double(yesOrNoSome);
+                yesOrNoSome=double(yesOrNoSome); 
+                yesOrNoOutlier=double(yesOrNoOutlier);                
                 yesOrNoAll(yesOrNoAll==0)=NaN; %set all zeroes to NaN
-                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN
+                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN 
+                yesOrNoOutlier(yesOrNoOutlier==0)=NaN; %set all zeroes to NaN 
+
                 
                 subplot(3,1,1);
                 plot(rawData(:,10),rawData(:,1:3), '--*b');
                 hold on
                 plot(rawData(:,10),yesOrNoAll(:,1), '*r');
                 plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
                 title([sensorName '- Right Back raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
@@ -105,6 +120,7 @@ classdef RawMarkers
                 hold on
                 plot(rawData(:,10),yesOrNoAll(:,1), '*r');
                 plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
                 title([sensorName '- Left Back raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
@@ -114,6 +130,7 @@ classdef RawMarkers
                 hold on
                 plot(rawData(:,10),yesOrNoAll(:,1), '*r');
                 plot(rawData(:,10),yesOrNoSome(:,1), '*g');
+                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
                 title([sensorName '- front raw data with dropped samples']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
@@ -202,12 +219,15 @@ classdef RawMarkers
             addOptional(p,'maxVeljump',1000); %max velocity jump in mm/sec
             addOptional(p,'Fs',100);
             addOptional(p,'plotOrNot',false);
+            addOptional(p,'sensorName','sensorName');
             parse(p,varargin{:});
+            
             maxGap = p.Results.maxGap;
             interpMethod = p.Results.interpMethod;
             maxVeljump = p.Results.maxVeljump;
             Fs = p.Results.Fs;
             plotOrNot = p.Results.plotOrNot;
+            sensorName = p.Results.sensorName;
             
             interpData = zeros(length(rawData(:,1)),10);
             for i = 1:9
@@ -217,11 +237,11 @@ classdef RawMarkers
             interpData(:,10) = rawData(:,10);
             if plotOrNot
                 for i = 1:9
-                    subplot(9,3,i)
+                    subplot(3,3,i)
                     plot(rawData(:,10),rawData(:,i), '--*b');
                     hold on
                     plot(rawData(:,10),interpData(:,i), '*r');
-                    title([rightBackName '- raw data and interpolated data']);
+                    title([sensorName '- raw data and interpolated data']);
                     xlabel('Time (sec)');
                     ylabel('Distance (mm)');
                 end
