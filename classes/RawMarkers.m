@@ -3,21 +3,25 @@ classdef RawMarkers
     % of raw C3D Three Marker data from SofieHDFFormat.
     % Various proxessing
     methods(Static)
-        function [marker1n,marker2n,marker3n] = eraseNan(marker1,marker2,marker3)
-            N=size(marker1,1);
+        function [rawDataNanErased, t_beforeErased] = eraseNan(rawData)
+            N=size(rawData,1);
+            CountDroppedQuaternions = 0;
+            rawDataNanErased = [];
             for i = 1:N
-                if (any(isnan(marker1(i,1:4)))) || ...
-                        (any(isnan(marker2(i,1:4)))) || ...
-                        (any(isnan(marker3(i,1:4))))
-                    marker1n(i,1:4) =0;
-                    marker2n(i,1:4) =0;
-                    marker3n(i,1:4) =0;
-                else marker1n(i,:) = marker1(i,:);
-                    marker2n(i,:) = marker2(i,:);
-                    marker3n(i,:) = marker3(i,:);
+                if (any(isnan(rawData(i,1:10))))
+                    CountDroppedQuaternions = CountDroppedQuaternions +1;
+                    
+                else rawDataNanErased2 = rawData(i,1:10) ;
+                    rawDataNanErased = [ rawDataNanErased;rawDataNanErased2];
                 end
             end
+            display(['Dropped Quaternions =', num2str(CountDroppedQuaternions)]);
+            if ((CountDroppedQuaternions/N)*100) > 5
+                warning('Markers3D:readDataVicon','Dropped Quaternions is more than 5 percent');
+            end
+            t_beforeErased = rawData(:,10);
         end
+        
         function [yesOrNo] = isNanOrZero(marker,varargin)
             p = inputParser;
             addOptional(p,'allOrSome',true);
@@ -37,34 +41,101 @@ classdef RawMarkers
             end
         end
         
+        function [spacedData] = removeNotWellSpaced(rawData,...
+                yesOrNoSpaced)
+            
+            countNotWellSpaced =0;
+            spacedData = zeros(size(rawData));
+            N = size(rawData,1);
+            for i = 1:N
+                if yesOrNoSpaced(i)==0;
+                    spacedData(i,1:9)=NaN;
+                    countNotWellSpaced = countNotWellSpaced +1;
+                else spacedData(i,1:9)=rawData(i,1:9);
+                end
+            end
+            spacedData(:,10)=rawData(:,10);
+            display(['Number of Not-well-spaced triangles =', num2str(countNotWellSpaced)]);
+            if ((countNotWellSpaced/N)*100) > 5
+                warning('RawMarkers:removeNotWellSpaced','Dropped Quaternions is more than 5 percent');
+            end
+        end
+        
         function [yesOrNo,distances]=...
                 areTheMarkersWellSpaced(rawData,varargin)
             %areTheMarkersWellSpaced Tests to see if the markers
             %are in a good triangle.
             % RETURNS
             % yesOrNo = [RBLB-RBFT,RBLB-FTLB,FTLB-RBLT];
+            % or when withRespectToMean is true:
+            % yesOrNo = [mRBLB-RBLB,mRBFT-RBFT,mFTLB-FTLB];
             % distances = [RBLB,RBFT,FTLB]
             p = inputParser;
             addOptional(p,'lengthThreshold',14.0);
             addOptional(p,'plotTheDistances',false);
+            addOptional(p,'sensorName','sensorName');
+            addOptional(p,'plotBoxPlot',false);
+            addOptional(p,'withRespectToMean',false)
+            
             parse(p,varargin{:});
             lengthThreshold = p.Results.lengthThreshold;
             plotTheDistances = p.Results.plotTheDistances;
+            sensorName = p.Results.sensorName;
+            plotBoxPlot = p.Results.plotBoxPlot;
+            withRespectToMean = p.Results.withRespectToMean;
             
-            RBLB = sqrt(sum((rawData(:,1:3) - rawData(:,4:6)).^2,2))
-            RBFT = sqrt(sum((rawData(:,1:3) - rawData(:,7:9)).^2,2))
-            FTLB = sqrt(sum((rawData(:,7:9) - rawData(:,4:6)).^2,2))
-
-            
-            if plotTheDistances
-                figure;
-                boxplot([RBLB;RBFT;FTLB])
-            end
+            RBLB = sqrt(sum((rawData(:,1:3) - rawData(:,4:6)).^2,2));
+            RBFT = sqrt(sum((rawData(:,1:3) - rawData(:,7:9)).^2,2));
+            FTLB = sqrt(sum((rawData(:,7:9) - rawData(:,4:6)).^2,2));
             
             distances = [RBLB,RBFT,FTLB];
-            yesOrNo = [abs(RBLB - RBFT),abs(RBLB - FTLB),...
-                abs(FTLB - RBFT)];
-            yesOrNo = yesOrNo<= lengthThreshold;
+            mRBLB = nanmean(RBLB);
+            mRBFT = nanmean(RBFT);
+            mFTLB = nanmean(FTLB);
+            
+            
+            if withRespectToMean
+                yesOrNo = [abs(mRBLB - RBLB),abs(mRBFT-RBFT),...
+                    abs(mFTLB-FTLB)];
+                yesOrNo = yesOrNo<= lengthThreshold;
+            else
+                yesOrNo = [abs(mRBLB - RBFT),abs(RBLB - FTLB),...
+                    abs(FTLB - RBFT)];
+                yesOrNo = yesOrNo<= lengthThreshold;
+            end
+            %yesOrNo = RawMarkers.isNanOrZero(rawData(:,1:9));
+            
+            if plotBoxPlot
+                figure('visible','on','WindowStyle','docked',...
+                    'Name',[sensorName '- Boxplot of lengths of the sides of the triangle']);
+                boxplot([RBLB,FTLB,RBFT],'labels',{['RBLB - mean is = ' num2str(nanmean(RBLB))],...
+                    ['FTLB - mean = ' num2str(nanmean(FTLB))],['RBFT - mean = ' num2str(nanmean(RBFT))]});
+                grid on;
+                ylabel('Absolute length of the triangle side in mm.')
+            end
+            if plotTheDistances
+                figure('visible','on','WindowStyle','docked',...
+                    'Name',[sensorName '- Lengths of the sides of the triangle over time']);
+                plot(rawData(:,10),distances,'-*');
+                                yesOrNoPlot=double(yesOrNo);
+                                yesOrNoPlot(yesOrNoPlot==1)=NaN;
+                                yesOrNoPlot=yesOrNoPlot+mRBLB;
+                                hold on
+                plot(rawData(:,10),yesOrNoPlot, 'sm');
+                legend('RBLB','RBFT','FTLB','Outlier');
+                hold on
+                ymin = 0;
+                ymax = 80;
+               % ylim([ymin ymax]);
+                hline=(refline([0,mRBLB])); hline2=(refline([0,mRBFT]));
+                hline3=(refline([0,mFTLB]));
+                set(hline,'Color', 'b','LineWidth',2); set(hline2,'Color', 'g','LineWidth',2);
+                set(hline3,'Color', 'r','LineWidth',2);
+                grid on;
+                ylabel('Absolute length of the triangle side in mm.')
+                xlabel('Time in sec.')
+                title(['Lengths of the triangle sides plotted against the time, threshold = ' num2str(lengthThreshold) ' mm']);
+            end
         end
         
         function [yesOrNoAll,yesOrNoSome,yesOrNoOutlier] = ...
@@ -75,63 +146,83 @@ classdef RawMarkers
             %matrix of 9 columns (x,y,z of the three markers)).
             %Also it is checked if they contain outliers
             
-            yesOrNoAll = RawMarkers.isNanOrZero(rawData(:,1:9));
-            yesOrNoSome = RawMarkers.isNanOrZero(rawData(:,1:9),...
-                'allOrSome',false);
-                  
-            for i = 1:9
-                markerOutliers = RawMarkers.findOutliers(rawData(:,i));
-            end
-        
-            yesOrNoOutlier = RawMarkers.isNanOrZero(markerOutliers,...
-                'allOrSome',false);
-            
-            
             p = inputParser;
             addOptional(p,'yesOrNoPlot',false);
             addOptional(p,'sensorName','sensorName');
             addOptional(p,'keepColumnLogicResult',false);
+            addOptional(p,'maxVelJump',1000.0);
+            addOptional(p,'Fs',100);            
             parse(p,varargin{:});
             yesOrNoPlot = p.Results.yesOrNoPlot;
             sensorName = p.Results.sensorName;
             keepColumnLogicResult = p.Results.keepColumnLogicResult;
+            maxVelJump = p.Results.maxVelJump;
+            Fs = p.Results.Fs
+            
+            yesOrNoAll = RawMarkers.isNanOrZero(rawData(:,1:9));
+            yesOrNoSome = RawMarkers.isNanOrZero(rawData(:,1:9),...
+                'allOrSome',false);
+            
+            for i = 1:9
+                markerOutliers = RawMarkers.findOutliers(rawData(:,i),'maxVelJump',...
+                    maxVelJump,'Fs', Fs);
+            end
+            
+            yesOrNoOutlier = RawMarkers.isNanOrZero(markerOutliers,...
+                'allOrSome',false);
+            
             
             if yesOrNoPlot
                 yesOrNoAll=double(yesOrNoAll);
-                yesOrNoSome=double(yesOrNoSome); 
-                yesOrNoOutlier=double(yesOrNoOutlier);                
+                yesOrNoSome=double(yesOrNoSome);
+                yesOrNoOutlier=double(yesOrNoOutlier);
+
                 yesOrNoAll(yesOrNoAll==0)=NaN; %set all zeroes to NaN
-                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN 
-                yesOrNoOutlier(yesOrNoOutlier==0)=NaN; %set all zeroes to NaN 
+                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN
+                yesOrNoOutlier(yesOrNoOutlier==0)=NaN; %set all zeroes to NaN
 
                 
+                figure('visible','on','WindowStyle','docked',...
+                    'Name',[sensorName ' - raw Data with dropped samples']);
+                
                 subplot(3,1,1);
-                plot(rawData(:,10),rawData(:,1:3), '--*b');
+                plot(rawData(:,10),rawData(:,1), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
-                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
-                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
-                title([sensorName '- Right Back raw data with dropped samples']);
+                plot(rawData(:,10),rawData(:,2), '--*k');
+                plot(rawData(:,10),rawData(:,3), '--*c');
+                plot(rawData(:,10),yesOrNoAll, 'sr');
+                plot(rawData(:,10),yesOrNoSome, 'og');
+                plot(rawData(:,10),yesOrNoOutlier, '<m');
+                %  plot(rawData(:,10),yesOrNoSpaced(:,1), '+y');
+                title([sensorName '- Right Back']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
+                legend('raw Data x','raw Data y','raw Data z','all NaN or Zero',...
+                    'some NaN or Zero', 'some Outliers');
                 
                 subplot(3,1,2);
-                plot(rawData(:,10),rawData(:,4:6), '--*b');
+                plot(rawData(:,10),rawData(:,4), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
-                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
-                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
-                title([sensorName '- Left Back raw data with dropped samples']);
+                plot(rawData(:,10),rawData(:,5), '--*k');
+                plot(rawData(:,10),rawData(:,6), '--*c');
+                plot(rawData(:,10),yesOrNoAll, 'sr');
+                plot(rawData(:,10),yesOrNoSome, 'og');
+                plot(rawData(:,10),yesOrNoOutlier, '<m');
+                %  plot(rawData(:,10),yesOrNoSpaced(:,1), '+y');
+                title([sensorName '- Left Back']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
                 
                 subplot(3,1,3);
-                plot(rawData(:,10),rawData(:,7:9), '--*b');
+                plot(rawData(:,10),rawData(:,7), '--*b');
                 hold on
-                plot(rawData(:,10),yesOrNoAll(:,1), '*r');
-                plot(rawData(:,10),yesOrNoSome(:,1), '*g');
-                plot(rawData(:,10),yesOrNoOutlier(:,1), '*m');                
-                title([sensorName '- front raw data with dropped samples']);
+                plot(rawData(:,10),rawData(:,8), '--*k');
+                plot(rawData(:,10),rawData(:,9), '--*c');
+                plot(rawData(:,10),yesOrNoAll, 'sr');
+                plot(rawData(:,10),yesOrNoSome, 'og');
+                plot(rawData(:,10),yesOrNoOutlier, '<m');
+                % plot(rawData(:,10),yesOrNoSpaced(:,1), '+y');
+                title([sensorName '- front']);
                 xlabel('Time (sec)');
                 ylabel('Distance (mm)');
             end
@@ -158,10 +249,9 @@ classdef RawMarkers
             markerData = markerData'; % make it a row array
             jumpLeft = markerData - markerData(:, [2 1:end-1]); % derivative on the left side
             jumpRight = markerData(:, [2:end end-1]) - markerData; % derivative on the right side
-            
-            isJumpLeft = any(~(abs(jumpLeft) < maxVeljump*dt)); % jump on the leftside ~ is used to also include NaN as positive result
-            isJumpright = any(~(abs(jumpRight) < maxVeljump*dt)); % jump on the right side
-            isOpposite = any(sign(jumpLeft) ~= sign(jumpRight)); % jumps are opposite
+            isJumpLeft = (~(abs(jumpLeft) < maxVeljump*dt)); % jump on the leftside ~ is used to also include NaN as positive result
+            isJumpright = (~(abs(jumpRight) < maxVeljump*dt)); % jump on the right side
+            isOpposite = (sign(jumpLeft) ~= sign(jumpRight)); % jumps are opposite
             
             markerData(:, isJumpLeft & isJumpright & isOpposite) = NaN;
             
@@ -208,63 +298,96 @@ classdef RawMarkers
             filMarkers = markerOutliers';
         end
         
-        function [interpData,gapArrayMarker] = findFillGaps(rawData,varargin)
-            %FINDFILLGAPS loops over the 9 columns of the matrix rawData...
-            %finds the gaps and outliers and
-            %fills the gaps, using interpolation
-            
+        function [interpData] = interpolateGaps(gapData,rawData,varargin)
+            %INTERPOLATEGAPS interpolates the gaps in the matrix gapData
+            %It uses the function fillGaps and loops over the 9 columns of
+            %the matrix
             p = inputParser;
             addOptional(p,'maxGap',10); %max gap to interpolate
             addOptional(p,'interpMethod', 'linear');
-            addOptional(p,'maxVeljump',1000); %max velocity jump in mm/sec
-            addOptional(p,'Fs',100);
             addOptional(p,'plotOrNot',false);
             addOptional(p,'sensorName','sensorName');
             parse(p,varargin{:});
-            
             maxGap = p.Results.maxGap;
             interpMethod = p.Results.interpMethod;
-            maxVeljump = p.Results.maxVeljump;
-            Fs = p.Results.Fs;
             plotOrNot = p.Results.plotOrNot;
             sensorName = p.Results.sensorName;
             
-            interpData = zeros(length(rawData(:,1)),10);
+            interpData = zeros(length(gapData(:,1)),10);
             for i = 1:9
-                markerOutliers = RawMarkers.findOutliers(rawData(:,i));
-                [interpData(:,i),gapArrayMarker] = RawMarkers.fillGaps(markerOutliers);
+                [interpData(:,i),gapArrayMarker] = RawMarkers.fillGaps(gapData(:,i));
+                %  [interpData(:,i),gapArrayMarker] = RawMarkers.fillGaps(markerOutliers);
             end
-            interpData(:,10) = rawData(:,10);
+            interpData(:,10) = gapData(:,10);
+            
             if plotOrNot
+                figure('visible','on','WindowStyle','docked',...
+                    'Name',[sensorName,'Raw data and interpolated data']);
+                
                 for i = 1:9
                     subplot(3,3,i)
                     plot(rawData(:,10),rawData(:,i), '--*b');
                     hold on
-                    plot(rawData(:,10),interpData(:,i), '*r');
-                    title([sensorName '- raw data and interpolated data']);
+                    plot(rawData(:,10),interpData(:,i), 'sr');
                     xlabel('Time (sec)');
                     ylabel('Distance (mm)');
+                    
                 end
             end
+        end
+        
+        
+        
+        function [gapData] = findGaps(rawData)
+            %FINDFILLGAPS loops over the 9 columns of the matrix rawData...
+            %finds the gaps and outliers and remove them by making them NaN
+            
+            gapData = zeros(length(rawData(:,1)),10);
+            for i = 1:9
+                gapData(:,i) = RawMarkers.findOutliers(rawData(:,i));
+            end
+            gapData(:,10) = rawData(:,10);
         end
         
         function [rawDataFilt] = filterRawData(rawData,varargin)
             %filterRawData filters the [N,10] rawData matrix calling
             %the function filterMarkerData
+            p = inputParser;
             addOptional(p,'freqLowPass',15);
             addOptional(p,'orderLowPass',4);
             addOptional(p,'Fs',100);
+            addOptional(p,'plotOrNot',false);
+            addOptional(p,'sensorName','sensorName');
             parse(p,varargin{:});
             freqLowPass = p.Results.freqLowPass;
             orderLowPass = p.Results.orderLowPass;
             Fs = p.Results.Fs;
+            plotOrNot = p.Results.plotOrNot;
+            sensorName = p.Results.sensorName;
             
             rawDataFilt = zeros(length(rawData(:,1)),10);
             for i = 1:9
-                markerOutliers = RawMarkers.filterMarkerData(rawData(:,i));
-                rawDataFilt(:,i) = RawMarkers.fillGaps(markerOutliers);
+                rawDataFilt(:,i) = RawMarkers.filterMarkerData(rawData(:,i));
             end
-            rawDataFilt(:,10) = rawDataFilt(:,10);
+            rawDataFilt(:,10) = rawData(:,10);
+            %rawDataFilt
+            if plotOrNot
+                figure('visible','on','WindowStyle','docked',...
+                    'Name',[sensorName,'Interpolated and filtered data']);
+                for i = 1:9
+                    subplot(3,3,i)
+                    plot(rawData(:,10),rawData(:,i), '--*b');
+                    hold on
+                    plot(rawData(:,10),rawDataFilt(:,i), '-r', 'LineWidth', 3);
+                    %title([sensorName '- raw data and filter data']);
+                    xlabel('Time (sec)');
+                    ylabel('Distance (mm)');
+                end
+            end
+            
+            
+            
+            
         end
         
         function [markerFilt] = filterMarkerData(markerData,varargin)
@@ -284,9 +407,13 @@ classdef RawMarkers
             orderLowPass = p.Results.orderLowPass;
             Fs = p.Results.Fs;
             
+            display(['Data filtered with butterworth low pass filter', ' - freqLowPass = ', num2str(freqLowPass)...
+                , 'orderLowPass =', num2str(orderLowPass)]);
             
+            
+            markerData = markerData';
             dt = 1/Fs;
-            markerFilt = nan(size(markerData)); % NaN matrix for the marker data
+            markerFilt = nan(size(markerData)); % NaN vector for the marker data
             omegaLow = 2 * freqLowPass * dt;
             [B, A]=butter(orderLowPass, omegaLow, 'low'); % Butterworth filter
             % make a n x 2 matrix containg on every row the beginning and the ending of
@@ -300,8 +427,8 @@ classdef RawMarkers
                         filtfilt(B, A, markerData(:, dataArray(iData,1) : dataArray(iData,2))')';
                 end
             end
-            display(['Data filtered with butterworth low pas filter', 'freqLowPass =', num2str(freqLowPass)...
-                , 'orderLowPass =', num2str(orderLowPass)]);
+            markerFilt = markerFilt';
+            
         end
         
         

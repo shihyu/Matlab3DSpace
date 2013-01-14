@@ -262,7 +262,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             title(theTitle)
         end
         
-     
+        
         
         function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
             % SETSTARTTIME Sets the starttime of an object
@@ -272,7 +272,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             integerTest = startTime/t_step;
             integerTest2 = endTime/t_step;
             if ~mod(integerTest,1) ==0 || ~mod(integerTest2,1) ==0
-                    warning('starting or ending sample is not dividable by the time step')
+                warning('starting or ending sample is not dividable by the time step')
             end
             [b, startSample] = min(abs(t - startTime));
             [b, endSample] = min(abs(t - endTime));
@@ -504,7 +504,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
-        
+      
         function [roll_t,pitch_t,yaw_t,t] = getRPYt(tm_t,varargin)
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
@@ -541,10 +541,26 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 yaw_t);
         end
         
-        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot,plotStyle)
+        function plotRPY(roll,pitch,yaw,t,inDegrees,typeOfPlot,plotStyle,varargin)
             %PLOTRPY(roll,pitch,yaw,inDegrees,Fs,t,type)
             %Type
             %PLOT the Roll Pitch and Yaw for the run.
+            p = inputParser;
+            addOptional(p,'plotDropped',false);
+            addOptional(p,'yesOrNoAll',[]);
+            addOptional(p,'yesOrNoSome',[]);
+            addOptional(p,'yesOrNoOutlier',[]);
+            addOptional(p,'yesOrNoWellSpaced',[]);
+            addOptional(p,'t_Original',[]);
+            parse(p,varargin{:});
+            plotDropped = p.Results.plotDropped;
+            yesOrNoAll = p.Results.yesOrNoAll;
+            yesOrNoSome = p.Results.yesOrNoSome;
+            yesOrNoOutlier =p.Results.yesOrNoOutlier;
+            yesOrNoWellSpaced = p.Results.yesOrNoWellSpaced;
+            t_Original = p.Results.t_Original;
+            
+            
             YMAX = max(max(abs(roll)),max(abs(pitch)));
             YMAX = max(YMAX,max(abs(yaw)));
             YMIN=-YMAX;
@@ -563,6 +579,23 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %             xlim([XMIN XMAX])
             title(['ROLL(y): maximum angle: ' num2str(max(abs(roll)))]);
             ylabel(YLABEL);
+            if plotDropped
+                yesOrNoAll=double(yesOrNoAll);
+                yesOrNoSome=double(yesOrNoSome);
+                yesOrNoOutlier=double(yesOrNoOutlier);
+                yesOrNoWellSpaced=double(yesOrNoWellSpaced);
+                yesOrNoAll(yesOrNoAll==0)=NaN; %set all zeroes to NaN
+                yesOrNoSome(yesOrNoSome==0)=NaN; %set all zeroes to NaN
+                yesOrNoOutlier(yesOrNoOutlier==0)=NaN; %set all zeroes to NaN
+                yesOrNoWellSpaced(yesOrNoWellSpaced==1)=NaN;
+                
+                plot(t_Original,yesOrNoAll, 'sr');
+                plot(t_Original,yesOrNoSome, 'xg');
+                plot(t_Original,yesOrNoOutlier, '<m');
+                plot(t_Original,yesOrNoWellSpaced, '+y');
+                legend('Roll','all NaN or Zero',...
+                    'some NaN or Zero', 'some Outliers', 'Not well spaced');
+            end
             subplot(3,1,2);
             ThreeD.plotAngle(t,pitch,typeOfPlot,YLABEL,plotStyle)
             grid on;
@@ -570,6 +603,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %             xlim([XMIN XMAX])
             title(['PITCH(x): maximum angle: ' num2str(max(abs(pitch)))]);
             ylabel(YLABEL);
+            if plotDropped
+                plot(t_Original,yesOrNoAll, 'sr');
+                plot(t_Original,yesOrNoSome, 'xg');
+                plot(t_Original,yesOrNoOutlier, '<m');
+                plot(t_Original,yesOrNoWellSpaced, '+y');
+                legend('Pitch','all NaN or Zero',...
+                    'some NaN or Zero', 'some Outliers', 'Not well spaced');
+            end
             subplot(3,1,3);
             ThreeD.plotAngle(t,yaw,typeOfPlot,YLABEL,plotStyle)
             grid on;
@@ -578,6 +619,15 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             title(['YAW(z): maximum angle: ' num2str(max(abs(yaw)))]);
             ylabel(YLABEL);
             xlabel(XLABEL);
+            if plotDropped
+                plot(t_Original,yesOrNoAll, 'sr');
+                plot(t_Original,yesOrNoSome, 'xg');
+                plot(t_Original,yesOrNoOutlier, '<m');
+                plot(t_Original,yesOrNoWellSpaced, '+y');
+                legend('Yaw','all NaN or Zero',...
+                    'some NaN or Zero', 'some Outliers', 'Not well spaced');
+            end
+            
         end
         function plotRS(roll,steer,inDegrees,Fs,varargin)
             %PLOTRPY(roll,steer,inDegrees,Fs,t,type)
@@ -626,10 +676,26 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         
         function [roll,pitch,yaw,t,theFigure] = ...
                 getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
-                plotStyle)
+                plotStyle,varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
             % Set theFigure to the figure handler if you would like to plot
             % on the same figure or to false if you want a new figure.
+            p = inputParser;
+            addOptional(p,'plotDropped',false);
+            addOptional(p,'yesOrNoAll',[]);
+            addOptional(p,'yesOrNoSome',[]);
+            addOptional(p,'yesOrNoOutlier',[]);
+            addOptional(p,'yesOrNoWellSpaced',[]);
+            addOptional(p,'t_Original',[]);
+            
+            parse(p,varargin{:});
+            plotDropped = p.Results.plotDropped;
+            yesOrNoAll = p.Results.yesOrNoAll;
+            yesOrNoSome = p.Results.yesOrNoSome;
+            yesOrNoOutlier =p.Results.yesOrNoOutlier;
+            yesOrNoWellSpaced = p.Results.yesOrNoWellSpaced;
+            t_Original = p.Results.t_Original;
+            
             [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);
             if theFigure==false
                 theFigure = figure('visible','on','WindowStyle','docked',...
@@ -642,7 +708,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             t_diff = t-t_shift(1:length(t_shift)-1);
             Fs = mean(1./t_diff(2:length(t_diff)));
             %t = t - t(1);
-            ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
+            if plotDropped
+                ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle,...
+                    'plotDropped', true, 'yesOrNoAll',yesOrNoAll, 'yesOrNoSome', yesOrNoSome,...
+                    'yesOrNoOutlier', yesOrNoOutlier, 'yesOrNoWellSpaced', yesOrNoWellSpaced,...
+                    't_Original', t_Original);
+            else
+                ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
+            end
         end
         
         function [Fs,Variance] = estimateFsAndVariance(t)
@@ -697,11 +770,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [tm_t_c,tm_est] = ...
-                zeroTheRun(tm_t,startIndex,numberOfSamples)
+                zeroTheRun(tm_t,startIndex,numberOfSamples,varargin)
             %ZEROTHERUN Changes the samples to the zero frame using
             %an estimate of the initial orientation from the start of
             %the run where the sensor was held still in a known
             %direction.
+            %There is also an option for using a zeroMeasurement, by
+            %using: optionStaticRun
             %
             %You can then callibrate the data. It takes the 'average'
             %quaternion of the numberOfSamples quaternions starting at
@@ -714,20 +789,23 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %position.
             %
             % Returns the tm_t(startIndex:length(tm_t)).
+
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
                 zeroRun{i} = ThreeD([1 0 0 0]);
             end
-            tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
-                tm_t,startIndex,numberOfSamples);
-            tm_t_c = tm_t(startIndex:length(tm_t));
-            timestamp1=tm_t{startIndex}.getTimestamp;
-            parfor i =  1:length(tm_t_c)
-                newTm = tm_est.*tm_t_c{i};
-                newTm = newTm.setTimestamp(newTm.getTimestamp...
-                    -timestamp1)
-                tm_t_c{i} = newTm;
+                tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
+                    tm_t,startIndex,numberOfSamples);
+                tm_t_c = tm_t(startIndex:length(tm_t));
+                timestamp1=tm_t{startIndex}.getTimestamp;
+                
+                parfor i =  1:length(tm_t_c)
+                    newTm = tm_est.*tm_t_c{i};
+                    newTm = newTm.setTimestamp(newTm.getTimestamp...
+                        -timestamp1)
+                    tm_t_c{i} = newTm;
+                end
             end
         end
         

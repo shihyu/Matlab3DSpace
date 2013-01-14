@@ -7,53 +7,7 @@ classdef Markers3D < ThreeD
     % maximal acceleration that is allowed for markers, otherwise markers are
     % considdered as outliers  % [m/s]
     methods (Static)
-        function [vtm_t,gapArray] = dropQuaternions(rightBack,leftBack,front,N)
-            %MARKED MISSING MARKERS
-            CountDroppedMarkers = 0;
-            [rightBack,leftBack,front] = Markers3D.eraseNan(rightBack,leftBack,front);
-            
-            display('Check if the markers are well spaced');
-            
-            
-            %     rightBack
-            %             size(rightBack)
-            %             size(leftBack)
-            %             size(front)
-            %             N
-            parfor i = 1:N
-                if ~Markers3D.areTheMarkersWellSpaced(rightBack(i,1:3),...
-                        leftBack(i,1:3),...
-                        front(i,1:3));
-                    vtm_t{i} = -1;
-                    CountDroppedMarkers = CountDroppedMarkers +1;
-                else
-                    vtm = Markers3D('rightBack',rightBack(i,1:3),...
-                        'leftBack',leftBack(i,1:3),...
-                        'front',front(i,1:3),...
-                        'timeStamp',rightBack(i,4:4));
-                    vtm_t{i} = vtm;
-                end
-            end
-            display(['Dropped Quaternions =', num2str(CountDroppedMarkers)]);
-            if ((CountDroppedMarkers/N)*100) > 5
-                warning('Markers3D:readDataVicon','Dropped Quaternions is more than 5 percent');
-            end
-            %REMOVE THE MARKED MARKERS
-            % If it is a class put it into the array, otherwise not (if it
-            % is -1)
-            vtm_tmp = {};
-            gapArray = [];
-            
-            for i = 1:N
-                if isa(vtm_t{i},'Markers3D')
-                    vtm_tmp = {vtm_tmp{:} vtm_t{i}};
-                else
-                    gapArray = [gapArray, i];
-                end
-            end
-            vtm_t = vtm_tmp;
-            display(['Array dropped Quaternions =', num2str(gapArray)]);
-        end
+        
         
         function vtm_t = create3DMarkersFromRawData(rawData,varargin)
             %CREATES3DMARKERFROMRAWDATA
