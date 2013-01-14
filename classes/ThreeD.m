@@ -269,13 +269,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             [corrValue]=max(R12);
             title(theTitle)
         end
-<<<<<<< HEAD
-        
-        
-        
-=======
 
->>>>>>> FETCH_HEAD
         function [t_new,tm_t_new]= setStartTime(t,tm_t, startTime, endTime, Fs)
             % SETSTARTTIME Sets the starttime of an object
             % Can be used to make objects of different sensors the same
@@ -510,10 +504,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             end
         end
         
-<<<<<<< HEAD
-      
-=======
->>>>>>> FETCH_HEAD
+
         function [roll_t,pitch_t,yaw_t,t] = getRPYt(tm_t,varargin)
             %GETRPYT(tm_t,inDegrees) Get the Roll, Pitch and Yaw
             %of the run tm_t and set inDegrees to true if you
@@ -707,7 +698,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [roll,pitch,yaw,t,theFigure] = ...
-
                 getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
                 plotStyle,varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
@@ -744,12 +734,12 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %t = t - t(1);
 
             if plotDropped
-                ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle,...
+                ThreeD.plotRPY(roll,pitch,yaw,t,...
                     'plotDropped', true, 'yesOrNoAll',yesOrNoAll, 'yesOrNoSome', yesOrNoSome,...
                     'yesOrNoOutlier', yesOrNoOutlier, 'yesOrNoWellSpaced', yesOrNoWellSpaced,...
                     't_Original', t_Original);
             else
-                ThreeD.plotRPY(roll,pitch,yaw,t,true,typeOfPlot,plotStyle);
+                ThreeD.plotRPY(roll,pitch,yaw,t);
             end
         end
         
@@ -842,7 +832,6 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     tm_t_c{i} = newTm;
                 end
             end
-        end
         
         function [tm_t,t] = resample(tm_t,t_wanted)
             %RESAMPLE Resamples a cell of ThreeD
