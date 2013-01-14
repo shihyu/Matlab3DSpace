@@ -27,7 +27,8 @@ classdef Markers3D < ThreeD
             adams = p.Results.adams;
             
             if adams
-                points_0 = ThreeD.x_base_frame;
+                display('Using X_BASE_FRAME');
+                points_0 = ThreeD.x_base_frame
             else
                 points_0 = ThreeD.default_points_0;
             end
