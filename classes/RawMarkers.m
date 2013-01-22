@@ -5,19 +5,19 @@ classdef RawMarkers
     methods(Static)
         function [rawDataNanErased, t_beforeErased] = eraseNan(rawData)
             N=size(rawData,1);
-            CountDroppedQuaternions = 0;
+            CountDroppedMarkers = 0;
             rawDataNanErased = [];
             for i = 1:N
                 if (any(isnan(rawData(i,1:10))))
-                    CountDroppedQuaternions = CountDroppedQuaternions +1;
+                    CountDroppedMarkers = CountDroppedMarkers +1;
                     
                 else rawDataNanErased2 = rawData(i,1:10) ;
                     rawDataNanErased = [ rawDataNanErased;rawDataNanErased2];
                 end
             end
-            display(['Dropped Quaternions =', num2str(CountDroppedQuaternions)]);
-            if ((CountDroppedQuaternions/N)*100) > 5
-                warning('Markers3D:readDataVicon','Dropped Quaternions is more than 5 percent');
+            display(['Dropped Markers =', num2str(CountDroppedMarkers)]);
+            if ((CountDroppedMarkers/N)*100) > 5
+                warning('Markers3D:readDataVicon','Dropped Markers is more than 5 percent');
             end
             t_beforeErased = rawData(:,10);
         end
@@ -57,7 +57,7 @@ classdef RawMarkers
             spacedData(:,10)=rawData(:,10);
             display(['Number of Not-well-spaced triangles =', num2str(countNotWellSpaced)]);
             if ((countNotWellSpaced/N)*100) > 5
-                warning('RawMarkers:removeNotWellSpaced','Dropped Quaternions is more than 5 percent');
+                warning('RawMarkers:removeNotWellSpaced','Dropped Markers is more than 5 percent');
             end
         end
         

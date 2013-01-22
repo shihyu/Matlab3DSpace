@@ -350,8 +350,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 normedPoint = (point-reference)/norm(point-reference)+...
                     reference;
                 %Reference point is zero
-            elseif (all(reference < repmat(eps, size(reference)))) && ...
-                    (all(point > repmat(eps, size(point))))
+            elseif (all(abs(reference) < repmat(eps, size(reference)))) && ...
+                    (any(abs(point) > repmat(eps, size(point))))
                 %display('Reference zero');
                 normedPoint = point/norm(point);
                 %Point is zero.
@@ -717,13 +717,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [roll,pitch,yaw,t,theFigure] = ...
-                getAndPlotRPYt(theRun_t,theTitle,theFigure,typeOfPlot,...
-                plotStyle,varargin)
+                getAndPlotRPYt(theRun_t,theTitle,theFigure,varargin)
             %GETANDPLOTRYP Gets and plots the RPY for the run.
             % Set theFigure to the figure handler if you would like to plot
             % on the same figure or to false if you want a new figure.
             p = inputParser;
             addOptional(p,'plotDropped',false);
+            p.addOptional('plotStyle','--*b');
             addOptional(p,'yesOrNoAll',[]);
             addOptional(p,'yesOrNoSome',[]);
             addOptional(p,'yesOrNoOutlier',[]);
@@ -737,7 +737,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             yesOrNoOutlier =p.Results.yesOrNoOutlier;
             yesOrNoWellSpaced = p.Results.yesOrNoWellSpaced;
             t_Original = p.Results.t_Original;
-            
+            plotStyle = p.Results.plotStyle;
+
             [roll,pitch,yaw,t] = ThreeD.getRPYt(theRun_t,true);
 
             if theFigure==false
@@ -758,7 +759,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                     'yesOrNoOutlier', yesOrNoOutlier, 'yesOrNoWellSpaced', yesOrNoWellSpaced,...
                     't_Original', t_Original);
             else
-                ThreeD.plotRPY(roll,pitch,yaw,t);
+                ThreeD.plotRPY(roll,pitch,yaw,t,'plotStyle',plotStyle);
             end
         end
         
