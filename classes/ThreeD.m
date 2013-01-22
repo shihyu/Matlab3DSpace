@@ -348,8 +348,8 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
                 normedPoint = (point-reference)/norm(point-reference)+...
                     reference;
                 %Reference point is zero
-            elseif (all(reference < repmat(eps, size(reference)))) && ...
-                    (all(point > repmat(eps, size(point))))
+            elseif (all(abs(reference) < repmat(eps, size(reference)))) && ...
+                    (any(abs(point) > repmat(eps, size(point))))
                 %display('Reference zero');
                 normedPoint = point/norm(point);
                 %Point is zero.
