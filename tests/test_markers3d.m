@@ -64,8 +64,65 @@ assertElementsAlmostEqual(...
         1 -1 0 0; 
         0 0 0 -1; 
         1 1 1 1],cvt.getT);
-quat = cvt.getQ
+    
+rightback = [0 1.766 0.7];
+leftback = [0 -1.766 0.7];
+front = [1.766 0 0.7];
+theTimestamp = 2.3;
+cvt = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
+assertElementsAlmostEqual(cvt.getH,...
+    [1 0 0 0;
+    0 -1 0 0; 
+    0 0 -1 0; 
+    0 0 0 1]);
+assertElementsAlmostEqual(...
+    [0 0 1 0; 
+        1 -1 0 0; 
+        0 0 0 -1; 
+        1 1 1 1],cvt.getT);
 
+rightback = [4.1 1.766 0.7];
+leftback = [4.1 -1.766 0.7];
+front = [4.866 0 0.7];
+theTimestamp = 2.3;
+cvt = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
+assertElementsAlmostEqual(cvt.getH,...
+    [1 0 0 0;
+    0 -1 0 0; 
+    0 0 -1 0; 
+    0 0 0 1]);
+assertElementsAlmostEqual(...
+    [0 0 1 0; 
+        1 -1 0 0; 
+        0 0 0 -1; 
+        1 1 1 1],cvt.getT);
+
+rightback = [4.1 4.866 0.7];
+leftback = [4.1 -1.766+3.1 0.7];
+front = [4.866 3.1 0.7];
+theTimestamp = 2.3;
+cvt = Markers3D('rightBack',rightback,...
+    'leftBack',leftback,...
+    'front',front,...
+    'timeStamp',theTimestamp);
+assertElementsAlmostEqual(cvt.getH,...
+    [1 0 0 0;
+    0 -1 0 0; 
+    0 0 -1 0; 
+    0 0 0 1]);
+assertElementsAlmostEqual(...
+    [0 0 1 0; 
+        1 -1 0 0; 
+        0 0 0 -1; 
+        1 1 1 1],cvt.getT);
+    
+    
 rightback = [1 1 2];
 leftback = [1 -1 2];
 front = [2 0 2];
@@ -95,11 +152,11 @@ cvt.getQ
 assertElementsAlmostEqual([1 -1 0 0; 0 0 0 -1; 0 0 1 0; 1 1 1 1],cvt.getT);
 
 %Rotate on X
-rightback = [0 0 1];
-leftback = [0 0 -1];
-front = [1 0 0];
+rightback = [0 0 1.34];
+leftback = [0 0 -1.34];
+front = [1.343 0 0];
 theta = -pi/2;
-H = rotx(theta);
+H = rotx(theta)
 cvt = Markers3D('rightBack',rightback,...
     'leftBack',leftback,...
     'front',front,...

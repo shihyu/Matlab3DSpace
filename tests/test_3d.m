@@ -240,6 +240,29 @@ REF=~all(theReference < repmat(eps, size(theReference)))
 assertEqual((thePoint-theReference)/norm(thePoint-theReference)+...
     theReference,...
     ThreeD.normWithOffset(thePoint,theReference));
+testIn = [-5.1 0.0 0.7];
+assertElementsAlmostEqual([-1 0.0 0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 0.7]));
+testIn = [5.1 0.0 0.7];
+assertElementsAlmostEqual([1 0.0 0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 0.7]));
+testIn = [-5.1 0.0 -0.7];
+assertElementsAlmostEqual([-1 0.0 -0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 -0.7]));
+
+
+testIn = [0.0 -5.1 0.7];
+assertElementsAlmostEqual([ 0.0 -1 0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 0.7]));
+testIn = [0.0 5.1 0.7];
+assertElementsAlmostEqual([0.0 1 0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 0.7]));
+testIn = [0.0 -5.1 -0.7];
+assertElementsAlmostEqual([0.0 -1  -0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 -0.7]));
+testIn = [0.0 5.1 -0.7];
+assertElementsAlmostEqual([0.0 1 -0.7],...
+    ThreeD.normWithOffset(testIn,[0 0 -0.7]));
 
 function test_resample
 rightback = [0 1  0];
