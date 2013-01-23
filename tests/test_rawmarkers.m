@@ -1,4 +1,4 @@
-function test_suite = test_vicon3d
+function test_suite = test_rawmarkers
 % MUST BE IN THE DIRECTORY WHERE THE TEST RUNS.
 initTestSuite;
 
