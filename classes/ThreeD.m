@@ -293,7 +293,7 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         
         function [jointAngle_t] = ...
                 getjointangles(sensor1_t,sensor2_t,angleName,...
-                callibrateStart,varargin)
+                varargin)
 
             p = inputParser;
             p.addOptional('doPlot',false);
@@ -311,12 +311,14 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %ThreeD.plotRun([sensor1_t;sensor2_t]);
             figures =[];
             if doPlot
-                ThreeD.getAndPlotRPYt(sensor2_t,...
-                    ['GETJOINTANGLES: Uncalibrated original sensor position: Sensor 1(' sensor1Style...
+                [~,~,~,~,theFigure] = ThreeD.getAndPlotRPYt(sensor2_t,...
+                    ['GETJOINTANGLES:Sensor 1(' sensor1Style...
                     ') Sensor 2 (' sensor2Style ')' ],false,'plotStyle',sensor2Style);
                 ThreeD.getAndPlotRPYt(sensor1_t,...
-                    '',unCallibratedOrignalFigure,'plotStyle',sensor1Style);
+                    ['GETJOINTANGLES:Sensor 1(' sensor1Style...
+                    ') Sensor 2 (' sensor2Style ')' ],theFigure,'plotStyle',sensor1Style);
             end
+            
             %joint Angle:
             % psiS = Steering Column Frame
             % psiR = Roll sensor frame, on the bicycle frame.
@@ -326,13 +328,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             % q_psi0 = H_R0*q_psiR => We have, sensor1_t
             % q_psiR = HSR*q_psiS => We want H12 => Now lets solve:
             % H_SR =  (H_R0)^-1*HS0
-            %In code: sensor2_t = H_RS and sensor1_t = H_R0
+            %In code: sensor2_t = H_S0 and sensor1_t = H_R0
             % Thus joint_angle = H_SR
             % jointAngle_t = sensor1_t'*sensor2_t
             jointAngle_t = ThreeD.cellInverseMultiply(sensor1_t,sensor2_t);
             if doPlot
                 ThreeD.getAndPlotRPYt(jointAngle_t,...
-                    ['GETJOINTANGLES: Calculated '  angleName '(un-callibrated).' ],...
+                    ['GETJOINTANGLES: Calculated '  angleName],...
                     false,'plotStyle',jointAnglePlotStyle);
             end
         end
@@ -462,8 +464,17 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %display('Calculating error (vector):')
             minSize = min(size(obj1,2),size(obj2,2));
             diff = cell(1,minSize);
-            parfor i = 1:minSize
-                diff{i} = obj1{i}'.*obj2{i};
+            if  strcmp(class(obj1),'ThreeD')
+                diff = cell(1,length(obj2));
+                parfor i =  1:length(obj2)
+                    Steer_St = obj1'.*obj2{i};
+                    diff{i} = Steer_St;
+                end
+            else
+                parfor i = 1:minSize
+                    diff{i} = obj1{i}'.*obj2{i};
+                    
+                end
             end
         end
         
@@ -475,8 +486,16 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %display('Calculating error (vector):')
             minSize = min(size(obj1,2),size(obj2,2));
             diff = cell(1,minSize);
-            parfor i = 1:minSize
-                diff{i} = obj1{i}.*obj2{i};
+            if  strcmp(class(obj1),'ThreeD')
+                diff = cell(1,length(obj2));
+                parfor i =  1:length(obj2)
+                     Steer_St = obj1.*obj2{i};
+                     diff{i} = Steer_St;
+                end
+            else
+                parfor i = 1:minSize
+                    diff{i} = obj1{i}.*obj2{i};
+                end
             end
         end
         
@@ -796,13 +815,11 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
         end
         
         function [tm_t_c,tm_est] = ...
-                zeroTheRun(tm_t,startIndex,numberOfSamples,varargin)
+                zeroTheRun(tm_t,startIndex,numberOfSamples)
             %ZEROTHERUN Changes the samples to the zero frame using
             %an estimate of the initial orientation from the start of
             %the run where the sensor was held still in a known
             %direction.
-            %There is also an option for using a zeroMeasurement, by
-            %using: optionStaticRun
             %
             %You can then callibrate the data. It takes the 'average'
             %quaternion of the numberOfSamples quaternions starting at
@@ -815,24 +832,24 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %position.
             %
             % Returns the tm_t(startIndex:length(tm_t)).
-
+            
             N=numberOfSamples+startIndex;
             zeroRun = cell(1,N);
             parfor i = 1:N
                 zeroRun{i} = ThreeD([1 0 0 0]);
             end
-                tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
-                    tm_t,startIndex,numberOfSamples);
-                tm_t_c = tm_t(startIndex:length(tm_t));
-                timestamp1=tm_t{startIndex}.getTimestamp;
-                
-                parfor i =  1:length(tm_t_c)
-                    newTm = tm_est.*tm_t_c{i};
-                    newTm = newTm.setTimestamp(newTm.getTimestamp...
-                        -timestamp1)
-                    tm_t_c{i} = newTm;
-                end
+            tm_est = ThreeD.getChangeOfGlobalReferenceFrames(zeroRun,...
+                tm_t,startIndex,numberOfSamples);
+            tm_t_c = tm_t(startIndex:length(tm_t));
+            timestamp1=tm_t{startIndex}.getTimestamp;
+            
+            parfor i =  1:length(tm_t_c)
+                newTm = tm_est.*tm_t_c{i};
+                newTm = newTm.setTimestamp(newTm.getTimestamp...
+                    -timestamp1)
+                tm_t_c{i} = newTm;
             end
+        end
         
         function [tm_t,t] = resample(tm_t,t_wanted)
             %RESAMPLE Resamples a cell of ThreeD

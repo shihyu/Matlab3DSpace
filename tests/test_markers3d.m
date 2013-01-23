@@ -3,9 +3,9 @@ function test_suite = test_markers3d
 initTestSuite;
 
 function test_Markers3D
-rightback = [0 -1 0];
-leftback = [0 1 0];
-front = [1 0 0];
+rightback = [0 -1.766 0];
+leftback = [0 1.766 0];
+front = [1.766 0 0];
 theTimestamp = 2.3;
 cvt = Markers3D('rightBack',rightback,...
     'leftBack',leftback,...
@@ -20,7 +20,11 @@ assertElementsAlmostEqual(cvt.getH,eye(4));
 assertElementsAlmostEqual(cvt.get0,cvt.getT);
 assertElementsAlmostEqual(cvt.getQ,[1 0 0 0]);
 assertEqual(cvt.getTimestamp(),2.3);
+
+cvt.getRPY(true)
+
 assertEqual(cvt.getRPY(true),[0,0,0]);
+
 
 rightback = [0 -1 0];
 leftback = [0 1 0];

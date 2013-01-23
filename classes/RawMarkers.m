@@ -261,7 +261,7 @@ classdef RawMarkers
             markerOutliers = markerData';
         end
         
-        function [filMarkers,gapArrayMarker] = fillGaps(markerOutliers,varargin)
+        function [filMarkers,gapArrayMarker] = fillGaps(gapData,varargin)
             %% FILLGAPS finds the gaps in the data and fill the gaps where possible
             % the gaps are marked with a NaN.
             % The array markerOutliers has size: (N,1)
@@ -271,31 +271,31 @@ classdef RawMarkers
             % interpolated marker data.
             
             p = inputParser;
-            addOptional(p,'maxGap',10); %max gap to interpolate
-            addOptional(p,'interpMethod', 'linear');
+            addOptional(p,'maxGap',50); %max gap to interpolate
+            addOptional(p,'interpMethod', 'cubic');
             parse(p,varargin{:});
             maxGap = p.Results.maxGap;
             interpMethod = p.Results.interpMethod;
             
-            markerOutliers = markerOutliers';
-            nFrames = length(markerOutliers);
+            gapData = gapData';
+            nFrames = length(gapData);
             % make a n x 2 matrix containg on every row the beginning and the ending of
             % a gap.
-            gapArrayMarker = [find(diff(isnan([0; markerOutliers(1,:)'])) > 0) ...
-                find(diff(isnan([markerOutliers(1,:)'; 0])) < 0)];
+            gapArrayMarker = [find(diff(isnan([0; gapData(1,:)'])) > 0) ...
+                find(diff(isnan([gapData(1,:)'; 0])) < 0)];
             % loop the gaps and fill them
             for iGap = 1:size(gapArrayMarker, 1); % loop all the gaps
                 isAtBeginning = gapArrayMarker(iGap, 1) == 1; % check if the gap is at the beginning
                 isAtEnd = gapArrayMarker(iGap, 2) == nFrames; % check if the gap is at the end
                 isTooLarge = gapArrayMarker(iGap, 2) - gapArrayMarker(iGap, 1) > maxGap; % gap is too large to interpolate
                 if ~isAtBeginning && ~isAtEnd && ~isTooLarge % only interpolate if none of these conditions are true
-                    markerOutliers(:, gapArrayMarker(iGap, 1) - 1 : gapArrayMarker(iGap, 2) + 1) = ...
+                    gapData(:, gapArrayMarker(iGap, 1) - 1 : gapArrayMarker(iGap, 2) + 1) = ...
                         interp1([gapArrayMarker(iGap, 1) - 1 gapArrayMarker(iGap, 2) + 1], ...
-                        [markerOutliers(:, gapArrayMarker(iGap, 1) - 1) markerOutliers(:, gapArrayMarker(iGap, 2) + 1)]', ...
-                        gapArrayMarker(iGap, 1) - 1 : gapArrayMarker(iGap, 2) + 1, interpMethod);
+                        [gapData(:, gapArrayMarker(iGap, 1) - 1) gapData(:, gapArrayMarker(iGap, 2) + 1)]', ...
+                        gapArrayMarker(iGap, 1) - 1 : gapArrayMarker(iGap, 2) + 1, interpMethod,'extrap');
                 end
             end
-            filMarkers = markerOutliers';
+            filMarkers = gapData';
         end
         
         function [interpData] = interpolateGaps(gapData,rawData,varargin)
@@ -303,8 +303,8 @@ classdef RawMarkers
             %It uses the function fillGaps and loops over the 9 columns of
             %the matrix
             p = inputParser;
-            addOptional(p,'maxGap',10); %max gap to interpolate
-            addOptional(p,'interpMethod', 'linear');
+            addOptional(p,'maxGap',30); %max gap to interpolate
+            addOptional(p,'interpMethod', 'cubic');
             addOptional(p,'plotOrNot',false);
             addOptional(p,'sensorName','sensorName');
             parse(p,varargin{:});
