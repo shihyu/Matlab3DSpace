@@ -347,13 +347,13 @@ classdef ThreeD <  matlab.mixin.Heterogeneous
             %Make sure you do not divide by zero.
             theTest = abs(point-reference)
             if any(abs(point-reference) > repmat(eps, size(point)))
-                display('Standard - Point not zero.');
+                %display('Standard - Point not zero.');
                 normedPoint = (point-reference)/norm(point-reference)+...
                     reference;
                 %Reference point is zero
             elseif (all(abs(reference) < repmat(eps, size(reference)))) && ...
                     (any(abs(point) > repmat(eps, size(point))))
-                display('Reference zero and Point not zero.');
+                %display('Reference zero and Point not zero.');
                 normedPoint = point/norm(point);
                 %Point is zero.
             else

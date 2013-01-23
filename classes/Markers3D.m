@@ -90,10 +90,10 @@ classdef Markers3D < ThreeD
             timeStamp = ...
                 p.Results.timeStamp;
     
-            midpoint = (rightback+leftback)/2
-            front = ThreeD.normWithOffset(front,midpoint)
-            rightback = ThreeD.normWithOffset(rightback,midpoint)
-            leftback = ThreeD.normWithOffset(leftback,midpoint)
+            midpoint = (rightback+leftback)/2;
+            front = ThreeD.normWithOffset(front,midpoint);
+            rightback = ThreeD.normWithOffset(rightback,midpoint);
+            leftback = ThreeD.normWithOffset(leftback,midpoint);
             %n=AXB=>A front , B = left. N=Positive Z axis...
             crosspointTmp = cross(front-midpoint,...
                 leftback-midpoint)+midpoint;
