@@ -250,6 +250,54 @@ assertElementsAlmostEqual(cvt.getH,H);
 [errorQuat,errorEuler] = quaternionerror(cvt.getQ,[1 0 0 0]);
 [errorQuat,errorEuler] = quaternionerror([1 0 0 0],cvt.getQ);
 
+function test_calculateCrossPoint
+firstPoint = [1.2 0 0]
+secondPoint = [0 1.2 0]
+midPoint = [0 0 0]
+crossPoint = Markers3D.calculateCrossPoint(firstPoint,...
+    secondPoint, midPoint);
+assertEqual([0 0 1],crossPoint);
+
+firstPoint = [1.2 0 1.44]
+secondPoint = [0 1.2 1.44]
+midPoint = [0 0 1.44]
+crossPoint = Markers3D.calculateCrossPoint(firstPoint,...
+    secondPoint, midPoint);
+assertEqual([0 0 2.44],crossPoint);
+
+firstPoint = [1.2 0 0]
+secondPoint = [0 -1.2 0]
+midPoint = [0 0 0]
+crossPoint = Markers3D.calculateCrossPoint(firstPoint,...
+    secondPoint, midPoint);
+assertEqual([0 0 -1],crossPoint);
+
+firstPoint = [1.2 0 1.44]
+secondPoint = [0 -1.2 1.44]
+midPoint = [0 0 1.44]
+crossPoint = Markers3D.calculateCrossPoint(firstPoint,...
+    secondPoint, midPoint);
+assertElementsAlmostEqual([0 0 0.44],crossPoint);
+
+%Now lets test the different Base Frames:
+%Default: ThreeD.default_points_0
+points = ThreeD.default_points_0;
+front = points(1:3,3)';
+leftBack = points(1:3,2)';
+midPoint = [0 0 0]
+crossPoint = Markers3D.calculateCrossPoint(front,...
+    leftBack, midPoint);
+assertEqual(points(1:3,4)',crossPoint);
+
+%Default: ThreeD.x_base_frame
+points = ThreeD.x_base_frame;
+front = points(1:3,3)';
+leftBack = points(1:3,2)';
+midPoint = [0 0 0]
+crossPoint = Markers3D.calculateCrossPoint(front,...
+    leftBack, midPoint);
+assertEqual(points(1:3,4)',crossPoint);
+
 
 function test_different_zeropoint
 %With different base points.

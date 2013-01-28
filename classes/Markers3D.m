@@ -47,6 +47,16 @@ classdef Markers3D < ThreeD
                 vtm_t{i} = vtm;
             end
         end
+        
+        function crossPoint = calculateCrossPoint(firstPoint,...
+                secondPoint,...
+                midPoint)
+            %CALCULATECROSSPOINT - Get the point to tell the system
+            %which way the quaternion/rotation matrix must point.
+            crosspointTmp = cross(firstPoint-midPoint,...
+                secondPoint-midPoint)+midPoint;
+            crossPoint = ThreeD.normWithOffset(crosspointTmp,midPoint);
+        end
     end
     
     
@@ -95,9 +105,10 @@ classdef Markers3D < ThreeD
             rightback = ThreeD.normWithOffset(rightback,midpoint);
             leftback = ThreeD.normWithOffset(leftback,midpoint);
             %n=AXB=>A front , B = left. N=Positive Z axis...
-            crosspointTmp = cross(front-midpoint,...
-                leftback-midpoint)+midpoint;
-            crosspoint = ThreeD.normWithOffset(crosspointTmp,midpoint);
+            crosspoint = Markers3D.calculateCrossPoint(...
+                front,...
+                leftback,...
+                midpoint);
             %not a perfect 60 degree Triangle... so rotate on the
             %XY plane to get the
             %actual front marker in the zero frame.
@@ -136,6 +147,7 @@ classdef Markers3D < ThreeD
             vtm@ThreeD(H_0_T);
             vtm.timestamp = timeStamp;
         end
+        
     end
 end
 
