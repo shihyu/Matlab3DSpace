@@ -15,7 +15,11 @@ replaced and whitespace removed.
 
 Documentation
 -------------
-The code will be the documentation.
+Add the libs directory to the path and then perform the following
+command to generate the HTML docs for the code (must be in base
+directory of the Matlab3DSpace package):
+	m2html('mfiles','.', 'htmldir','doc', 'recursive','on', 'global','on');
+
 
 Dependencies
 ------------
