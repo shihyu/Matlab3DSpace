@@ -11,3 +11,9 @@ rawData = RawMarkers.readFromFile(filename,runName,'RBT','LBT','FTN')
 [yesOrNo,distances]=RawMarkers.areTheMarkersWellSpaced(rawData,...
     'plotBoxPlot',true,...
         'plotTheDistances',true);
+%Lets see what the final results looks like
+data_2 = Markers3D.create3DMarkersFromRawData(rawData);
+rawData = RawMarkers.readFromFile(filename,runName,'RBO','LBO','FON')
+data_1 = Markers3D.create3DMarkersFromRawData(rawData);
+%And plot the run.
+ThreeD.plotRun([data_1;data_2])

@@ -1,5 +1,5 @@
 classdef ThreeD <  matlab.mixin.Heterogeneous
-    %THREEMARKERS Base class that builds homogenous matrixs,
+    %ThreeD Base class that builds homogenous matrixs,
     % quaternions, global reference frame and plot functions
     % for 3D data.
     %

@@ -1,6 +1,5 @@
 classdef Quat3D < ThreeD
-    %Quat3D Contains static data to help with the reading
-    %of data from Quaternion data stored in the SFIE-HDF-FORMAT.
+    %Quat3D Works with Quaternions to create ThreeD objects.
     methods (Static)
         
         function [qtm_t,sync] = readDataSHDF(filename,...
